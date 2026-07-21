@@ -724,11 +724,14 @@ const state = {
   board: null,
   boardRaw: null,
   boardError: null,      // set when board fetch fails
+  boardDropped: 0,       // rows that made it through CSV but failed name+pos check
   sleeperLeague: null,
   sleeperError: null,
   filter: { pos: 'ALL', search: '' },
   sort:   { key: 'ovr', dir: 'asc' },
   errors: [],
+  // Fetch trace (for the debug tab)
+  fetchTrace: null,
 };
 
 /* ============================================================
@@ -737,12 +740,46 @@ const state = {
 async function fetchSheet(sheetName) {
   const url = sheetCsvUrl(sheetName);
   const resp = await fetch(url, { cache: 'no-store' });
-  if (!resp.ok) throw new Error(`Sheet fetch failed (${resp.status}) for "${sheetName}"`);
-  const text = await resp.text();
-  if (text.trim().startsWith('<')) {
-    throw new Error(`Got HTML instead of CSV — is the sheet shared "Anyone with the link"?`);
+
+  const trace = {
+    sheetName,
+    url,
+    status: resp.status,
+    statusText: resp.statusText,
+    contentType: resp.headers.get('content-type') || '(none)',
+    rawFirst500: null,
+    parsedRowCount: null,
+    headers: null,
+    objectCount: null,
+  };
+  state.fetchTrace = trace;
+
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
+
+  let text = await resp.text();
+  // Strip UTF-8 BOM if present
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  trace.rawFirst500 = text.slice(0, 500);
+
+  const trimmed = text.trim();
+
+  // Google Sheets returns HTML for auth-required or moved-permanently pages
+  if (trimmed.startsWith('<')) {
+    throw new Error(`Got HTML instead of CSV — the sheet is likely not shared as "Anyone with the link", or the SHEET_ID is wrong.`);
   }
-  return csvToObjects(parseCSV(text));
+  // Google Sheets returns JSONP wrapper for gviz JSON errors (rare with tqx=out:csv but possible)
+  if (trimmed.startsWith('/*O_o*/') || trimmed.startsWith(')]}')) {
+    throw new Error(`Got JSON error wrapper instead of CSV. First 200 chars: ${trimmed.slice(0, 200)}`);
+  }
+
+  const rows = parseCSV(text);
+  trace.parsedRowCount = rows.length;
+  trace.headers = rows[0] || [];
+
+  const objects = csvToObjects(rows);
+  trace.objectCount = objects.length;
+
+  return objects;
 }
 
 async function fetchSleeperLeague() {
@@ -758,7 +795,7 @@ async function fetchSleeperLeague() {
      Ovr Rk, Pos, Pos Rk, Tier, Player, Team, Bye, FPS, VORP, ADP, ADP Rk, Fmt Δ vs Std
    ============================================================ */
 function normalizeBoard(rows) {
-  return rows.map(r => {
+  const mapped = rows.map(r => {
     const num = (v) => {
       if (v === '' || v == null) return null;
       const n = Number(v);
@@ -778,7 +815,10 @@ function normalizeBoard(rows) {
       adprk:  num(r['ADP Rk']),
       fmtd:   num(r['Fmt Δ vs Std']),
     };
-  }).filter(p => p.name && p.pos);
+  });
+  const kept = mapped.filter(p => p.name && p.pos);
+  state.boardDropped = mapped.length - kept.length;
+  return kept;
 }
 
 function boardVorpRange(rows) {
@@ -982,6 +1022,32 @@ function renderDebug() {
     </div>`);
   }
 
+  // Sheet fetch trace — critical for diagnosing empty responses
+  if (state.fetchTrace) {
+    const t = state.fetchTrace;
+    const headersFound = t.headers && t.headers.length ? t.headers.join(' | ') : '(none)';
+    const requiredCols = ['Player', 'Pos', 'Ovr Rk', 'Tier', 'FPS', 'VORP'];
+    const missing = t.headers ? requiredCols.filter(c => !t.headers.includes(c)) : requiredCols;
+    const missingWarn = missing.length ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Missing expected columns: ${missing.join(', ')}</div>` : '';
+    const emptyWarn = t.objectCount === 0 ? `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Fetch succeeded but 0 rows returned. Check the tab name matches "Overall Board" exactly and has data.</div>` : '';
+    const dropWarn = state.boardDropped > 0 ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ ${state.boardDropped} rows dropped by the "has name and position" filter — likely a column-name mismatch.</div>` : '';
+
+    cards.push(`<div class="debug-card">
+      <h4>Sheet Fetch Trace</h4>
+      <div class="kv"><span class="kv-k">requested tab</span><span class="kv-v">${escapeHtml(t.sheetName)}</span></div>
+      <div class="kv"><span class="kv-k">HTTP status</span><span class="kv-v">${t.status} ${escapeHtml(t.statusText || '')}</span></div>
+      <div class="kv"><span class="kv-k">content-type</span><span class="kv-v" style="font-size:10px;">${escapeHtml(t.contentType)}</span></div>
+      <div class="kv"><span class="kv-k">CSV rows (incl header)</span><span class="kv-v">${t.parsedRowCount ?? '—'}</span></div>
+      <div class="kv"><span class="kv-k">objects after header</span><span class="kv-v">${t.objectCount ?? '—'}</span></div>
+      <div class="kv" style="align-items:flex-start;"><span class="kv-k">headers found</span><span class="kv-v" style="text-align:right; font-size:10px; word-break:break-all; max-width:220px;">${escapeHtml(headersFound)}</span></div>
+      ${missingWarn}${emptyWarn}${dropWarn}
+      <div style="margin-top:10px;">
+        <div class="kv-k" style="margin-bottom:4px;">first 500 chars of response</div>
+        <pre>${escapeHtml(t.rawFirst500 || '(empty)')}</pre>
+      </div>
+    </div>`);
+  }
+
   if (state.errors.length) {
     cards.push(`<div class="debug-card">
       <h4 style="color:var(--down)">Errors</h4>
@@ -1021,7 +1087,16 @@ async function boot() {
     state.boardRaw = boardResult.value;
     state.board = normalizeBoard(boardResult.value);
     state.boardError = null;
-    setPill('statusBoard', 'ok', `Board · ${state.board.length} players`);
+    if (state.board.length === 0) {
+      // Fetch worked but produced nothing usable — surface as an error so the UI is honest
+      const t = state.fetchTrace;
+      const headers = t && t.headers ? t.headers.join(', ') : '(no headers found)';
+      state.boardError = `Fetch succeeded but 0 players parsed. Headers found: ${headers}. Open the Debug tab for the raw response.`;
+      state.errors.push('Board: ' + state.boardError);
+      setPill('statusBoard', 'err', 'Board · 0 rows');
+    } else {
+      setPill('statusBoard', 'ok', `Board · ${state.board.length} players`);
+    }
   } else {
     state.boardError = boardResult.reason.message;
     state.errors.push('Board: ' + state.boardError);
@@ -1041,7 +1116,14 @@ async function retryBoard() {
     const rows = await fetchSheet(CONFIG.SHEETS.board);
     state.boardRaw = rows;
     state.board = normalizeBoard(rows);
-    setPill('statusBoard', 'ok', `Board · ${state.board.length} players`);
+    if (state.board.length === 0) {
+      const t = state.fetchTrace;
+      const headers = t && t.headers ? t.headers.join(', ') : '(no headers found)';
+      state.boardError = `Fetch succeeded but 0 players parsed. Headers found: ${headers}. Open the Debug tab.`;
+      setPill('statusBoard', 'err', 'Board · 0 rows');
+    } else {
+      setPill('statusBoard', 'ok', `Board · ${state.board.length} players`);
+    }
   } catch (e) {
     state.boardError = e.message;
     state.errors.push('Board (retry): ' + e.message);
