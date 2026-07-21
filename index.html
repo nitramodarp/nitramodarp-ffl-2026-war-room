@@ -810,9 +810,22 @@ const COL_ALIASES = {
   fmtd:   ['Fmt Δ vs Std', 'Format Delta', 'Fmt Delta'],
 };
 
+function normalizeColName(s) {
+  return String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 function pickCol(row, aliases) {
+  // Fast path: exact match
   for (const a of aliases) {
     if (row[a] !== undefined) return { value: row[a], matched: a };
+  }
+  // Fallback: fuzzy match (strips whitespace, punctuation, case).
+  // Catches "FPS (League scoring)" with a non-breaking space, curly quotes, etc.
+  const targets = new Set(aliases.map(normalizeColName));
+  for (const key of Object.keys(row)) {
+    if (targets.has(normalizeColName(key))) {
+      return { value: row[key], matched: key };
+    }
   }
   return { value: undefined, matched: null };
 }
