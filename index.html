@@ -1705,20 +1705,25 @@ function needMultiplier(pos, counts, round) {
     // round 10 — by then a bench slot is nearly free anyway.
     const t = Math.min(1, Math.max(0, (round - 1) / 9));
     const mult = 0.65 + t * (1.4 - 0.65);
-    return { mult, reason: `DEF streamable via rolling waivers — value discounted pre-round-10 (rd ${round})` };
+    return { mult, real: true, reason: `DEF streamable via rolling waivers — value discounted pre-round-10 (rd ${round})` };
   }
 
-  if (dedicatedRemaining > 0) return { mult: 1.4, reason: `starter slot open (have ${have}/${ROSTER_SLOTS[pos]})` };
+  if (dedicatedRemaining > 0) return { mult: 1.4, real: true, reason: `starter slot open (have ${have}/${ROSTER_SLOTS[pos]})` };
 
   if (FLEX_ELIGIBLE.includes(pos)) {
     const flexFilled = FLEX_ELIGIBLE.reduce((sum, p) => sum + Math.max(0, (counts[p]||0) - (ROSTER_SLOTS[p]||0)), 0);
-    if (flexFilled < FLEX_SLOTS) return { mult: 1.15, reason: `flex value (${flexFilled}/${FLEX_SLOTS} flex filled)` };
+    if (flexFilled < FLEX_SLOTS) return { mult: 1.15, real: true, reason: `flex value (${flexFilled}/${FLEX_SLOTS} flex filled)` };
   }
 
-  if (pos === 'QB' && have >= 1) return { mult: 0.55, reason: 'QB starter filled — streaming tier only' };
-  if (pos === 'DEF' && have >= 1) return { mult: 0.4, reason: 'DEF filled — rarely worth a 2nd' };
+  // Everything past this point is a redundant/luxury pick: a 2nd starter-only
+  // position (QB/DEF) or bench depth at a flex-eligible spot beyond what you'll
+  // ever start. Scarcity in these positions' tiers doesn't matter — you were
+  // never taking another one regardless of how thin the tier gets. `real:false`
+  // tells the scorer to ignore the tier-cliff bonus for these.
+  if (pos === 'QB' && have >= 1) return { mult: 0.55, real: false, reason: 'QB starter filled — streaming tier only' };
+  if (pos === 'DEF' && have >= 1) return { mult: 0.4, real: false, reason: 'DEF filled — rarely worth a 2nd' };
 
-  return { mult: 0.85, reason: 'bench depth' };
+  return { mult: 0.85, real: false, reason: 'bench depth' };
 }
 
 function tierUrgencyBonus(player, undraftedByPos) {
@@ -1740,8 +1745,12 @@ function computeRecommendation(undrafted, round) {
     .map(p => {
       const need = needMultiplier(p.pos, counts, round);
       const tier = tierUrgencyBonus(p, undraftedByPos);
-      const score = p.vorp * need.mult * tier.bonus;
-      return { player: p, score, need, tier };
+      // Tier-cliff urgency only matters if you actually still need this position.
+      // A thinning tier for a position you've already filled is irrelevant —
+      // you were never taking another one regardless of scarcity.
+      const appliedTierBonus = need.real ? tier.bonus : 1.0;
+      const score = p.vorp * need.mult * appliedTierBonus;
+      return { player: p, score, need, tier, appliedTierBonus };
     })
     .sort((a, b) => b.score - a.score);
 
@@ -1992,6 +2001,9 @@ function renderDraftTab() {
     }).join('');
     const altText = [rec.runnerUp, rec.thirdOption].filter(Boolean)
       .map(r => `${r.player.name} (${r.player.pos}, ${r.player.vorp.toFixed(1)})`).join(' · ');
+    const tierText = need.real
+      ? `${tier.label}${tier.remaining <= 2 ? ' — tier cliff, take now or lose the tier' : ''}`
+      : `${tier.remaining} left in tier ${player.tier} (scarcity irrelevant — not a real need)`;
     recHtml = `<div class="rec-card">
       <div class="rec-label">Recommended Pick — Pick ${round}.${String(slot).padStart(2,'0')}</div>
       <div class="rec-main">
@@ -1999,7 +2011,7 @@ function renderDraftTab() {
         <span class="rec-name">${escapeHtml(player.name)}</span>
         <span class="rec-vorp">VORP ${player.vorp.toFixed(1)}</span>
       </div>
-      <div class="rec-reason">${need.reason} · ${tier.label}${tier.remaining <= 2 ? ' — tier cliff, take now or lose the tier' : ''}</div>
+      <div class="rec-reason">${need.reason} · ${tierText}</div>
       <div class="need-meter">${needPills}</div>
       ${altText ? `<div class="rec-alt">Next best: ${escapeHtml(altText)}</div>` : ''}
     </div>`;
