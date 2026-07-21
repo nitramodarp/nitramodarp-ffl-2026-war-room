@@ -733,7 +733,67 @@
   .best-avail-row .ba-name { flex: 1; font-weight: 500; }
   .best-avail-row .ba-tier { width: 6px; height: 20px; border-radius: 2px; flex-shrink: 0; }
   .best-avail-row .ba-vorp { font-family: var(--font-mono); font-size: 12px; color: var(--accent); width: 50px; text-align: right; }
-  .best-avail-row .ba-diff { font-family: var(--font-mono); font-size: 11px; width: 40px; text-align: right; }
+  .rec-card {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--bg-elev)), var(--bg-elev));
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .rec-card .rec-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .rec-card .rec-main {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .rec-card .rec-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+  }
+  .rec-card .rec-vorp {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .rec-card .rec-reason {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--fg-mute);
+    line-height: 1.5;
+  }
+  .rec-card .rec-alt {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--fg-dim);
+    font-family: var(--font-mono);
+  }
+  .need-meter {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .need-pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    background: var(--bg-elev-2);
+    color: var(--fg-mute);
+  }
+  .need-pill.need-open { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, var(--bg-elev-2)); }
+  .need-pill.need-full { color: var(--fg-dim); }
 
   /* ============================================================
      Legend footer
@@ -914,6 +974,10 @@
         <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-mute); white-space:nowrap;">DRAFT ID</span>
         <input type="text" id="draftIdOverride" placeholder="defaults to league draft">
       </label>
+      <label class="search" style="max-width:180px;">
+        <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-mute); white-space:nowrap;">MY SLOT</span>
+        <input type="number" id="mySlotOverride" min="1" max="12" placeholder="auto">
+      </label>
       <button id="draftConnectBtn" class="chip active" style="padding:6px 14px;">Connect</button>
       <button id="draftDisconnectBtn" class="chip" style="padding:6px 14px; display:none;">Disconnect</button>
       <span class="hint" id="draftPollStatus">Not connected</span>
@@ -922,7 +986,7 @@
     <div id="draftHost">
       <div class="state">
         <h3>Live Draft Tracker</h3>
-        <p>Enter a draft ID above and click Connect. Defaults to this league's draft (<code id="draftIdDefault"></code>) — paste a Sleeper mock draft ID here to test the tracker before Aug 22.</p>
+        <p>Enter a draft ID above and click Connect. Defaults to this league's draft (<code id="draftIdDefault"></code>) — paste a Sleeper mock draft ID here to test the tracker before Aug 22. Set "My Slot" manually to test recommendations against a mock (auto-resolves from your real owner ID once the actual draft starts).</p>
       </div>
     </div>
   </section>
@@ -1588,6 +1652,89 @@ function renderTradeCalc() {
 }
 
 /* ============================================================
+   Roster construction — from the confirmed league brief.
+   Used by the recommendation engine to score positional need.
+   ============================================================ */
+const ROSTER_SLOTS = { QB: 1, RB: 2, WR: 2, TE: 1, DEF: 1 };
+const FLEX_SLOTS = 2;               // W/R/T flex, filled by RB/WR/TE
+const FLEX_ELIGIBLE = ['RB', 'WR', 'TE'];
+const BENCH_SLOTS = 6;
+
+function computeMyRosterCounts() {
+  const counts = { QB: 0, RB: 0, WR: 0, TE: 0, DEF: 0 };
+  const mySlot = resolveMySlot();
+  if (mySlot == null) return { counts, mySlot };
+  draftState.matchedPicks.forEach(pk => {
+    if (pk.draft_slot !== mySlot) return;
+    const pos = pk.boardMatch ? pk.boardMatch.pos : (pk.metadata && pk.metadata.position);
+    if (pos && counts[pos] != null) counts[pos]++;
+  });
+  return { counts, mySlot };
+}
+
+function resolveMySlot() {
+  // Prefer real resolution via draft_order (works once the real draft's
+  // user list matches league membership). Fall back to manual override
+  // for testing against a mock draft, whose participants aren't real owners.
+  const manual = document.getElementById('mySlotOverride')?.value;
+  if (manual) return parseInt(manual, 10);
+  if (draftState.meta && draftState.meta.draft_order) {
+    const slot = draftState.meta.draft_order[CONFIG.MY_OWNER_ID];
+    if (slot != null) return slot;
+  }
+  return null;
+}
+
+/* ============================================================
+   Recommendation engine
+   score = VORP x needMultiplier x tierUrgencyBonus
+   Explainable by design — every factor is surfaced in the UI,
+   not just the final number.
+   ============================================================ */
+function needMultiplier(pos, counts) {
+  const have = counts[pos] || 0;
+  const dedicatedRemaining = Math.max(0, (ROSTER_SLOTS[pos] || 0) - have);
+  if (dedicatedRemaining > 0) return { mult: 1.4, reason: `starter slot open (have ${have}/${ROSTER_SLOTS[pos]})` };
+
+  if (FLEX_ELIGIBLE.includes(pos)) {
+    const flexFilled = FLEX_ELIGIBLE.reduce((sum, p) => sum + Math.max(0, (counts[p]||0) - (ROSTER_SLOTS[p]||0)), 0);
+    if (flexFilled < FLEX_SLOTS) return { mult: 1.15, reason: `flex value (${flexFilled}/${FLEX_SLOTS} flex filled)` };
+  }
+
+  if (pos === 'QB' && have >= 1) return { mult: 0.55, reason: 'QB starter filled — streaming tier only' };
+  if (pos === 'DEF' && have >= 1) return { mult: 0.4, reason: 'DEF filled — rarely worth a 2nd' };
+
+  return { mult: 0.85, reason: 'bench depth' };
+}
+
+function tierUrgencyBonus(player, undraftedByPos) {
+  const samePosTier = (undraftedByPos[player.pos] || []).filter(p => p.tier === player.tier);
+  const remaining = samePosTier.length;
+  if (remaining <= 2) return { bonus: 1.3, remaining, label: `last ${remaining} in tier ${player.tier}` };
+  if (remaining <= 4) return { bonus: 1.15, remaining, label: `${remaining} left in tier ${player.tier}` };
+  return { bonus: 1.0, remaining, label: `${remaining} left in tier ${player.tier}` };
+}
+
+function computeRecommendation(undrafted) {
+  if (!undrafted.length) return null;
+  const { counts, mySlot } = computeMyRosterCounts();
+  const undraftedByPos = {};
+  undrafted.forEach(p => { (undraftedByPos[p.pos] = undraftedByPos[p.pos] || []).push(p); });
+
+  const scored = undrafted
+    .filter(p => p.vorp != null)
+    .map(p => {
+      const need = needMultiplier(p.pos, counts);
+      const tier = tierUrgencyBonus(p, undraftedByPos);
+      const score = p.vorp * need.mult * tier.bonus;
+      return { player: p, score, need, tier };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  return { top: scored[0], runnerUp: scored[1], thirdOption: scored[2], counts, mySlot, scored };
+}
+
+/* ============================================================
    Live Draft Tracker
    Polls Sleeper's draft picks endpoint. Each pick's own metadata
    carries the player's name/pos/team, so we never need the 5MB
@@ -1736,8 +1883,8 @@ function renderDraftTab() {
   const nextPickNo = totalPicks + 1;
   const { round, slot } = draftOverallToSlot(nextPickNo, teams);
   const otcName = ownerNameForSlot(slot);
-  const otcRosterId = draftState.meta.slot_to_roster_id ? draftState.meta.slot_to_roster_id[String(slot)] : null;
-  const isMe = draftState.myRosterId != null && otcRosterId === draftState.myRosterId;
+  const mySlot = resolveMySlot();
+  const isMe = mySlot != null && slot === mySlot;
   const draftComplete = draftState.meta.status === 'complete' ||
     (draftState.meta.settings && totalPicks >= draftState.meta.settings.teams * draftState.meta.settings.rounds);
 
@@ -1747,6 +1894,9 @@ function renderDraftTab() {
   );
   const undrafted = state.board ? state.board.filter(p => !draftedIds.has(p.name)) : [];
   const unmatchedCount = draftState.matchedPicks.filter(p => !p.boardMatch).length;
+
+  // Recommendation engine
+  const rec = computeRecommendation(undrafted);
 
   // Recent picks feed (most recent first)
   const feed = draftState.matchedPicks.slice().reverse().slice(0, 30).map(pk => {
@@ -1786,11 +1936,11 @@ function renderDraftTab() {
       <span class="ba-diff" style="color:var(--up)">ADP ${p.adprk}</span>
     </div>`).join('') || '<p style="color:var(--fg-dim); font-size:12px;">—</p>';
 
-  // My picks so far
-  const myPicks = draftState.matchedPicks.filter(pk => {
-    const rid = pk.roster_id != null ? Number(pk.roster_id) : null;
-    return draftState.myRosterId != null && rid === draftState.myRosterId;
-  });
+  // My picks so far — identified by draft_slot, which works in both
+  // mock tests (manual override) and the real draft (auto-resolved)
+  const myPicks = mySlot != null
+    ? draftState.matchedPicks.filter(pk => pk.draft_slot === mySlot)
+    : [];
   const myPicksHtml = myPicks.map(pk => {
     const name = pk.boardMatch ? pk.boardMatch.name : `${pk.metadata?.first_name||''} ${pk.metadata?.last_name||''}`.trim();
     return `<div class="pick-feed-row">
@@ -1798,7 +1948,9 @@ function renderDraftTab() {
       <span class="pk-player">${escapeHtml(name)}</span>
       <span class="pk-vorp">${pk.boardMatch ? pk.boardMatch.pos : ''}</span>
     </div>`;
-  }).join('') || '<p style="color:var(--fg-dim); font-size:12px;">No picks yet — waiting for your slot to resolve or draft to start.</p>';
+  }).join('') || (mySlot == null
+      ? '<p style="color:var(--fg-dim); font-size:12px;">Set "My Slot" above to track your picks and get recommendations.</p>'
+      : '<p style="color:var(--fg-dim); font-size:12px;">No picks yet.</p>');
 
   const statusBanner = draftComplete
     ? `<div class="draft-status-banner"><span class="otc-label">DRAFT COMPLETE</span><span class="pick-count">${totalPicks} picks made</span></div>`
@@ -1809,8 +1961,39 @@ function renderDraftTab() {
         <span class="pick-count">${totalPicks} picks made · ${unmatchedCount ? unmatchedCount + ' unmatched' : 'all matched'}</span>
       </div>`;
 
+  // Recommendation card
+  let recHtml = '';
+  if (mySlot == null) {
+    recHtml = `<div class="rec-card">
+      <div class="rec-label">Recommended Pick</div>
+      <div style="color:var(--fg-mute); font-size:13px;">Set "My Slot" above to get a personalized recommendation based on your actual roster needs. Until then, use Best Available on the right.</div>
+    </div>`;
+  } else if (rec && rec.top) {
+    const { player, need, tier } = rec.top;
+    const needPills = Object.keys(ROSTER_SLOTS).map(pos => {
+      const have = rec.counts[pos] || 0;
+      const want = ROSTER_SLOTS[pos];
+      const cls = have < want ? 'need-open' : 'need-full';
+      return `<span class="need-pill ${cls}">${pos} ${have}/${want}</span>`;
+    }).join('');
+    const altText = [rec.runnerUp, rec.thirdOption].filter(Boolean)
+      .map(r => `${r.player.name} (${r.player.pos}, ${r.player.vorp.toFixed(1)})`).join(' · ');
+    recHtml = `<div class="rec-card">
+      <div class="rec-label">Recommended Pick — Pick ${round}.${String(slot).padStart(2,'0')}</div>
+      <div class="rec-main">
+        <span class="pos-tag pos-${player.pos}">${player.pos}</span>
+        <span class="rec-name">${escapeHtml(player.name)}</span>
+        <span class="rec-vorp">VORP ${player.vorp.toFixed(1)}</span>
+      </div>
+      <div class="rec-reason">${need.reason} · ${tier.label}${tier.remaining <= 2 ? ' — tier cliff, take now or lose the tier' : ''}</div>
+      <div class="need-meter">${needPills}</div>
+      ${altText ? `<div class="rec-alt">Next best: ${escapeHtml(altText)}</div>` : ''}
+    </div>`;
+  }
+
   host.innerHTML = `
     ${statusBanner}
+    ${recHtml}
     <div class="draft-grid">
       <div class="draft-card">
         <h4>Recent Picks</h4>
@@ -2024,6 +2207,9 @@ document.getElementById('tradeRecv').addEventListener('input', () => renderTrade
 
 document.getElementById('draftConnectBtn').addEventListener('click', connectDraft);
 document.getElementById('draftDisconnectBtn').addEventListener('click', disconnectDraft);
+document.getElementById('mySlotOverride').addEventListener('input', () => {
+  if (draftState.connected) renderDraftTab();
+});
 
 document.getElementById('posFilter').addEventListener('click', e => {
   const btn = e.target.closest('.chip');
