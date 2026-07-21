@@ -1691,9 +1691,23 @@ function resolveMySlot() {
    Explainable by design — every factor is surfaced in the UI,
    not just the final number.
    ============================================================ */
-function needMultiplier(pos, counts) {
+function needMultiplier(pos, counts, round) {
   const have = counts[pos] || 0;
   const dedicatedRemaining = Math.max(0, (ROSTER_SLOTS[pos] || 0) - have);
+
+  if (pos === 'DEF' && dedicatedRemaining > 0) {
+    // DEF is uniquely unpredictable year-to-year (defenses swing 15-20 spots
+    // in rankings on scheme/injury changes far more than skill positions do),
+    // and this league's 1-day rolling waivers make a comparable streamer
+    // available almost every week. Missing an "elite" DEF early costs little;
+    // wasting a mid-round pick chasing one costs a roster spot you can't get
+    // back. Discount heavily pre-draft, fade linearly to full weight by
+    // round 10 — by then a bench slot is nearly free anyway.
+    const t = Math.min(1, Math.max(0, (round - 1) / 9));
+    const mult = 0.65 + t * (1.4 - 0.65);
+    return { mult, reason: `DEF streamable via rolling waivers — value discounted pre-round-10 (rd ${round})` };
+  }
+
   if (dedicatedRemaining > 0) return { mult: 1.4, reason: `starter slot open (have ${have}/${ROSTER_SLOTS[pos]})` };
 
   if (FLEX_ELIGIBLE.includes(pos)) {
@@ -1715,7 +1729,7 @@ function tierUrgencyBonus(player, undraftedByPos) {
   return { bonus: 1.0, remaining, label: `${remaining} left in tier ${player.tier}` };
 }
 
-function computeRecommendation(undrafted) {
+function computeRecommendation(undrafted, round) {
   if (!undrafted.length) return null;
   const { counts, mySlot } = computeMyRosterCounts();
   const undraftedByPos = {};
@@ -1724,7 +1738,7 @@ function computeRecommendation(undrafted) {
   const scored = undrafted
     .filter(p => p.vorp != null)
     .map(p => {
-      const need = needMultiplier(p.pos, counts);
+      const need = needMultiplier(p.pos, counts, round);
       const tier = tierUrgencyBonus(p, undraftedByPos);
       const score = p.vorp * need.mult * tier.bonus;
       return { player: p, score, need, tier };
@@ -1896,7 +1910,7 @@ function renderDraftTab() {
   const unmatchedCount = draftState.matchedPicks.filter(p => !p.boardMatch).length;
 
   // Recommendation engine
-  const rec = computeRecommendation(undrafted);
+  const rec = computeRecommendation(undrafted, round);
 
   // Recent picks feed (most recent first)
   const feed = draftState.matchedPicks.slice().reverse().slice(0, 30).map(pk => {
