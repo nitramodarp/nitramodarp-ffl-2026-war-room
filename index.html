@@ -643,6 +643,99 @@
   }
 
   /* ============================================================
+     Live Draft tab
+     ============================================================ */
+  .draft-status-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .draft-status-banner .otc-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+  }
+  .draft-status-banner .otc-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .draft-status-banner .otc-name.is-me { color: var(--accent); }
+  .draft-status-banner .pick-count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--fg-mute);
+  }
+  .draft-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 900px) { .draft-grid { grid-template-columns: 1fr; } }
+  .draft-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .draft-card h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    margin-bottom: 10px;
+  }
+  .pick-feed { max-height: 420px; overflow-y: auto; }
+  .pick-feed-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .pick-feed-row:last-child { border-bottom: none; }
+  .pick-feed-row .pk-no {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fg-dim);
+    width: 40px;
+  }
+  .pick-feed-row .pk-team {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fg-mute);
+    width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pick-feed-row .pk-player { flex: 1; font-weight: 500; }
+  .pick-feed-row .pk-vorp { font-family: var(--font-mono); font-size: 11px; color: var(--fg-mute); }
+  .best-avail-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .best-avail-row:last-child { border-bottom: none; }
+  .best-avail-row .ba-name { flex: 1; font-weight: 500; }
+  .best-avail-row .ba-tier { width: 6px; height: 20px; border-radius: 2px; flex-shrink: 0; }
+  .best-avail-row .ba-vorp { font-family: var(--font-mono); font-size: 12px; color: var(--accent); width: 50px; text-align: right; }
+  .best-avail-row .ba-diff { font-family: var(--font-mono); font-size: 11px; width: 40px; text-align: right; }
+
+  /* ============================================================
      Legend footer
      ============================================================ */
   .legend {
@@ -816,10 +909,21 @@
   </section>
 
   <section class="tab-panel" id="tab-draft">
-    <div class="state">
-      <h3>Live Draft Tracker</h3>
-      <p>Polls Sleeper's draft API every 3s during the live draft. Ships the week of Aug 22 — no signal to build against until picks start flowing.</p>
-      <p style="margin-top:8px; font-family:var(--font-mono); font-size:11px;">Draft ID: <code id="draftIdDisplay"></code></p>
+    <div class="controls">
+      <label class="search" style="max-width:340px;">
+        <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-mute); white-space:nowrap;">DRAFT ID</span>
+        <input type="text" id="draftIdOverride" placeholder="defaults to league draft">
+      </label>
+      <button id="draftConnectBtn" class="chip active" style="padding:6px 14px;">Connect</button>
+      <button id="draftDisconnectBtn" class="chip" style="padding:6px 14px; display:none;">Disconnect</button>
+      <span class="hint" id="draftPollStatus">Not connected</span>
+    </div>
+
+    <div id="draftHost">
+      <div class="state">
+        <h3>Live Draft Tracker</h3>
+        <p>Enter a draft ID above and click Connect. Defaults to this league's draft (<code id="draftIdDefault"></code>) — paste a Sleeper mock draft ID here to test the tracker before Aug 22.</p>
+      </div>
     </div>
   </section>
 
@@ -980,6 +1084,30 @@ async function fetchSheet(sheetName) {
 async function fetchSleeperLeague() {
   const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${CONFIG.LEAGUE_ID}`);
   if (!resp.ok) throw new Error(`Sleeper league fetch failed (${resp.status})`);
+  return resp.json();
+}
+
+async function fetchDraftMeta(draftId) {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/draft/${draftId}`);
+  if (!resp.ok) throw new Error(`Draft meta fetch failed (${resp.status})`);
+  return resp.json();
+}
+
+async function fetchDraftPicks(draftId) {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/draft/${draftId}/picks`);
+  if (!resp.ok) throw new Error(`Draft picks fetch failed (${resp.status})`);
+  return resp.json();
+}
+
+async function fetchLeagueUsers() {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${CONFIG.LEAGUE_ID}/users`);
+  if (!resp.ok) throw new Error(`League users fetch failed (${resp.status})`);
+  return resp.json();
+}
+
+async function fetchLeagueRosters() {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${CONFIG.LEAGUE_ID}/rosters`);
+  if (!resp.ok) throw new Error(`League rosters fetch failed (${resp.status})`);
   return resp.json();
 }
 
@@ -1460,6 +1588,250 @@ function renderTradeCalc() {
 }
 
 /* ============================================================
+   Live Draft Tracker
+   Polls Sleeper's draft picks endpoint. Each pick's own metadata
+   carries the player's name/pos/team, so we never need the 5MB
+   /players/nfl dump — just fuzzy-match name+team against our board.
+   ============================================================ */
+const draftState = {
+  draftId: null,
+  meta: null,       // draft settings, draft_order, slot_to_roster_id
+  users: null,       // league users (display names)
+  rosters: null,      // league rosters (owner_id -> roster_id)
+  picks: [],         // current picks array from Sleeper
+  matchedPicks: [],   // picks enriched with board match
+  myRosterId: null,
+  pollTimer: null,
+  connected: false,
+  error: null,
+  lastPolled: null,
+};
+
+function draftNormName(s) {
+  return String(s ?? '').toLowerCase()
+    .replace(/[^a-z\s]/g, '')
+    .replace(/\b(jr|sr|ii|iii|iv|v)\b/g, '')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function matchPickToBoard(pick) {
+  if (!state.board) return null;
+  const md = pick.metadata || {};
+  let name, pos;
+  if (md.position === 'DEF' || pick.player_id && /^[A-Z]{2,3}$/.test(pick.player_id)) {
+    // Team defense — Sleeper represents as team abbreviation; metadata.first_name/last_name hold city/team
+    name = `${md.first_name || ''} ${md.last_name || ''}`.trim();
+    pos = 'DEF';
+  } else {
+    name = `${md.first_name || ''} ${md.last_name || ''}`.trim();
+    pos = md.position;
+  }
+  const target = draftNormName(name);
+  if (!target) return null;
+  // Exact normalized match first
+  let hit = state.board.find(p => draftNormName(p.name) === target && (pos ? p.pos === pos : true));
+  if (hit) return hit;
+  // DEF fallback: match on team city/name substring
+  if (pos === 'DEF') {
+    hit = state.board.find(p => p.pos === 'DEF' && draftNormName(p.name).includes(target.split(' ').pop()));
+    if (hit) return hit;
+  }
+  // Loose fallback: last name + team match
+  const lastName = draftNormName(md.last_name || '');
+  if (lastName) {
+    hit = state.board.find(p => draftNormName(p.name).endsWith(lastName) && (!md.team || p.team === md.team));
+    if (hit) return hit;
+  }
+  return null;
+}
+
+function draftOverallToSlot(pickNo, teams) {
+  const round = Math.floor((pickNo - 1) / teams) + 1;
+  const posInRound = (pickNo - 1) % teams + 1;
+  const slot = round % 2 === 1 ? posInRound : teams - posInRound + 1;
+  return { round, slot };
+}
+
+function ownerNameForSlot(slot) {
+  if (!draftState.meta || !draftState.users) return `Slot ${slot}`;
+  const draftOrder = draftState.meta.draft_order || {};
+  const userId = Object.keys(draftOrder).find(uid => draftOrder[uid] === slot);
+  if (!userId) return `Slot ${slot}`;
+  const user = draftState.users.find(u => u.user_id === userId);
+  if (!user) return `Slot ${slot}`;
+  return (user.metadata && user.metadata.team_name) || user.display_name || `Slot ${slot}`;
+}
+
+async function connectDraft() {
+  const input = document.getElementById('draftIdOverride').value.trim();
+  const draftId = input || CONFIG.DRAFT_ID;
+  draftState.draftId = draftId;
+  draftState.error = null;
+  document.getElementById('draftPollStatus').textContent = 'Connecting…';
+
+  try {
+    const [meta, users, rosters] = await Promise.all([
+      fetchDraftMeta(draftId),
+      fetchLeagueUsers().catch(() => []),   // may fail for a foreign mock draft — non-fatal
+      fetchLeagueRosters().catch(() => []),
+    ]);
+    draftState.meta = meta;
+    draftState.users = users;
+    draftState.rosters = rosters;
+    const myRoster = rosters.find(r => r.owner_id === CONFIG.MY_OWNER_ID);
+    draftState.myRosterId = myRoster ? myRoster.roster_id : null;
+    draftState.connected = true;
+
+    document.getElementById('draftConnectBtn').style.display = 'none';
+    document.getElementById('draftDisconnectBtn').style.display = '';
+    document.getElementById('draftPollStatus').textContent = `Connected · ${meta.status}`;
+
+    await pollDraft();
+    draftState.pollTimer = setInterval(pollDraft, 3000);
+  } catch (e) {
+    draftState.error = e.message;
+    draftState.connected = false;
+    document.getElementById('draftPollStatus').textContent = 'Connection failed';
+    renderDraftTab();
+  }
+}
+
+function disconnectDraft() {
+  if (draftState.pollTimer) clearInterval(draftState.pollTimer);
+  draftState.pollTimer = null;
+  draftState.connected = false;
+  document.getElementById('draftConnectBtn').style.display = '';
+  document.getElementById('draftDisconnectBtn').style.display = 'none';
+  document.getElementById('draftPollStatus').textContent = 'Disconnected';
+}
+
+async function pollDraft() {
+  try {
+    const picks = await fetchDraftPicks(draftState.draftId);
+    draftState.picks = picks;
+    draftState.matchedPicks = picks.map(pk => ({ ...pk, boardMatch: matchPickToBoard(pk) }));
+    draftState.lastPolled = new Date();
+    draftState.error = null;
+    document.getElementById('draftPollStatus').textContent =
+      `Connected · ${picks.length} picks · synced ${draftState.lastPolled.toLocaleTimeString()}`;
+  } catch (e) {
+    draftState.error = e.message;
+    document.getElementById('draftPollStatus').textContent = `Poll error: ${e.message}`;
+  }
+  renderDraftTab();
+}
+
+function renderDraftTab() {
+  const host = document.getElementById('draftHost');
+  if (!draftState.connected) {
+    if (draftState.error) {
+      host.innerHTML = `<div class="state"><h3>Connection failed</h3><p style="color:var(--down)">${escapeHtml(draftState.error)}</p></div>`;
+    }
+    return;
+  }
+
+  const teams = (draftState.meta.settings && draftState.meta.settings.teams) || 12;
+  const totalPicks = draftState.picks.length;
+  const nextPickNo = totalPicks + 1;
+  const { round, slot } = draftOverallToSlot(nextPickNo, teams);
+  const otcName = ownerNameForSlot(slot);
+  const otcRosterId = draftState.meta.slot_to_roster_id ? draftState.meta.slot_to_roster_id[String(slot)] : null;
+  const isMe = draftState.myRosterId != null && otcRosterId === draftState.myRosterId;
+  const draftComplete = draftState.meta.status === 'complete' ||
+    (draftState.meta.settings && totalPicks >= draftState.meta.settings.teams * draftState.meta.settings.rounds);
+
+  // Drafted name-set for filtering best-available
+  const draftedIds = new Set(
+    draftState.matchedPicks.filter(p => p.boardMatch).map(p => p.boardMatch.name)
+  );
+  const undrafted = state.board ? state.board.filter(p => !draftedIds.has(p.name)) : [];
+  const unmatchedCount = draftState.matchedPicks.filter(p => !p.boardMatch).length;
+
+  // Recent picks feed (most recent first)
+  const feed = draftState.matchedPicks.slice().reverse().slice(0, 30).map(pk => {
+    const md = pk.metadata || {};
+    const name = pk.boardMatch ? pk.boardMatch.name : `${md.first_name || ''} ${md.last_name || ''}`.trim() || '(unknown)';
+    const vorp = pk.boardMatch ? pk.boardMatch.vorp.toFixed(1) : '—';
+    const { round: r, slot: s } = draftOverallToSlot(pk.pick_no, teams);
+    return `<div class="pick-feed-row">
+      <span class="pk-no">${r}.${String(s).padStart(2,'0')}</span>
+      <span class="pk-team">${escapeHtml(ownerNameForSlot(s))}</span>
+      <span class="pk-player">${escapeHtml(name)}</span>
+      <span class="pk-vorp">${vorp}</span>
+    </div>`;
+  }).join('') || '<p style="color:var(--fg-dim); font-size:12px;">No picks yet.</p>';
+
+  // Best available by VORP (top 15)
+  const bestAvail = undrafted.slice().sort((a,b) => (b.vorp ?? -Infinity) - (a.vorp ?? -Infinity)).slice(0, 15);
+  const bestAvailHtml = bestAvail.map(p => `
+    <div class="best-avail-row">
+      <span class="ba-tier tier-${p.tier || 8}"></span>
+      <span class="pos-tag pos-${p.pos}">${p.pos}</span>
+      <span class="ba-name">${escapeHtml(p.name)}</span>
+      <span class="ba-vorp">${p.vorp != null ? p.vorp.toFixed(1) : ''}</span>
+    </div>`).join('') || '<p style="color:var(--fg-dim); font-size:12px;">—</p>';
+
+  // Biggest ADP discount remaining (undrafted, adprk much later than we'd expect given how many picks have passed)
+  const discounts = undrafted.filter(p => p.adprk != null)
+    .map(p => ({ ...p, discount: p.adprk - nextPickNo }))
+    .filter(p => p.discount > 0)
+    .sort((a,b) => b.discount - a.discount)
+    .slice(0, 10);
+  const discountsHtml = discounts.map(p => `
+    <div class="best-avail-row">
+      <span class="ba-tier tier-${p.tier || 8}"></span>
+      <span class="pos-tag pos-${p.pos}">${p.pos}</span>
+      <span class="ba-name">${escapeHtml(p.name)}</span>
+      <span class="ba-diff" style="color:var(--up)">ADP ${p.adprk}</span>
+    </div>`).join('') || '<p style="color:var(--fg-dim); font-size:12px;">—</p>';
+
+  // My picks so far
+  const myPicks = draftState.matchedPicks.filter(pk => {
+    const rid = pk.roster_id != null ? Number(pk.roster_id) : null;
+    return draftState.myRosterId != null && rid === draftState.myRosterId;
+  });
+  const myPicksHtml = myPicks.map(pk => {
+    const name = pk.boardMatch ? pk.boardMatch.name : `${pk.metadata?.first_name||''} ${pk.metadata?.last_name||''}`.trim();
+    return `<div class="pick-feed-row">
+      <span class="pk-no">Pk ${pk.pick_no}</span>
+      <span class="pk-player">${escapeHtml(name)}</span>
+      <span class="pk-vorp">${pk.boardMatch ? pk.boardMatch.pos : ''}</span>
+    </div>`;
+  }).join('') || '<p style="color:var(--fg-dim); font-size:12px;">No picks yet — waiting for your slot to resolve or draft to start.</p>';
+
+  const statusBanner = draftComplete
+    ? `<div class="draft-status-banner"><span class="otc-label">DRAFT COMPLETE</span><span class="pick-count">${totalPicks} picks made</span></div>`
+    : `<div class="draft-status-banner">
+        <span class="otc-label">ON THE CLOCK</span>
+        <span class="otc-name ${isMe ? 'is-me' : ''}">${escapeHtml(otcName)}${isMe ? ' (you)' : ''}</span>
+        <span class="otc-label">Pick ${round}.${String(slot).padStart(2,'0')} · #${nextPickNo}</span>
+        <span class="pick-count">${totalPicks} picks made · ${unmatchedCount ? unmatchedCount + ' unmatched' : 'all matched'}</span>
+      </div>`;
+
+  host.innerHTML = `
+    ${statusBanner}
+    <div class="draft-grid">
+      <div class="draft-card">
+        <h4>Recent Picks</h4>
+        <div class="pick-feed">${feed}</div>
+      </div>
+      <div class="draft-card">
+        <h4>Best Available (by VORP)</h4>
+        <div class="pick-feed">${bestAvailHtml}</div>
+      </div>
+      <div class="draft-card">
+        <h4>Biggest ADP Discounts Remaining</h4>
+        <div class="pick-feed">${discountsHtml}</div>
+      </div>
+      <div class="draft-card">
+        <h4>My Picks</h4>
+        <div class="pick-feed">${myPicksHtml}</div>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
    Rendering — debug
    ============================================================ */
 function renderDebug() {
@@ -1551,7 +1923,7 @@ function renderDebug() {
    Boot
    ============================================================ */
 async function boot() {
-  document.getElementById('draftIdDisplay').textContent = CONFIG.DRAFT_ID;
+  document.getElementById('draftIdDefault').textContent = CONFIG.DRAFT_ID;
   updateDraftCountdown();
   setInterval(updateDraftCountdown, 60000);
 
@@ -1649,6 +2021,9 @@ document.getElementById('mispricingPosFilter').addEventListener('click', e => {
 document.getElementById('mySlotInput').addEventListener('input', () => renderPickValues());
 document.getElementById('tradeSend').addEventListener('input', () => renderTradeCalc());
 document.getElementById('tradeRecv').addEventListener('input', () => renderTradeCalc());
+
+document.getElementById('draftConnectBtn').addEventListener('click', connectDraft);
+document.getElementById('draftDisconnectBtn').addEventListener('click', disconnectDraft);
 
 document.getElementById('posFilter').addEventListener('click', e => {
   const btn = e.target.closest('.chip');
