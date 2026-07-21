@@ -492,6 +492,157 @@
   .kv-v { color: var(--fg); font-family: var(--font-mono); font-size: 11px; text-align: right; }
 
   /* ============================================================
+     Mispricing tab
+     ============================================================ */
+  .hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-dim);
+    margin-left: auto;
+  }
+  .mis-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 900px) { .mis-columns { grid-template-columns: 1fr; } }
+  .mis-col-header {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 10px 12px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .mis-col-header.up { background: color-mix(in srgb, var(--up) 15%, var(--bg-elev)); color: var(--up); }
+  .mis-col-header.down { background: color-mix(in srgb, var(--down) 15%, var(--bg-elev)); color: var(--down); }
+  .mis-list {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .mis-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .mis-row:last-child { border-bottom: none; }
+  .mis-row .mis-name { font-weight: 500; flex: 1; }
+  .mis-row .mis-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fg-mute); }
+  .mis-row .mis-diff { font-family: var(--font-mono); font-size: 13px; font-weight: 600; width: 44px; text-align: right; }
+
+  /* ============================================================
+     Pick Values tab
+     ============================================================ */
+  .pv-grid {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 900px) { .pv-grid { grid-template-columns: 1fr; } }
+  .pv-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .pv-card h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    margin-bottom: 10px;
+  }
+  .ladder-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .ladder-row:last-child { border-bottom: none; }
+  .ladder-pick { color: var(--fg-mute); width: 48px; }
+  .ladder-val { color: var(--accent); font-weight: 500; margin-left: auto; }
+  .ladder-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-elev-2);
+    border-radius: 3px;
+    overflow: hidden;
+    max-width: 80px;
+  }
+  .ladder-bar-fill { height: 100%; background: var(--accent-dim); }
+
+  .curve-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .curve-table th {
+    text-align: right;
+    padding: 6px 10px;
+    color: var(--fg-mute);
+    font-weight: 500;
+    border-bottom: 1px solid var(--line);
+  }
+  .curve-table th:first-child, .curve-table td:first-child { text-align: left; }
+  .curve-table td {
+    text-align: right;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .curve-table tr:last-child td { border-bottom: none; }
+
+  .trade-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) { .trade-row { grid-template-columns: 1fr; } }
+  .trade-side label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+    margin-bottom: 6px;
+  }
+  .trade-side input {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .trade-side input:focus { border-color: var(--accent-dim); }
+  #tradeResult {
+    padding: 12px;
+    background: var(--bg-elev-2);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  #mySlotInput {
+    width: 40px;
+    text-align: right;
+    padding: 2px 4px;
+    background: var(--bg-elev-2);
+    border-radius: 3px;
+  }
+
+  /* ============================================================
      Legend footer
      ============================================================ */
   .legend {
@@ -607,16 +758,60 @@
   </section>
 
   <section class="tab-panel" id="tab-mispricing">
-    <div class="state">
-      <h3>ADP Mispricings</h3>
-      <p>Rendered from the ADP Mispricings sheet. Coming in the next build.</p>
+    <div class="controls">
+      <div class="chips" id="mispricingPosFilter">
+        <button class="chip active" data-pos="ALL">All</button>
+        <button class="chip" data-pos="QB">QB</button>
+        <button class="chip" data-pos="RB">RB</button>
+        <button class="chip" data-pos="WR">WR</button>
+        <button class="chip" data-pos="TE">TE</button>
+        <button class="chip" data-pos="DEF">DEF</button>
+      </div>
+      <span class="hint">Our VORP rank vs FFC half-PPR ADP · noise-filtered by minimum projected role</span>
+    </div>
+    <div id="mispricingHost">
+      <div class="state"><div class="spinner"></div><p style="margin-top:12px">Waiting for board…</p></div>
     </div>
   </section>
 
   <section class="tab-panel" id="tab-pickcurve">
-    <div class="state">
-      <h3>Pick Values</h3>
-      <p>Pick-value curve and on-clock trade calculator. Coming in the next build — data is already in your workbook's Pick Value Curve sheet.</p>
+    <div class="controls">
+      <label class="search" style="max-width:220px;">
+        <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-mute); white-space:nowrap;">MY SLOT</span>
+        <input type="number" id="mySlotInput" min="1" max="12" value="6" style="width:40px; text-align:right;">
+        <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-dim);">of 12</span>
+      </label>
+      <span class="hint">Pick 1.01 = 1000 baseline · derived from VORP available at each ADP slot, smoothed + forced monotonic</span>
+    </div>
+
+    <div class="pv-grid">
+      <div class="pv-card">
+        <h4>Your Pick Ladder</h4>
+        <div id="slotLadder"></div>
+      </div>
+      <div class="pv-card pv-card-wide">
+        <h4>Curve — Round Boundaries</h4>
+        <div id="curveTable"></div>
+      </div>
+    </div>
+
+    <div class="pv-card" style="margin-top:14px;">
+      <h4>Trade Calculator</h4>
+      <p style="font-size:12px; color:var(--fg-mute); margin-bottom:12px;">
+        Enter picks as <code>round.slot</code> (e.g. <code>1.06</code>), separated by commas.
+        Curve is a floor — check the Board's tier column before trusting a close call: the last player in a tier is worth more than the curve alone says.
+      </p>
+      <div class="trade-row">
+        <div class="trade-side">
+          <label>You send</label>
+          <input type="text" id="tradeSend" placeholder="e.g. 1.06, 3.06">
+        </div>
+        <div class="trade-side">
+          <label>You receive</label>
+          <input type="text" id="tradeRecv" placeholder="e.g. 2.01">
+        </div>
+      </div>
+      <div id="tradeResult"></div>
     </div>
   </section>
 
@@ -1071,6 +1266,200 @@ function escapeHtml(s) {
 }
 
 /* ============================================================
+   Pick Value Curve
+   Derived client-side from the loaded board: for each ADP slot,
+   the curve value = VORP of the player at that slot (clamped >=0),
+   smoothed with a 3-pick rolling window, then forced monotonic
+   decreasing (later picks can't be worth more than earlier ones —
+   ADP mispricings are opportunities to exploit, not the pick's
+   own baseline value). Normalized so pick 1 = 1000.
+   Mirrors the methodology in the workbook's Pick Value Curve sheet.
+   ============================================================ */
+let pickCurve = null; // { raw: {rank: val}, normalized: {rank: val} }
+
+function buildPickCurve() {
+  if (!state.board || !state.board.length) return null;
+  const byAdp = state.board
+    .filter(p => p.adprk != null && p.vorp != null)
+    .sort((a, b) => a.adprk - b.adprk);
+  if (!byAdp.length) return null;
+
+  const maxRank = Math.max(...byAdp.map(p => p.adprk), 180);
+  const raw = {};
+  byAdp.forEach(p => { raw[p.adprk] = Math.max(0, p.vorp); });
+
+  // Fill any gaps + extend tail with exponential decay from the last known value
+  let lastKnown = 0;
+  for (let r = 1; r <= maxRank; r++) {
+    if (raw[r] != null) lastKnown = raw[r];
+    else raw[r] = lastKnown;
+  }
+  for (let r = maxRank + 1; r <= 200; r++) {
+    lastKnown = lastKnown * 0.85;
+    raw[r] = lastKnown;
+  }
+
+  // Smooth (3-pick rolling window)
+  const smooth = {};
+  for (let r = 1; r <= 200; r++) {
+    const vals = [raw[r-1], raw[r], raw[r+1]].filter(v => v != null);
+    smooth[r] = vals.reduce((a,b) => a+b, 0) / vals.length;
+  }
+
+  // Force monotonic decreasing
+  const mono = {};
+  let prev = smooth[1];
+  for (let r = 1; r <= 200; r++) {
+    const v = Math.min(smooth[r], prev);
+    mono[r] = v;
+    prev = v;
+  }
+
+  // Normalize: pick 1 = 1000
+  const factor = mono[1] > 0 ? 1000 / mono[1] : 1;
+  const normalized = {};
+  for (let r = 1; r <= 200; r++) normalized[r] = mono[r] * factor;
+
+  return { raw: mono, normalized };
+}
+
+function overallPick(round, slot, teams = 12) {
+  return round % 2 === 1 ? (round - 1) * teams + slot : round * teams - slot + 1;
+}
+
+function pickLabel(overall, teams = 12) {
+  const round = Math.floor((overall - 1) / teams) + 1;
+  const posInRound = (overall - 1) % teams + 1;
+  const slot = round % 2 === 1 ? posInRound : teams - posInRound + 1;
+  return `${round}.${String(slot).padStart(2, '0')}`;
+}
+
+function parsePickList(str) {
+  // Accepts "1.06, 3.06" or "1.06 3.06" -> [{round, slot, overall, value}]
+  if (!str || !str.trim()) return [];
+  const teams = state.sleeperLeague?.total_rosters || 12;
+  return str.split(/[,\s]+/).filter(Boolean).map(tok => {
+    const m = tok.match(/^(\d+)\.(\d+)$/);
+    if (!m) return null;
+    const round = parseInt(m[1], 10);
+    const slot = parseInt(m[2], 10);
+    const overall = overallPick(round, slot, teams);
+    const value = pickCurve ? (pickCurve.normalized[overall] ?? 0) : 0;
+    return { round, slot, overall, value, label: tok };
+  }).filter(Boolean);
+}
+
+/* ============================================================
+   Rendering — Mispricings tab
+   ============================================================ */
+function renderMispricing() {
+  const host = document.getElementById('mispricingHost');
+  if (!state.board) {
+    host.innerHTML = '<div class="state"><div class="spinner"></div><p style="margin-top:12px">Waiting for board…</p></div>';
+    return;
+  }
+  const pos = state.mispricingPos || 'ALL';
+  const floor = { RB: 70, WR: 70, TE: 45, QB: 150, DEF: 0 };
+
+  let candidates = state.board.filter(p => p.adprk != null && p.ovr != null);
+  if (pos !== 'ALL') candidates = candidates.filter(p => p.pos === pos);
+  candidates = candidates.filter(p => (p.fps ?? 0) >= (floor[p.pos] ?? 0));
+  candidates.forEach(p => { p.diff = p.adprk - p.ovr; });
+
+  const under = candidates.slice().sort((a, b) => b.diff - a.diff).slice(0, 20);
+  const over  = candidates.slice().sort((a, b) => a.diff - b.diff).slice(0, 20);
+
+  const row = (p) => `
+    <div class="mis-row">
+      <span class="pos-tag pos-${p.pos}">${p.pos}</span>
+      <span class="mis-name">${escapeHtml(p.name)}</span>
+      <span class="mis-meta">Rk ${p.ovr} · ADP ${p.adprk}</span>
+      <span class="mis-diff" style="color:${p.diff > 0 ? 'var(--up)' : 'var(--down)'}">${formatSigned(p.diff)}</span>
+    </div>`;
+
+  host.innerHTML = `
+    <div class="mis-columns">
+      <div>
+        <div class="mis-col-header up">Undervalued — market drafts too late</div>
+        <div class="mis-list">${under.map(row).join('') || '<div class="mis-row"><span class="mis-name" style="color:var(--fg-dim)">No matches at this filter</span></div>'}</div>
+      </div>
+      <div>
+        <div class="mis-col-header down">Overvalued — market drafts too early</div>
+        <div class="mis-list">${over.map(row).join('') || '<div class="mis-row"><span class="mis-name" style="color:var(--fg-dim)">No matches at this filter</span></div>'}</div>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   Rendering — Pick Values tab
+   ============================================================ */
+function renderPickValues() {
+  if (!pickCurve && state.board) pickCurve = buildPickCurve();
+  if (!pickCurve) {
+    document.getElementById('slotLadder').innerHTML = '<p style="color:var(--fg-dim); font-size:12px;">Waiting for board…</p>';
+    document.getElementById('curveTable').innerHTML = '';
+    return;
+  }
+  const teams = state.sleeperLeague?.total_rosters || 12;
+  const slot = parseInt(document.getElementById('mySlotInput').value, 10) || 1;
+
+  // Ladder: this slot's pick in each of the first 8 rounds
+  const ladderHost = document.getElementById('slotLadder');
+  const rows = [];
+  for (let rd = 1; rd <= 8; rd++) {
+    const overall = overallPick(rd, slot, teams);
+    const val = pickCurve.normalized[overall] ?? 0;
+    rows.push({ label: `${rd}.${String(slot).padStart(2,'0')}`, overall, val });
+  }
+  const maxVal = Math.max(...rows.map(r => r.val), 1);
+  ladderHost.innerHTML = rows.map(r => `
+    <div class="ladder-row">
+      <span class="ladder-pick">${r.label}</span>
+      <span class="ladder-bar"><span class="ladder-bar-fill" style="width:${(r.val/maxVal*100).toFixed(0)}%"></span></span>
+      <span class="ladder-val">${r.val.toFixed(0)}</span>
+    </div>`).join('');
+
+  // Round-boundary curve table
+  const boundaries = [1, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 144, 168];
+  const curveHost = document.getElementById('curveTable');
+  curveHost.innerHTML = `
+    <table class="curve-table">
+      <thead><tr><th>Pick</th><th>Round end</th><th>Value</th></tr></thead>
+      <tbody>
+        ${boundaries.map(p => `<tr><td>${pickLabel(p, teams)}</td><td>${Math.ceil(p/teams)}</td><td>${(pickCurve.normalized[p] ?? 0).toFixed(1)}</td></tr>`).join('')}
+      </tbody>
+    </table>`;
+
+  renderTradeCalc();
+}
+
+function renderTradeCalc() {
+  const sendStr = document.getElementById('tradeSend').value;
+  const recvStr = document.getElementById('tradeRecv').value;
+  const resultHost = document.getElementById('tradeResult');
+  if (!sendStr.trim() && !recvStr.trim()) {
+    resultHost.innerHTML = `<span style="color:var(--fg-dim)">Enter picks on both sides to evaluate.</span>`;
+    return;
+  }
+  const send = parsePickList(sendStr);
+  const recv = parsePickList(recvStr);
+  const sendTotal = send.reduce((a, p) => a + p.value, 0);
+  const recvTotal = recv.reduce((a, p) => a + p.value, 0);
+  const delta = recvTotal - sendTotal;
+  const deltaColor = delta > 0 ? 'var(--up)' : delta < 0 ? 'var(--down)' : 'var(--fg-mute)';
+  const verdict = Math.abs(delta) < sendTotal * 0.05
+    ? 'Roughly fair'
+    : delta > 0 ? 'Favors you' : 'Favors them';
+
+  resultHost.innerHTML = `
+    <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:center;">
+      <div>You send: <strong>${sendTotal.toFixed(0)}</strong> ${send.length ? '(' + send.map(p=>p.label).join(', ') + ')' : ''}</div>
+      <div>You receive: <strong>${recvTotal.toFixed(0)}</strong> ${recv.length ? '(' + recv.map(p=>p.label).join(', ') + ')' : ''}</div>
+      <div style="color:${deltaColor}; font-weight:600;">Δ ${formatSigned(Math.round(delta))} · ${verdict}</div>
+    </div>`;
+}
+
+/* ============================================================
    Rendering — debug
    ============================================================ */
 function renderDebug() {
@@ -1187,6 +1576,7 @@ async function boot() {
     state.boardRaw = boardResult.value;
     state.board = normalizeBoard(boardResult.value);
     state.boardError = null;
+    pickCurve = null; // invalidate — will rebuild from fresh board on next render
     if (state.board.length === 0) {
       // Fetch worked but produced nothing usable — surface as an error so the UI is honest
       const t = state.fetchTrace;
@@ -1243,7 +1633,22 @@ document.getElementById('tabs').addEventListener('click', e => {
   const target = btn.dataset.tab;
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${target}`));
   if (target === 'debug') renderDebug();
+  if (target === 'mispricing') renderMispricing();
+  if (target === 'pickcurve') renderPickValues();
 });
+
+state.mispricingPos = 'ALL';
+document.getElementById('mispricingPosFilter').addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('#mispricingPosFilter .chip').forEach(c => c.classList.toggle('active', c === btn));
+  state.mispricingPos = btn.dataset.pos;
+  renderMispricing();
+});
+
+document.getElementById('mySlotInput').addEventListener('input', () => renderPickValues());
+document.getElementById('tradeSend').addEventListener('input', () => renderTradeCalc());
+document.getElementById('tradeRecv').addEventListener('input', () => renderTradeCalc());
 
 document.getElementById('posFilter').addEventListener('click', e => {
   const btn = e.target.closest('.chip');
