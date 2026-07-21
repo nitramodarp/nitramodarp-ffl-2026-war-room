@@ -1732,11 +1732,38 @@ function needMultiplier(pos, counts, round) {
 }
 
 function tierUrgencyBonus(player, undraftedByPos) {
-  const samePosTier = (undraftedByPos[player.pos] || []).filter(p => p.tier === player.tier);
-  const remaining = samePosTier.length;
-  if (remaining <= 2) return { bonus: 1.3, remaining, label: `last ${remaining} in tier ${player.tier}` };
-  if (remaining <= 4) return { bonus: 1.15, remaining, label: `${remaining} left in tier ${player.tier}` };
-  return { bonus: 1.0, remaining, label: `${remaining} left in tier ${player.tier}` };
+  const pool = (undraftedByPos[player.pos] || []).filter(p => p.vorp != null);
+  const sameTier = pool.filter(p => p.tier === player.tier);
+  const remaining = sameTier.length;
+  const nextTier = pool.filter(p => p.tier === player.tier + 1);
+
+  if (!nextTier.length) {
+    // Last meaningful tier at this position — nothing to measure a cliff
+    // against. Running out here just means the position tapers off, not
+    // that value falls off a ledge. Mild nod to scarcity only.
+    const bonus = remaining <= 2 ? 1.1 : 1.0;
+    return { bonus, remaining, gapVorp: 0, label: `${remaining} left in tier ${player.tier} (final tier)` };
+  }
+
+  // The real question isn't "how many are left" — it's "how much do I lose
+  // by waiting." Measure the actual VORP cliff: worst player still left in
+  // this tier vs. the best player waiting in the next tier down. Normalize
+  // by the position's overall VORP spread so a QB cliff and an RB cliff are
+  // judged on the same scale, not raw point totals (QB numbers run bigger).
+  const worstInTier = Math.min(...sameTier.map(p => p.vorp));
+  const bestInNext = Math.max(...nextTier.map(p => p.vorp));
+  const gapVorp = Math.max(0, worstInTier - bestInNext);
+  // Normalize by the position's CEILING (rank-1 VORP), not its full range.
+  // Full-range normalization gets washed out by deep bench scrubs sitting
+  // at large negative VORP — a real cliff at the top of the position looked
+  // identical to a non-cliff once diluted across 40+ players. The ceiling
+  // is stable regardless of how deep the irrelevant tail goes.
+  const posMax = Math.max(...pool.map(p => p.vorp), 1);
+  const gapFraction = Math.min(1, gapVorp / posMax);
+
+  const bonus = 1.0 + gapFraction * 0.6;
+  const label = `${remaining} left in tier ${player.tier} · ${gapVorp.toFixed(1)}pt cliff to tier ${player.tier + 1}`;
+  return { bonus, remaining, gapVorp, label };
 }
 
 function computeRecommendation(undrafted, round) {
@@ -2007,7 +2034,7 @@ function renderDraftTab() {
     const altText = [rec.runnerUp, rec.thirdOption].filter(Boolean)
       .map(r => `${r.player.name} (${r.player.pos}, ${r.player.vorp.toFixed(1)})`).join(' · ');
     const tierText = need.real
-      ? `${tier.label}${tier.remaining <= 2 ? ' — tier cliff, take now or lose the tier' : ''}`
+      ? `${tier.label}${tier.bonus >= 1.10 ? ' — real cliff, take now or lose the tier' : ''}`
       : `${tier.remaining} left in tier ${player.tier} (scarcity irrelevant — not a real need)`;
     recHtml = `<div class="rec-card">
       <div class="rec-label">Recommended Pick — Pick ${round}.${String(slot).padStart(2,'0')}</div>
