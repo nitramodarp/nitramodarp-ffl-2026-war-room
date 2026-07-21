@@ -285,9 +285,9 @@
     color: var(--fg-mute);
     border-bottom: 1px solid var(--line);
     background: var(--bg-elev);
-    position: sticky;
-    top: 49px; /* below topbar */
-    z-index: 5;
+    /* Sticky disabled — was overlapping row 1. Header scrolls with content;
+       keep the top bar sticky instead. */
+    position: static;
     white-space: nowrap;
     user-select: none;
     cursor: pointer;
