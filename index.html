@@ -1720,7 +1720,12 @@ function needMultiplier(pos, counts, round) {
   // ever start. Scarcity in these positions' tiers doesn't matter — you were
   // never taking another one regardless of how thin the tier gets. `real:false`
   // tells the scorer to ignore the tier-cliff bonus for these.
-  if (pos === 'QB' && have >= 1) return { mult: 0.55, real: false, reason: 'QB starter filled — streaming tier only' };
+  // A redundant QB2 gets the same treatment as a redundant DEF2: this league's
+  // rolling waivers with a 1-day claim window make in-season streaming viable
+  // for both, and bye weeks are known months in advance — there's no surprise
+  // to plan around. A bench slot spent on a QB you'll start 1-2 weeks all
+  // season has real opportunity cost against a lottery-ticket RB/WR.
+  if (pos === 'QB' && have >= 1) return { mult: 0.4, real: false, reason: 'QB starter filled — streamable via rolling waivers, rarely worth a 2nd' };
   if (pos === 'DEF' && have >= 1) return { mult: 0.4, real: false, reason: 'DEF filled — rarely worth a 2nd' };
 
   return { mult: 0.85, real: false, reason: 'bench depth' };
