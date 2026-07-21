@@ -790,35 +790,112 @@ async function fetchSleeperLeague() {
 
 /* ============================================================
    Board normalization
-   Map the "Overall Board" CSV columns into a stable shape.
-   Column names in the sheet are:
-     Ovr Rk, Pos, Pos Rk, Tier, Player, Team, Bye, FPS, VORP, ADP, ADP Rk, Fmt Δ vs Std
+   Column names in the sheet vary (my export uses "Ovr Rk", other
+   exports use "OVR (VORP)", etc). Aliases let us accept both.
+   When a critical column is missing entirely (Tier, Ovr Rk), we
+   derive it client-side so the UI stays whole.
    ============================================================ */
+const COL_ALIASES = {
+  ovr:    ['Ovr Rk', 'OVR (VORP)', 'OVR', 'Overall Rk', 'Overall Rank', 'Rank'],
+  pos:    ['Pos', 'POS', 'Position'],
+  posrk:  ['Pos Rk', 'Position Rank', 'POS Rk'],
+  tier:   ['Tier'],
+  name:   ['Player', 'Name', 'Player Name'],
+  team:   ['Team', 'TM'],
+  bye:    ['Bye', 'BYE', 'Bye Week'],
+  fps:    ['FPS', 'FPS (League scoring)', 'Fantasy Points', 'Points'],
+  vorp:   ['VORP', 'Value Over Replacement'],
+  adp:    ['ADP', 'ADP (FFC half-PPR)', 'ADP (Half PPR)'],
+  adprk:  ['ADP Rk', 'ADP Rank', 'ADP Rank (non-K)', 'ADP Rk (non-K)'],
+  fmtd:   ['Fmt Δ vs Std', 'Format Delta', 'Fmt Delta'],
+};
+
+function pickCol(row, aliases) {
+  for (const a of aliases) {
+    if (row[a] !== undefined) return { value: row[a], matched: a };
+  }
+  return { value: undefined, matched: null };
+}
+
 function normalizeBoard(rows) {
+  const num = (v) => {
+    if (v === '' || v == null) return null;
+    const n = Number(v);
+    return isNaN(n) ? null : n;
+  };
+  const resolvedAliases = {};
   const mapped = rows.map(r => {
-    const num = (v) => {
-      if (v === '' || v == null) return null;
-      const n = Number(v);
-      return isNaN(n) ? null : n;
-    };
-    return {
-      ovr:    num(r['Ovr Rk']),
-      pos:    r['Pos'],
-      posrk:  num(r['Pos Rk']),
-      tier:   num(r['Tier']),
-      name:   r['Player'],
-      team:   r['Team'],
-      bye:    num(r['Bye']),
-      fps:    num(r['FPS']),
-      vorp:   num(r['VORP']),
-      adp:    num(r['ADP']),
-      adprk:  num(r['ADP Rk']),
-      fmtd:   num(r['Fmt Δ vs Std']),
-    };
+    const p = {};
+    for (const [k, aliases] of Object.entries(COL_ALIASES)) {
+      const pick = pickCol(r, aliases);
+      if (pick.matched && !resolvedAliases[k]) resolvedAliases[k] = pick.matched;
+      p[k] = (k === 'pos' || k === 'name' || k === 'team') ? pick.value : num(pick.value);
+    }
+    return p;
   });
   const kept = mapped.filter(p => p.name && p.pos);
   state.boardDropped = mapped.length - kept.length;
+  state.resolvedAliases = resolvedAliases;
+  state.derived = [];
+
+  computeMissingFields(kept);
   return kept;
+}
+
+function computeMissingFields(rows) {
+  if (!rows.length) return;
+
+  // 1. Client-side OVR: sort by VORP desc, assign rank
+  if (rows.some(p => p.ovr == null) && rows.some(p => p.vorp != null)) {
+    const sorted = rows.slice().sort((a, b) => (b.vorp ?? -Infinity) - (a.vorp ?? -Infinity));
+    sorted.forEach((p, i) => { if (p.ovr == null) p.ovr = i + 1; });
+    state.derived.push('ovr (from VORP desc)');
+  }
+
+  // 2. Client-side POSRK: sort by VORP desc within pos
+  if (rows.some(p => p.posrk == null)) {
+    const byPos = {};
+    rows.forEach(p => { (byPos[p.pos] = byPos[p.pos] || []).push(p); });
+    Object.values(byPos).forEach(list => {
+      list.sort((a, b) => (b.vorp ?? -Infinity) - (a.vorp ?? -Infinity));
+      list.forEach((p, i) => { if (p.posrk == null) p.posrk = i + 1; });
+    });
+    state.derived.push('posrk (from VORP desc within pos)');
+  }
+
+  // 3. Client-side TIER: within each position, new tier when drop between
+  //    consecutive FPS exceeds 1.5x the median top-40 drop. Same rule as the
+  //    workbook's Python script — reproducible either way.
+  if (rows.some(p => p.tier == null) && rows.some(p => p.fps != null)) {
+    const byPos = {};
+    rows.forEach(p => { (byPos[p.pos] = byPos[p.pos] || []).push(p); });
+    Object.values(byPos).forEach(list => {
+      list.sort((a, b) => (b.fps ?? -Infinity) - (a.fps ?? -Infinity));
+      const top = list.slice(0, Math.min(40, list.length));
+      const drops = [];
+      for (let i = 0; i < top.length - 1; i++) {
+        const d = (top[i].fps ?? 0) - (top[i+1].fps ?? 0);
+        if (d > 0) drops.push(d);
+      }
+      if (!drops.length) { list.forEach(p => { if (p.tier == null) p.tier = 1; }); return; }
+      drops.sort((a, b) => a - b);
+      const median = drops[Math.floor(drops.length / 2)];
+      const threshold = 1.5 * median;
+      let tier = 1;
+      list.forEach((p, i) => {
+        if (p.tier == null) p.tier = tier;
+        if (i + 1 < list.length) {
+          const nextFps = list[i+1].fps ?? 0;
+          const drop = (p.fps ?? 0) - nextFps;
+          if (drop > threshold && nextFps > 0) tier = Math.min(tier + 1, 8);
+        }
+      });
+    });
+    state.derived.push('tier (from FPS drops within pos)');
+  }
+
+  // Re-sort by ovr ascending so state.board is in canonical order
+  rows.sort((a, b) => (a.ovr ?? Infinity) - (b.ovr ?? Infinity));
 }
 
 function boardVorpRange(rows) {
@@ -1026,11 +1103,17 @@ function renderDebug() {
   if (state.fetchTrace) {
     const t = state.fetchTrace;
     const headersFound = t.headers && t.headers.length ? t.headers.join(' | ') : '(none)';
-    const requiredCols = ['Player', 'Pos', 'Ovr Rk', 'Tier', 'FPS', 'VORP'];
-    const missing = t.headers ? requiredCols.filter(c => !t.headers.includes(c)) : requiredCols;
-    const missingWarn = missing.length ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Missing expected columns: ${missing.join(', ')}</div>` : '';
     const emptyWarn = t.objectCount === 0 ? `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Fetch succeeded but 0 rows returned. Check the tab name matches "Overall Board" exactly and has data.</div>` : '';
     const dropWarn = state.boardDropped > 0 ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ ${state.boardDropped} rows dropped by the "has name and position" filter — likely a column-name mismatch.</div>` : '';
+
+    // Column resolution — show which sheet column mapped to which internal field
+    const aliasRows = state.resolvedAliases ? Object.entries(state.resolvedAliases)
+      .map(([k, v]) => `<div class="kv"><span class="kv-k">${k}</span><span class="kv-v" style="font-size:10px;">${escapeHtml(v)}</span></div>`)
+      .join('') : '';
+    const expected = ['ovr','pos','posrk','tier','name','team','bye','fps','vorp','adp','adprk','fmtd'];
+    const unresolved = state.resolvedAliases ? expected.filter(k => !state.resolvedAliases[k]) : expected;
+    const unresolvedWarn = unresolved.length ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Unmatched fields: ${unresolved.join(', ')}</div>` : '';
+    const derivedNote = state.derived && state.derived.length ? `<div style="color:var(--accent); font-size:11px; margin-top:6px; font-family:var(--font-mono);">↻ Derived client-side: ${state.derived.join(' · ')}</div>` : '';
 
     cards.push(`<div class="debug-card">
       <h4>Sheet Fetch Trace</h4>
@@ -1040,7 +1123,11 @@ function renderDebug() {
       <div class="kv"><span class="kv-k">CSV rows (incl header)</span><span class="kv-v">${t.parsedRowCount ?? '—'}</span></div>
       <div class="kv"><span class="kv-k">objects after header</span><span class="kv-v">${t.objectCount ?? '—'}</span></div>
       <div class="kv" style="align-items:flex-start;"><span class="kv-k">headers found</span><span class="kv-v" style="text-align:right; font-size:10px; word-break:break-all; max-width:220px;">${escapeHtml(headersFound)}</span></div>
-      ${missingWarn}${emptyWarn}${dropWarn}
+      ${emptyWarn}${dropWarn}${unresolvedWarn}${derivedNote}
+      <div style="margin-top:10px;">
+        <div class="kv-k" style="margin-bottom:4px;">column resolution</div>
+        ${aliasRows}
+      </div>
       <div style="margin-top:10px;">
         <div class="kv-k" style="margin-bottom:4px;">first 500 chars of response</div>
         <pre>${escapeHtml(t.rawFirst500 || '(empty)')}</pre>
