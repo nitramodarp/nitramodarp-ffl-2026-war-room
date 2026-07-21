@@ -723,7 +723,9 @@ function csvToObjects(rows) {
 const state = {
   board: null,
   boardRaw: null,
+  boardError: null,      // set when board fetch fails
   sleeperLeague: null,
+  sleeperError: null,
   filter: { pos: 'ALL', search: '' },
   sort:   { key: 'ovr', dir: 'asc' },
   errors: [],
@@ -818,6 +820,29 @@ function formatSigned(n) {
 
 function renderBoard() {
   const host = document.getElementById('boardHost');
+
+  // State: fetch failed
+  if (state.boardError) {
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/edit`;
+    host.innerHTML = `
+      <div class="state">
+        <h3>Couldn't load the board</h3>
+        <p style="color:var(--down); font-family:var(--font-mono); font-size:12px;">${escapeHtml(state.boardError)}</p>
+        <p style="margin-top:16px">Most common cause: the Google Sheet isn't public yet.</p>
+        <div style="text-align:left; max-width:520px; margin:16px auto; font-size:12px; color:var(--fg-mute); font-family:var(--font-mono); line-height:1.7;">
+          1. Open <a href="${sheetUrl}" target="_blank" rel="noopener">the sheet</a><br>
+          2. Click <span style="color:var(--fg)">Share</span> (top right)<br>
+          3. Under <span style="color:var(--fg)">General access</span>, set to <span style="color:var(--fg)">"Anyone with the link"</span>, role <span style="color:var(--fg)">Viewer</span><br>
+          4. Confirm the tab is named exactly <code>Overall Board</code><br>
+          5. Come back and retry
+        </div>
+        <button onclick="retryBoard()">Retry</button>
+        <p style="margin-top:14px; font-size:11px; color:var(--fg-dim);">Or open the <span style="color:var(--accent); cursor:pointer;" onclick="document.querySelector('.tab[data-tab=&quot;debug&quot;]').click()">Debug tab</span> for full details.</p>
+      </div>`;
+    return;
+  }
+
+  // State: still loading
   if (!state.board) {
     host.innerHTML = '<div class="state"><div class="spinner"></div><p style="margin-top:12px">Fetching board…</p></div>';
     return;
@@ -995,19 +1020,33 @@ async function boot() {
   if (boardResult.status === 'fulfilled') {
     state.boardRaw = boardResult.value;
     state.board = normalizeBoard(boardResult.value);
+    state.boardError = null;
     setPill('statusBoard', 'ok', `Board · ${state.board.length} players`);
   } else {
-    state.errors.push('Board: ' + boardResult.reason.message);
+    state.boardError = boardResult.reason.message;
+    state.errors.push('Board: ' + state.boardError);
     setPill('statusBoard', 'err', 'Board failed');
-    document.getElementById('boardHost').innerHTML = `
-      <div class="state">
-        <h3>Couldn't load the board</h3>
-        <p>${escapeHtml(boardResult.reason.message)}</p>
-        <p>Check that the Google Sheet is shared as <code>Anyone with the link</code> and the tab is named <code>Overall Board</code>.</p>
-        <button onclick="location.reload()">Retry</button>
-      </div>`;
   }
 
+  renderBoard();
+  renderDebug();
+}
+
+async function retryBoard() {
+  state.board = null;
+  state.boardError = null;
+  setPill('statusBoard', '', 'Board…');
+  renderBoard();
+  try {
+    const rows = await fetchSheet(CONFIG.SHEETS.board);
+    state.boardRaw = rows;
+    state.board = normalizeBoard(rows);
+    setPill('statusBoard', 'ok', `Board · ${state.board.length} players`);
+  } catch (e) {
+    state.boardError = e.message;
+    state.errors.push('Board (retry): ' + e.message);
+    setPill('statusBoard', 'err', 'Board failed');
+  }
   renderBoard();
   renderDebug();
 }
