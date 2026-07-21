@@ -1780,7 +1780,15 @@ function computeRecommendation(undrafted, round) {
       // Tier-cliff urgency only matters if you actually still need this position.
       // A thinning tier for a position you've already filled is irrelevant —
       // you were never taking another one regardless of scarcity.
-      const appliedTierBonus = need.real ? tier.bonus : 1.0;
+      let appliedTierBonus = need.real ? tier.bonus : 1.0;
+      // DEF cliffs get less trust than skill-position cliffs, independent of
+      // the streaming-timing discount above. A "tier 1, alone" DEF in July is
+      // exactly the kind of preseason ranking that swings 15-20 spots by
+      // midseason — defensive performance is driven by scheme/injury churn
+      // far more than skill-position talent is. Halve the earned bonus.
+      if (p.pos === 'DEF' && appliedTierBonus > 1.0) {
+        appliedTierBonus = 1.0 + (appliedTierBonus - 1.0) * 0.5;
+      }
       const score = p.vorp * need.mult * appliedTierBonus;
       return { player: p, score, need, tier, appliedTierBonus };
     })
@@ -2024,7 +2032,7 @@ function renderDraftTab() {
       <div style="color:var(--fg-mute); font-size:13px;">Set "My Slot" above to get a personalized recommendation based on your actual roster needs. Until then, use Best Available on the right.</div>
     </div>`;
   } else if (rec && rec.top) {
-    const { player, need, tier } = rec.top;
+    const { player, need, tier, appliedTierBonus } = rec.top;
     const needPills = Object.keys(ROSTER_SLOTS).map(pos => {
       const have = rec.counts[pos] || 0;
       const want = ROSTER_SLOTS[pos];
@@ -2033,8 +2041,11 @@ function renderDraftTab() {
     }).join('');
     const altText = [rec.runnerUp, rec.thirdOption].filter(Boolean)
       .map(r => `${r.player.name} (${r.player.pos}, ${r.player.vorp.toFixed(1)})`).join(' · ');
+    const dampNote = player.pos === 'DEF' && tier.bonus > appliedTierBonus
+      ? ' (DEF cliff trusted at half strength — defensive rankings swing more than skill positions)'
+      : '';
     const tierText = need.real
-      ? `${tier.label}${tier.bonus >= 1.10 ? ' — real cliff, take now or lose the tier' : ''}`
+      ? `${tier.label}${appliedTierBonus >= 1.10 ? ' — real cliff, take now or lose the tier' : ''}${dampNote}`
       : `${tier.remaining} left in tier ${player.tier} (scarcity irrelevant — not a real need)`;
     recHtml = `<div class="rec-card">
       <div class="rec-label">Recommended Pick — Pick ${round}.${String(slot).padStart(2,'0')}</div>
