@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Friends For Life · War Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Design tokens
+     ============================================================ */
+  :root {
+    /* Surface */
+    --bg:            #0a0e14;
+    --bg-elev:       #101620;
+    --bg-elev-2:     #161e2b;
+    --line:          #212a3a;
+    --line-strong:   #2d3a52;
+
+    /* Text */
+    --fg:            #e6eaf0;
+    --fg-mute:       #8b96a8;
+    --fg-dim:        #5d6779;
+
+    /* Accents — used sparingly */
+    --accent:        #6cd4c8;    /* teal, used for interactive/active */
+    --accent-dim:    #3a8a80;
+    --up:            #7ed4a8;    /* undervalued / positive delta */
+    --down:          #e88a8a;    /* overvalued / negative delta */
+    --warn:          #f0c674;
+
+    /* Tier palette — cool → warm as tier degrades.
+       These are the app's signature color story. Kept intentional. */
+    --t1: #4a9d94;
+    --t2: #6ab8a0;
+    --t3: #8ec98a;
+    --t4: #d4c56a;
+    --t5: #d99a5a;
+    --t6: #c47862;
+    --t7: #a86560;
+    --t8: #7a5555;
+
+    /* Type */
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-body:    'Inter', system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+    /* Layout */
+    --hpad:          20px;
+    --radius:        6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  button {
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  input { font: inherit; color: inherit; background: transparent; border: none; outline: none; }
+
+  /* ============================================================
+     Header
+     ============================================================ */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px var(--hpad);
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+  .brand-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+    letter-spacing: 0.02em;
+  }
+
+  .status-row {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+    white-space: nowrap;
+  }
+  .pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--fg-dim);
+    flex-shrink: 0;
+  }
+  .pill.ok .dot { background: var(--up); }
+  .pill.err .dot { background: var(--down); }
+  .pill.warn .dot { background: var(--warn); }
+  .pill.ok    { color: var(--fg); }
+  .pill.err   { color: var(--down); border-color: color-mix(in srgb, var(--down) 30%, var(--line)); }
+  .pill.warn  { color: var(--warn); }
+
+  /* ============================================================
+     Tab nav
+     ============================================================ */
+  .tabs {
+    display: flex;
+    padding: 0 var(--hpad);
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--line);
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    position: relative;
+    padding: 12px 14px;
+    color: var(--fg-mute);
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: color 0.15s;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--fg); }
+  .tab.active { color: var(--fg); }
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    left: 14px; right: 14px; bottom: -1px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px 2px 0 0;
+  }
+  .tab .badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: var(--bg-elev-2);
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fg-mute);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .tab.disabled { opacity: 0.4; pointer-events: none; }
+
+  /* ============================================================
+     Main & tab content
+     ============================================================ */
+  main {
+    padding: 16px var(--hpad) 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ============================================================
+     Board controls
+     ============================================================ */
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .chips {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 3px;
+  }
+  .chip {
+    padding: 6px 12px;
+    border-radius: 4px;
+    color: var(--fg-mute);
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.12s;
+  }
+  .chip:hover { color: var(--fg); }
+  .chip.active {
+    background: var(--bg-elev-2);
+    color: var(--fg);
+    box-shadow: 0 0 0 1px var(--line-strong);
+  }
+  .search {
+    flex: 1;
+    min-width: 180px;
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .search:focus-within { border-color: var(--accent-dim); }
+  .search svg { width: 14px; height: 14px; color: var(--fg-dim); flex-shrink: 0; }
+  .search input {
+    flex: 1;
+    font-size: 13px;
+  }
+  .search input::placeholder { color: var(--fg-dim); }
+  .result-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+    margin-left: auto;
+  }
+
+  /* ============================================================
+     Board table
+     ============================================================ */
+  .board-wrap {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .board {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .board thead th {
+    text-align: left;
+    padding: 10px 8px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-elev);
+    position: sticky;
+    top: 49px; /* below topbar */
+    z-index: 5;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+  }
+  .board thead th:hover { color: var(--fg); }
+  .board thead th.sort-active { color: var(--accent); }
+  .board thead th.sort-active::after {
+    content: attr(data-arrow);
+    margin-left: 4px;
+    font-size: 9px;
+  }
+  .board tbody tr {
+    border-bottom: 1px solid var(--line);
+    transition: background 0.1s;
+  }
+  .board tbody tr:hover { background: var(--bg-elev-2); }
+  .board tbody tr:last-child { border-bottom: none; }
+  .board td {
+    padding: 8px;
+    vertical-align: middle;
+  }
+  .col-tier { width: 6px; padding: 0 !important; }
+  .col-tier .tier-bar {
+    width: 6px;
+    height: 100%;
+    min-height: 34px;
+    display: block;
+  }
+  .tier-1 { background: var(--t1); }
+  .tier-2 { background: var(--t2); }
+  .tier-3 { background: var(--t3); }
+  .tier-4 { background: var(--t4); }
+  .tier-5 { background: var(--t5); }
+  .tier-6 { background: var(--t6); }
+  .tier-7 { background: var(--t7); }
+  .tier-8 { background: var(--t8); }
+
+  .col-rk { width: 40px; }
+  .rk-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--fg-mute);
+    text-align: right;
+    padding-right: 4px;
+  }
+
+  .col-pos { width: 50px; }
+  .pos-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    background: var(--bg-elev-2);
+    color: var(--fg-mute);
+  }
+  .pos-QB  { color: #d4a06a; background: color-mix(in srgb, #d4a06a 12%, var(--bg-elev-2)); }
+  .pos-RB  { color: #7ec8b3; background: color-mix(in srgb, #7ec8b3 12%, var(--bg-elev-2)); }
+  .pos-WR  { color: #7ba5d4; background: color-mix(in srgb, #7ba5d4 12%, var(--bg-elev-2)); }
+  .pos-TE  { color: #c4a0d4; background: color-mix(in srgb, #c4a0d4 12%, var(--bg-elev-2)); }
+  .pos-DEF { color: #a8a89a; background: color-mix(in srgb, #a8a89a 12%, var(--bg-elev-2)); }
+  .pos-rk {
+    display: inline-block;
+    margin-left: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fg-dim);
+  }
+
+  .col-player { min-width: 180px; }
+  .player-name {
+    font-weight: 500;
+    color: var(--fg);
+  }
+  .player-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fg-mute);
+    margin-top: 1px;
+  }
+
+  .col-num {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    width: 70px;
+    white-space: nowrap;
+  }
+  .col-vorp {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    width: 90px;
+    font-weight: 500;
+  }
+  .col-adp { width: 60px; text-align: right; font-family: var(--font-mono); font-size: 12px; color: var(--fg-mute); }
+  .col-diff { width: 70px; text-align: right; font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+  .diff-up   { color: var(--up); }
+  .diff-down { color: var(--down); }
+  .diff-none { color: var(--fg-dim); }
+
+  /* VORP mini-bar (background gradient behind number) */
+  .vorp-bar {
+    display: inline-block;
+    position: relative;
+  }
+
+  /* ============================================================
+     Loading & error & empty states
+     ============================================================ */
+  .state {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--fg-mute);
+  }
+  .state h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    color: var(--fg);
+    margin-bottom: 8px;
+  }
+  .state p {
+    font-size: 13px;
+    max-width: 480px;
+    margin: 0 auto 14px;
+  }
+  .state code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--bg-elev-2);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--fg);
+  }
+  .state button {
+    padding: 8px 16px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    color: var(--fg);
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.12s;
+  }
+  .state button:hover { background: var(--accent-dim); border-color: var(--accent); }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid var(--line-strong);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ============================================================
+     Debug tab
+     ============================================================ */
+  .debug-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  .debug-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .debug-card h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    margin-bottom: 8px;
+  }
+  .debug-card pre {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg);
+    background: var(--bg);
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: pre;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .kv { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
+  .kv-k { color: var(--fg-mute); font-family: var(--font-mono); font-size: 11px; }
+  .kv-v { color: var(--fg); font-family: var(--font-mono); font-size: 11px; text-align: right; }
+
+  /* ============================================================
+     Legend footer
+     ============================================================ */
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .legend-tiers {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend-tier-strip {
+    display: inline-flex;
+    height: 10px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .legend-tier-strip span {
+    display: inline-block;
+    width: 14px;
+    height: 100%;
+  }
+  .legend-sep { color: var(--fg-dim); }
+
+  /* ============================================================
+     Responsive
+     ============================================================ */
+  @media (max-width: 720px) {
+    .topbar { flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
+    .status-row { margin-left: 0; width: 100%; font-size: 10px; }
+    main { padding: 12px; }
+    .col-player { min-width: 140px; }
+    .board thead th { font-size: 10px; padding: 8px 6px; }
+    .board td { padding: 7px 6px; font-size: 12px; }
+    /* Hide less-critical columns on narrow screens */
+    .col-adp-hide { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-name">Friends For Life</span>
+    <span class="brand-sub">WAR ROOM · 2026</span>
+  </div>
+  <div class="status-row" id="statusRow">
+    <span class="pill" id="statusSleeper"><span class="dot"></span><span>Sleeper</span></span>
+    <span class="pill" id="statusBoard"><span class="dot"></span><span>Board</span></span>
+    <span class="pill" id="statusDraft"><span class="dot"></span><span>Draft</span></span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-tab="board">Board</button>
+  <button class="tab" data-tab="mispricing">Mispricings</button>
+  <button class="tab" data-tab="pickcurve">Pick Values</button>
+  <button class="tab" data-tab="draft">Live Draft</button>
+  <button class="tab" data-tab="roster">Roster Needs</button>
+  <button class="tab" data-tab="debug">Debug</button>
+</nav>
+
+<main>
+  <section class="tab-panel active" id="tab-board">
+    <div class="controls">
+      <div class="chips" id="posFilter">
+        <button class="chip active" data-pos="ALL">All</button>
+        <button class="chip" data-pos="QB">QB</button>
+        <button class="chip" data-pos="RB">RB</button>
+        <button class="chip" data-pos="WR">WR</button>
+        <button class="chip" data-pos="TE">TE</button>
+        <button class="chip" data-pos="DEF">DEF</button>
+      </div>
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+        <input type="text" id="searchBox" placeholder="Search player or team">
+      </label>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+
+    <div id="boardHost">
+      <div class="state">
+        <div class="spinner"></div>
+        <p style="margin-top:12px">Fetching board…</p>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="legend-tiers">
+        <span>Tiers</span>
+        <span class="legend-tier-strip">
+          <span class="tier-1"></span><span class="tier-2"></span><span class="tier-3"></span>
+          <span class="tier-4"></span><span class="tier-5"></span><span class="tier-6"></span>
+          <span class="tier-7"></span><span class="tier-8"></span>
+        </span>
+        <span>Elite → Streaming</span>
+      </span>
+      <span class="legend-sep">·</span>
+      <span>VORP = points over replacement (this format)</span>
+      <span class="legend-sep">·</span>
+      <span>Diff = ADP rank − our rank. <span style="color:var(--up)">+</span> = market drafts too late.</span>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-mispricing">
+    <div class="state">
+      <h3>ADP Mispricings</h3>
+      <p>Rendered from the ADP Mispricings sheet. Coming in the next build.</p>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-pickcurve">
+    <div class="state">
+      <h3>Pick Values</h3>
+      <p>Pick-value curve and on-clock trade calculator. Coming in the next build — data is already in your workbook's Pick Value Curve sheet.</p>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-draft">
+    <div class="state">
+      <h3>Live Draft Tracker</h3>
+      <p>Polls Sleeper's draft API every 3s during the live draft. Ships the week of Aug 22 — no signal to build against until picks start flowing.</p>
+      <p style="margin-top:8px; font-family:var(--font-mono); font-size:11px;">Draft ID: <code id="draftIdDisplay"></code></p>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-roster">
+    <div class="state">
+      <h3>Roster Needs</h3>
+      <p>Fills in as your Sleeper roster changes. Empty until draft starts.</p>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-debug">
+    <div class="debug-grid" id="debugGrid"></div>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const CONFIG = {
+  LEAGUE_ID:  '1359038733340389376',
+  DRAFT_ID:   '1359038733352988672',
+  MY_OWNER_ID:'634248191616888832',
+
+  // Google Sheets (published board data)
+  SHEET_ID:   '1iMdzr7FAu6qFi5JlV7eGHNhSjIWQ6DyFyoV5wmrOMSg',
+  SHEETS: {
+    board:      'Overall Board',
+    qb:         'QB Ranks',
+    rb:         'RB Ranks',
+    wr:         'WR Ranks',
+    te:         'TE Ranks',
+    def:        'DEF Ranks',
+    mispricing: 'ADP Mispricings',
+    pickcurve:  'Pick Value Curve',
+  },
+
+  // Sleeper API base
+  SLEEPER_API: 'https://api.sleeper.app/v1',
+
+  // Draft date (Sat Aug 22 2026 2:00 PM EDT = 18:00 UTC)
+  DRAFT_START_UTC: '2026-08-22T18:00:00Z',
+};
+
+/* ============================================================
+   Sheet URL helper
+   ============================================================ */
+function sheetCsvUrl(sheetName) {
+  const encoded = encodeURIComponent(sheetName);
+  return `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encoded}`;
+}
+
+/* ============================================================
+   CSV parser
+   Handles quoted fields, escaped quotes, embedded commas + newlines.
+   ============================================================ */
+function parseCSV(text) {
+  const rows = [];
+  let cur = [''];
+  let inQuotes = false;
+  let i = 0;
+  while (i < text.length) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i+1] === '"') { cur[cur.length-1] += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      cur[cur.length-1] += c; i++; continue;
+    }
+    if (c === '"') { inQuotes = true; i++; continue; }
+    if (c === ',') { cur.push(''); i++; continue; }
+    if (c === '\r') { i++; continue; }
+    if (c === '\n') { rows.push(cur); cur = ['']; i++; continue; }
+    cur[cur.length-1] += c; i++;
+  }
+  if (cur.length > 1 || cur[0] !== '') rows.push(cur);
+  return rows;
+}
+
+function csvToObjects(rows) {
+  if (rows.length < 2) return [];
+  const headers = rows[0].map(h => h.trim());
+  return rows.slice(1)
+    .filter(r => r.some(v => v && v.trim() !== ''))
+    .map(r => {
+      const o = {};
+      headers.forEach((h, i) => o[h] = (r[i] ?? '').trim());
+      return o;
+    });
+}
+
+/* ============================================================
+   State
+   ============================================================ */
+const state = {
+  board: null,
+  boardRaw: null,
+  sleeperLeague: null,
+  filter: { pos: 'ALL', search: '' },
+  sort:   { key: 'ovr', dir: 'asc' },
+  errors: [],
+};
+
+/* ============================================================
+   Data layer
+   ============================================================ */
+async function fetchSheet(sheetName) {
+  const url = sheetCsvUrl(sheetName);
+  const resp = await fetch(url, { cache: 'no-store' });
+  if (!resp.ok) throw new Error(`Sheet fetch failed (${resp.status}) for "${sheetName}"`);
+  const text = await resp.text();
+  if (text.trim().startsWith('<')) {
+    throw new Error(`Got HTML instead of CSV — is the sheet shared "Anyone with the link"?`);
+  }
+  return csvToObjects(parseCSV(text));
+}
+
+async function fetchSleeperLeague() {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${CONFIG.LEAGUE_ID}`);
+  if (!resp.ok) throw new Error(`Sleeper league fetch failed (${resp.status})`);
+  return resp.json();
+}
+
+/* ============================================================
+   Board normalization
+   Map the "Overall Board" CSV columns into a stable shape.
+   Column names in the sheet are:
+     Ovr Rk, Pos, Pos Rk, Tier, Player, Team, Bye, FPS, VORP, ADP, ADP Rk, Fmt Δ vs Std
+   ============================================================ */
+function normalizeBoard(rows) {
+  return rows.map(r => {
+    const num = (v) => {
+      if (v === '' || v == null) return null;
+      const n = Number(v);
+      return isNaN(n) ? null : n;
+    };
+    return {
+      ovr:    num(r['Ovr Rk']),
+      pos:    r['Pos'],
+      posrk:  num(r['Pos Rk']),
+      tier:   num(r['Tier']),
+      name:   r['Player'],
+      team:   r['Team'],
+      bye:    num(r['Bye']),
+      fps:    num(r['FPS']),
+      vorp:   num(r['VORP']),
+      adp:    num(r['ADP']),
+      adprk:  num(r['ADP Rk']),
+      fmtd:   num(r['Fmt Δ vs Std']),
+    };
+  }).filter(p => p.name && p.pos);
+}
+
+function boardVorpRange(rows) {
+  const vs = rows.map(r => r.vorp).filter(v => v != null);
+  return { min: Math.min(...vs), max: Math.max(...vs) };
+}
+
+/* ============================================================
+   Rendering — status pills
+   ============================================================ */
+function setPill(id, statusClass, text) {
+  const el = document.getElementById(id);
+  el.className = 'pill ' + (statusClass || '');
+  el.querySelector('span:last-child').textContent = text;
+}
+
+function updateDraftCountdown() {
+  const draftMs = new Date(CONFIG.DRAFT_START_UTC).getTime();
+  const now = Date.now();
+  const diff = draftMs - now;
+  if (diff <= 0) {
+    setPill('statusDraft', 'warn', 'Draft: LIVE');
+    return;
+  }
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const label = days > 0 ? `Draft in ${days}d ${hours}h` : `Draft in ${hours}h`;
+  setPill('statusDraft', '', label);
+}
+
+/* ============================================================
+   Rendering — board
+   ============================================================ */
+function formatSigned(n) {
+  if (n == null) return '';
+  if (n === 0) return '0';
+  return (n > 0 ? '+' : '') + n;
+}
+
+function renderBoard() {
+  const host = document.getElementById('boardHost');
+  if (!state.board) {
+    host.innerHTML = '<div class="state"><div class="spinner"></div><p style="margin-top:12px">Fetching board…</p></div>';
+    return;
+  }
+
+  // Filter
+  const s = state.filter.search.toLowerCase().trim();
+  let rows = state.board.filter(p => {
+    if (state.filter.pos !== 'ALL' && p.pos !== state.filter.pos) return false;
+    if (s && !(p.name.toLowerCase().includes(s) || (p.team || '').toLowerCase().includes(s))) return false;
+    return true;
+  });
+
+  // Sort
+  const key = state.sort.key;
+  const dir = state.sort.dir === 'asc' ? 1 : -1;
+  rows.sort((a, b) => {
+    const av = a[key], bv = b[key];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === 'number') return (av - bv) * dir;
+    return String(av).localeCompare(String(bv)) * dir;
+  });
+
+  document.getElementById('resultCount').textContent =
+    `${rows.length} players`;
+
+  // Build table
+  const headers = [
+    { key: 'ovr',   label: 'RK',    align: 'right',  width: 'col-rk' },
+    { key: '_tier', label: '',      align: '',       width: 'col-tier', nosort: true },
+    { key: 'pos',   label: 'POS',   align: '',       width: 'col-pos' },
+    { key: 'name',  label: 'PLAYER',align: '',       width: 'col-player' },
+    { key: 'fps',   label: 'FPS',   align: 'right',  width: 'col-num' },
+    { key: 'vorp',  label: 'VORP',  align: 'right',  width: 'col-vorp' },
+    { key: 'adp',   label: 'ADP',   align: 'right',  width: 'col-adp col-adp-hide' },
+    { key: '_diff', label: 'DIFF',  align: 'right',  width: 'col-diff' },
+  ];
+
+  const vr = boardVorpRange(state.board);
+  const vrSpan = Math.max(vr.max - vr.min, 1);
+
+  const thead = `<thead><tr>${headers.map(h => {
+    const active = state.sort.key === h.key;
+    const arrow = state.sort.dir === 'asc' ? '▲' : '▼';
+    const cls = `${h.width} ${active ? 'sort-active' : ''}`.trim();
+    const dataAttr = active ? `data-arrow="${arrow}"` : '';
+    const sortAttr = h.nosort ? '' : `data-sort="${h.key}"`;
+    return `<th class="${cls}" ${sortAttr} ${dataAttr}>${h.label}</th>`;
+  }).join('')}</tr></thead>`;
+
+  const tbody = '<tbody>' + rows.map(p => {
+    const diff = (p.adprk != null && p.ovr != null) ? (p.adprk - p.ovr) : null;
+    const diffCls = diff == null ? 'diff-none' : diff > 5 ? 'diff-up' : diff < -5 ? 'diff-down' : 'diff-none';
+    const vorpPct = p.vorp != null ? Math.max(0, (p.vorp - vr.min) / vrSpan) : 0;
+    const vorpColor = p.vorp != null && p.vorp > 0 ? 'var(--up)' : p.vorp != null && p.vorp < 0 ? 'var(--fg-dim)' : 'var(--fg-mute)';
+    const vorpBg = `linear-gradient(90deg, color-mix(in srgb, var(--accent) 15%, transparent) ${vorpPct*100}%, transparent ${vorpPct*100}%)`;
+    return `<tr>
+      <td class="col-rk rk-num">${p.ovr ?? ''}</td>
+      <td class="col-tier"><span class="tier-bar tier-${p.tier || 8}"></span></td>
+      <td class="col-pos"><span class="pos-tag pos-${p.pos}">${p.pos}</span><span class="pos-rk">${p.posrk ?? ''}</span></td>
+      <td class="col-player">
+        <div class="player-name">${escapeHtml(p.name)}</div>
+        <div class="player-meta">${escapeHtml(p.team || '')}${p.bye != null ? ' · BYE ' + p.bye : ''}</div>
+      </td>
+      <td class="col-num">${p.fps != null ? p.fps.toFixed(1) : ''}</td>
+      <td class="col-vorp" style="background:${vorpBg}; color:${vorpColor}">${p.vorp != null ? p.vorp.toFixed(1) : ''}</td>
+      <td class="col-adp col-adp-hide">${p.adp != null ? p.adp.toFixed(1) : '—'}</td>
+      <td class="col-diff ${diffCls}">${formatSigned(diff)}</td>
+    </tr>`;
+  }).join('') + '</tbody>';
+
+  host.innerHTML = `<div class="board-wrap"><table class="board">${thead}${tbody}</table></div>`;
+
+  // Wire header sort
+  host.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.dataset.sort;
+      if (state.sort.key === k) {
+        state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.sort.key = k;
+        // Sensible defaults: rank cols asc, value cols desc
+        state.sort.dir = (k === 'ovr' || k === 'posrk' || k === 'adp') ? 'asc' : 'desc';
+      }
+      renderBoard();
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+/* ============================================================
+   Rendering — debug
+   ============================================================ */
+function renderDebug() {
+  const host = document.getElementById('debugGrid');
+  const cards = [];
+
+  cards.push(`<div class="debug-card">
+    <h4>Config</h4>
+    <div class="kv"><span class="kv-k">LEAGUE_ID</span><span class="kv-v">${CONFIG.LEAGUE_ID}</span></div>
+    <div class="kv"><span class="kv-k">DRAFT_ID</span><span class="kv-v">${CONFIG.DRAFT_ID}</span></div>
+    <div class="kv"><span class="kv-k">MY_OWNER_ID</span><span class="kv-v">${CONFIG.MY_OWNER_ID}</span></div>
+    <div class="kv"><span class="kv-k">SHEET_ID</span><span class="kv-v">${CONFIG.SHEET_ID.slice(0,20)}…</span></div>
+    <div class="kv"><span class="kv-k">DRAFT_START</span><span class="kv-v">${CONFIG.DRAFT_START_UTC}</span></div>
+  </div>`);
+
+  if (state.sleeperLeague) {
+    const l = state.sleeperLeague;
+    cards.push(`<div class="debug-card">
+      <h4>Sleeper — League</h4>
+      <div class="kv"><span class="kv-k">name</span><span class="kv-v">${escapeHtml(l.name || '')}</span></div>
+      <div class="kv"><span class="kv-k">status</span><span class="kv-v">${l.status || ''}</span></div>
+      <div class="kv"><span class="kv-k">season</span><span class="kv-v">${l.season || ''}</span></div>
+      <div class="kv"><span class="kv-k">total_rosters</span><span class="kv-v">${l.total_rosters || ''}</span></div>
+      <div class="kv"><span class="kv-k">roster_positions</span><span class="kv-v">${(l.roster_positions||[]).join(',')}</span></div>
+      <div class="kv"><span class="kv-k">draft_id</span><span class="kv-v">${l.draft_id || ''}</span></div>
+      <div class="kv"><span class="kv-k">pick_trading</span><span class="kv-v">${l.settings ? l.settings.pick_trading : ''}</span></div>
+      <div class="kv"><span class="kv-k">trade_deadline</span><span class="kv-v">${l.settings ? l.settings.trade_deadline : ''}</span></div>
+    </div>`);
+  }
+
+  if (state.board) {
+    const byPos = {};
+    state.board.forEach(p => { byPos[p.pos] = (byPos[p.pos] || 0) + 1; });
+    cards.push(`<div class="debug-card">
+      <h4>Board — Loaded</h4>
+      <div class="kv"><span class="kv-k">total players</span><span class="kv-v">${state.board.length}</span></div>
+      ${Object.keys(byPos).sort().map(pos => `<div class="kv"><span class="kv-k">${pos}</span><span class="kv-v">${byPos[pos]}</span></div>`).join('')}
+      <div class="kv"><span class="kv-k">top by VORP</span><span class="kv-v">${state.board[0] ? escapeHtml(state.board[0].name) : ''}</span></div>
+    </div>`);
+  }
+
+  if (state.errors.length) {
+    cards.push(`<div class="debug-card">
+      <h4 style="color:var(--down)">Errors</h4>
+      ${state.errors.map(e => `<div style="color:var(--down); font-size:12px; margin-bottom:6px;">${escapeHtml(e)}</div>`).join('')}
+    </div>`);
+  }
+
+  host.innerHTML = cards.join('');
+}
+
+/* ============================================================
+   Boot
+   ============================================================ */
+async function boot() {
+  document.getElementById('draftIdDisplay').textContent = CONFIG.DRAFT_ID;
+  updateDraftCountdown();
+  setInterval(updateDraftCountdown, 60000);
+
+  // Fetch in parallel
+  setPill('statusSleeper', '', 'Sleeper…');
+  setPill('statusBoard', '', 'Board…');
+
+  const [sleeperResult, boardResult] = await Promise.allSettled([
+    fetchSleeperLeague(),
+    fetchSheet(CONFIG.SHEETS.board),
+  ]);
+
+  if (sleeperResult.status === 'fulfilled') {
+    state.sleeperLeague = sleeperResult.value;
+    setPill('statusSleeper', 'ok', `Sleeper · ${state.sleeperLeague.status}`);
+  } else {
+    state.errors.push('Sleeper: ' + sleeperResult.reason.message);
+    setPill('statusSleeper', 'err', 'Sleeper offline');
+  }
+
+  if (boardResult.status === 'fulfilled') {
+    state.boardRaw = boardResult.value;
+    state.board = normalizeBoard(boardResult.value);
+    setPill('statusBoard', 'ok', `Board · ${state.board.length} players`);
+  } else {
+    state.errors.push('Board: ' + boardResult.reason.message);
+    setPill('statusBoard', 'err', 'Board failed');
+    document.getElementById('boardHost').innerHTML = `
+      <div class="state">
+        <h3>Couldn't load the board</h3>
+        <p>${escapeHtml(boardResult.reason.message)}</p>
+        <p>Check that the Google Sheet is shared as <code>Anyone with the link</code> and the tab is named <code>Overall Board</code>.</p>
+        <button onclick="location.reload()">Retry</button>
+      </div>`;
+  }
+
+  renderBoard();
+  renderDebug();
+}
+
+/* ============================================================
+   Event wiring
+   ============================================================ */
+document.getElementById('tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+  const target = btn.dataset.tab;
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${target}`));
+  if (target === 'debug') renderDebug();
+});
+
+document.getElementById('posFilter').addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('#posFilter .chip').forEach(c => c.classList.toggle('active', c === btn));
+  state.filter.pos = btn.dataset.pos;
+  renderBoard();
+});
+
+let searchTimer;
+document.getElementById('searchBox').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.filter.search = e.target.value;
+    renderBoard();
+  }, 120);
+});
+
+boot();
+</script>
+</body>
+</html>
