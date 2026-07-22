@@ -971,6 +971,7 @@
     <span class="pill" id="statusBoard"><span class="dot"></span><span>Board</span></span>
     <span class="pill" id="statusDraft"><span class="dot"></span><span>Draft</span></span>
     <span class="pill" id="statusHistory"><span class="dot"></span><span>History</span></span>
+    <span class="pill" id="statusPlan"><span class="dot"></span><span>Plan</span></span>
   </div>
 </header>
 
@@ -1148,6 +1149,7 @@ const CONFIG = {
     def:        'DEF Ranks',
     mispricing: 'ADP Mispricings',
     pickcurve:  'Pick Value Curve',
+    roundPlan:  'Round Plan',
   },
 
   // Sleeper API base
@@ -2284,29 +2286,59 @@ function tierUrgencyBonus(player, undraftedByPos) {
    ============================================================ */
 /* ============================================================
    Round-by-round draft plan
-   Mirrors the "Draft Day Plan" tab in the workbook — same strategy,
-   same rationale, now live in the tool that's actually open during
-   the draft. `primary` positions get a small, explainable nudge in
-   the recommendation engine (see planAlignmentFactor); everything
-   else is reference text shown alongside the recommendation.
+   Single source of truth is the workbook's "Round Plan" sheet,
+   fetched as CSV the same way the Board data is. The object below
+   is only a fallback so the app still works before that sheet is
+   published, or if the fetch fails — loadRoundPlan() overwrites it
+   in place on success. `primary` positions get a small, explainable
+   nudge in the recommendation engine (see planAlignmentFactor);
+   everything else is reference text shown alongside the
+   recommendation.
    ============================================================ */
 const ROUND_PLAN = {
   1:  { primary: ['RB','WR'], strategy: 'Best RB/WR available', rationale: 'Room prices Round 1 correctly — no market edge to chase. Take the highest true-VORP RB/WR on the board.' },
-  2:  { primary: ['QB','RB','WR'], strategy: 'QB reach window opens', rationale: 'True value has a top-5 QB here — the room hasn\u2019t taken QB1 before pick 23 in either real draft. If a top-tier QB is alive, this beats a WR2/RB2-tier player on VORP.' },
-  3:  { primary: ['QB','RB','WR','TE'], strategy: 'QB reach window \u2014 last shot at elite tier', rationale: 'Both 2024 and 2025 saw the room\u2019s first QB go in this range (picks 23-36). Last round you\u2019re truly ahead of the market. Take the QB if the tier is thinning, else best RB/WR/TE1.' },
+  2:  { primary: ['QB','RB','WR'], strategy: 'QB reach window opens', rationale: 'True value has a top-5 QB here — the room hasn’t taken QB1 before pick 23 in either real draft. If a top-tier QB is alive, this beats a WR2/RB2-tier player on VORP.' },
+  3:  { primary: ['QB','RB','WR','TE'], strategy: 'QB reach window — last shot at elite tier', rationale: 'Both 2024 and 2025 saw the room’s first QB go in this range (picks 23-36). Last round you’re truly ahead of the market. Take the QB if the tier is thinning, else best RB/WR/TE1.' },
   4:  { primary: ['RB','WR'], strategy: 'Best RB/WR; QB5-9 tier still real', rationale: 'If QB1 is filled, keep stacking skill-position value. If not, this tier still carries real VORP over a 2nd shot.' },
   5:  { primary: ['RB','WR','TE'], strategy: 'RB/WR depth', rationale: 'Keep taking the best true-VORP skill player. TE1 tier starts to matter here if you want a difference-making TE.' },
   6:  { primary: ['RB','WR','TE'], strategy: 'RB/WR depth or TE1 decision', rationale: 'Last realistic window for a true difference-making TE before the position flattens into streaming-tier.' },
-  7:  { primary: ['RB','WR'], strategy: 'RB/WR depth', rationale: 'Bench-building begins \u2014 favor RB/WR over a 2nd QB or early DEF; both are cheaper later.' },
-  8:  { primary: ['RB','WR'], strategy: 'RB/WR depth', rationale: 'Champions drafted fewer RB/WR than the field on average \u2014 don\u2019t force volume, just take real value.' },
-  9:  { primary: ['DEF','RB','WR','TE'], strategy: 'DEF1 window opens', rationale: 'History shows the room doesn\u2019t seriously engage DEF until deep rounds \u2014 a real DEF1-vs-replacement gap (~+40 pts) still exists uncontested here.' },
+  7:  { primary: ['RB','WR'], strategy: 'RB/WR depth', rationale: 'Bench-building begins — favor RB/WR over a 2nd QB or early DEF; both are cheaper later.' },
+  8:  { primary: ['RB','WR'], strategy: 'RB/WR depth', rationale: 'Champions drafted fewer RB/WR than the field on average — don’t force volume, just take real value.' },
+  9:  { primary: ['DEF','RB','WR','TE'], strategy: 'DEF1 window opens', rationale: 'History shows the room doesn’t seriously engage DEF until deep rounds — a real DEF1-vs-replacement gap (~+40 pts) still exists uncontested here.' },
   10: { primary: ['DEF','RB','WR','TE'], strategy: 'DEF1 (if not yet) or best flier', rationale: 'Last round with a meaningful DEF1 tier gap in most mocks.' },
   11: { primary: ['RB','WR','QB'], strategy: 'Bench RB/WR or QB2 flier', rationale: 'A 2nd QB here matches the champion pattern of carrying QB insurance.' },
-  12: { primary: ['DEF'], strategy: 'DEF2', rationale: 'Champions in both real seasons rostered 2 DEFs. Churn data showed no win correlation either way \u2014 this is bye/matchup coverage, not chasing streams.' },
-  13: { primary: ['RB','WR'], strategy: 'Bench RB/WR, bye-week coverage', rationale: 'Check the Bye Week Map below \u2014 target whichever position has the thinnest bye coverage on your actual roster right now.' },
-  14: { primary: ['QB','RB','WR','TE','DEF'], strategy: 'QB2 (if not yet) or lottery ticket', rationale: 'Backfill remaining bench needs \u2014 handcuffs, rookie fliers, or your 2nd QB if still open.' },
-  15: { primary: ['RB','WR','TE','QB','DEF'], strategy: 'Final bench slot \u2014 best remaining upside', rationale: 'Pure lottery ticket. Fill whatever gap the Bye Week Map or Roster Needs tab still shows.' },
+  12: { primary: ['DEF'], strategy: 'DEF2', rationale: 'Champions in both real seasons rostered 2 DEFs. Churn data showed no win correlation either way — this is bye/matchup coverage, not chasing streams.' },
+  13: { primary: ['RB','WR'], strategy: 'Bench RB/WR, bye-week coverage', rationale: 'Check the Bye Week Map below — target whichever position has the thinnest bye coverage on your actual roster right now.' },
+  14: { primary: ['QB','RB','WR','TE','DEF'], strategy: 'QB2 (if not yet) or lottery ticket', rationale: 'Backfill remaining bench needs — handcuffs, rookie fliers, or your 2nd QB if still open.' },
+  15: { primary: ['RB','WR','TE','QB','DEF'], strategy: 'Final bench slot — best remaining upside', rationale: 'Pure lottery ticket. Fill whatever gap the Bye Week Map or Roster Needs tab still shows.' },
 };
+state.roundPlanSource = 'fallback (built-in default — sheet not loaded yet)';
+
+function normalizeRoundPlan(rows) {
+  const out = {};
+  rows.forEach(r => {
+    const round = Number(r['Round']);
+    if (!round) return;
+    const primaryRaw = r['Primary Positions'] || '';
+    const primary = primaryRaw.split(',').map(s => s.trim()).filter(Boolean);
+    out[round] = {
+      primary: primary.length ? primary : ['RB', 'WR'],
+      strategy: r['Strategy'] || `Round ${round}`,
+      rationale: r['Rationale'] || '',
+    };
+  });
+  return out;
+}
+
+async function loadRoundPlan() {
+  const rows = await fetchSheet(CONFIG.SHEETS.roundPlan);
+  const parsed = normalizeRoundPlan(rows);
+  if (!Object.keys(parsed).length) throw new Error('Round Plan sheet fetched but produced 0 usable rows.');
+  Object.keys(ROUND_PLAN).forEach(k => delete ROUND_PLAN[k]);
+  Object.assign(ROUND_PLAN, parsed);
+  state.roundPlanSource = `sheet · ${Object.keys(parsed).length} rounds`;
+}
+
 function getRoundPlan(round) {
   return ROUND_PLAN[round] || ROUND_PLAN[15];
 }
@@ -2695,7 +2727,10 @@ function renderDraftTab() {
     </div>`;
   }).join('');
   const roundPlanCard = `<div class="rec-card" style="background:linear-gradient(135deg, color-mix(in srgb, var(--warn) 10%, var(--bg-elev)), var(--bg-elev)); border-color:var(--warn);">
-    <div class="rec-label" style="color:var(--warn);">Round ${round} Plan</div>
+    <div class="rec-label" style="color:var(--warn); display:flex; justify-content:space-between; align-items:center;">
+      <span>Round ${round} Plan</span>
+      <span style="font-family:var(--font-mono); font-size:9px; text-transform:none; letter-spacing:0; color:var(--fg-dim);">${escapeHtml(state.roundPlanSource || '')}</span>
+    </div>
     <div style="font-family:var(--font-display); font-weight:700; font-size:17px; margin-bottom:6px;">${escapeHtml(currentPlan.strategy)}</div>
     <div style="font-size:12.5px; color:var(--fg-mute); line-height:1.5;">${escapeHtml(currentPlan.rationale)}</div>
     <details style="margin-top:10px;">
@@ -3179,6 +3214,14 @@ function renderDebug() {
     </div>`);
   }
 
+  cards.push(`<div class="debug-card">
+    <h4>Round Plan</h4>
+    <div class="kv"><span class="kv-k">source</span><span class="kv-v">${escapeHtml(state.roundPlanSource || 'unknown')}</span></div>
+    <div class="kv"><span class="kv-k">sheet name</span><span class="kv-v">${escapeHtml(CONFIG.SHEETS.roundPlan)}</span></div>
+    <div class="kv"><span class="kv-k">rounds loaded</span><span class="kv-v">${Object.keys(ROUND_PLAN).length}</span></div>
+    ${state.roundPlanSource && state.roundPlanSource.startsWith('fallback') ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Using built-in defaults — publish the "Round Plan" tab to the same Google Sheet as the Board to make it the live source.</div>` : ''}
+  </div>`);
+
   if (state.board) {
     const byPos = {};
     state.board.forEach(p => { byPos[p.pos] = (byPos[p.pos] || 0) + 1; });
@@ -3283,6 +3326,22 @@ async function boot() {
   }
 
   renderBoard();
+  renderDebug();
+
+  // Fetched sequentially after Board rather than in parallel with it —
+  // fetchSheet() writes to the single shared state.fetchTrace field, and
+  // running this alongside the Board fetch could clobber the trace the
+  // Debug tab shows for Board with this smaller sheet's trace instead.
+  setPill('statusPlan', '', 'Plan…');
+  try {
+    await loadRoundPlan();
+    setPill('statusPlan', 'ok', state.roundPlanSource);
+  } catch (e) {
+    // Non-fatal — ROUND_PLAN keeps its built-in fallback values, so the
+    // Round Plan card and recommendation engine still work either way.
+    state.errors.push('Round Plan: ' + e.message);
+    setPill('statusPlan', 'warn', 'Plan · using fallback');
+  }
   renderDebug();
 }
 
