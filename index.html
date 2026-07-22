@@ -2261,7 +2261,18 @@ function needMultiplier(pos, counts, round) {
     }
     return { mult: REDUNDANT_STARTER_MULT, real: false, slotType: 'luxury', reason: 'QB filled — streamable via rolling waivers, byes are known in advance, rarely worth a 2nd outside the plan window' };
   }
-  if (pos === 'DEF' && have >= 1) return { mult: REDUNDANT_STARTER_MULT, real: false, slotType: 'luxury', reason: 'DEF filled — streamable via rolling waivers, rarely worth a 2nd' };
+  if (pos === 'DEF' && have >= 1) {
+    // Same gate as the QB2 fix — was hardcoded flat 0.25/real:false with no
+    // window check, which meant DEF2 could never realistically win a
+    // recommendation even in Round 12, the plan's explicit "DEF2" round.
+    // This is the identical bug shape, just on the sibling position; should
+    // have been fixed symmetrically the first time instead of only QB.
+    const inWindow = getRoundPlan(round).primary.includes('DEF');
+    if (inWindow) {
+      return { mult: 1.0, real: true, slotType: 'bench', reason: `DEF2 window open (Rd ${round} per the plan) — champion pattern carried 2 DEFs` };
+    }
+    return { mult: REDUNDANT_STARTER_MULT, real: false, slotType: 'luxury', reason: 'DEF filled — streamable via rolling waivers, rarely worth a 2nd outside the plan window' };
+  }
 
   return { mult: 0.85, real: false, slotType: 'bench', reason: 'bench depth' };
 }
@@ -2506,8 +2517,9 @@ function computeRecommendation(undrafted, round) {
       // real VORP gap, it just breaks ties toward the historically-grounded
       // play when options are close.
       const plan = planAlignmentFactor(p, round);
-      const score = p.vorp * mult * appliedTierBonus * bye.mult * plan.mult;
-      return { player: p, score, need, tier, appliedTierBonus, bye, plan };
+      const comp = compositionAlignmentFactor(p, counts);
+      const score = p.vorp * mult * appliedTierBonus * bye.mult * plan.mult * comp.mult;
+      return { player: p, score, need, tier, appliedTierBonus, bye, plan, comp };
     })
     // Priority tier first: a genuinely empty required starter slot always
     // outranks a luxury/bench pick, no matter how the raw VORP compares.
@@ -2570,6 +2582,27 @@ function checkCompositionAlerts(counts) {
     }
   });
   return deviations;
+}
+
+// Same modest-nudge philosophy as byeDiversityFactor/planAlignmentFactor —
+// pulls gently toward a position still under its target and away from one
+// already over, but never enough to override real VORP or an open starter
+// slot. Added after RB overshot its 4-5 target two mock drafts running
+// (reached 7) with only a passive alert card and no actual scoring
+// influence — visibility alone wasn't changing the outcome. Positions with
+// a hard mechanism already (TE's cap, QB/DEF's window gates) are mostly
+// unaffected by this in practice; RB/WR are the ones with no other guard.
+function compositionAlignmentFactor(player, counts) {
+  const target = ROSTER_TARGET[player.pos];
+  if (!target) return { mult: 1.0, label: '' };
+  const have = counts[player.pos] || 0;
+  if (have >= target.max) {
+    return { mult: 0.93, label: `already at ${have} ${player.pos} (target ${target.min}-${target.max})` };
+  }
+  if (have < target.min) {
+    return { mult: 1.06, label: `under target at ${have} ${player.pos} (target ${target.min}-${target.max})` };
+  }
+  return { mult: 1.0, label: '' };
 }
 
 /* ============================================================
@@ -2807,7 +2840,7 @@ function renderDraftTab() {
       <div style="color:var(--fg-mute); font-size:13px;">Set "My Slot" above to get a personalized recommendation based on your actual roster needs. Until then, use Best Available on the right.</div>
     </div>`;
   } else if (rec && rec.top) {
-    const { player, need, tier, appliedTierBonus, bye, plan } = rec.top;
+    const { player, need, tier, appliedTierBonus, bye, plan, comp } = rec.top;
     const needPills = Object.keys(ROSTER_SLOTS).map(pos => {
       const have = rec.counts[pos] || 0;
       const want = ROSTER_SLOTS[pos];
@@ -2829,7 +2862,7 @@ function renderDraftTab() {
         <span class="rec-name">${escapeHtml(player.name)}</span>
         <span class="rec-vorp">VORP ${player.vorp.toFixed(1)}</span>
       </div>
-      <div class="rec-reason">${need.reason} · ${tierText}${bye.label ? ' · ' + bye.label : ''}${plan.label ? ' · ' + plan.label : ''}</div>
+      <div class="rec-reason">${need.reason} · ${tierText}${bye.label ? ' · ' + bye.label : ''}${plan.label ? ' · ' + plan.label : ''}${comp.label ? ' · ' + comp.label : ''}</div>
       <div class="need-meter">${needPills}</div>
       ${altText ? `<div class="rec-alt">Next best: ${escapeHtml(altText)}</div>` : ''}
     </div>`;
