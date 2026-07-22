@@ -1345,6 +1345,11 @@ async function fetchDraftsFor(id) {
   if (!resp.ok) return [];
   return resp.json();
 }
+async function fetchTransactionsFor(id, round) {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${id}/transactions/${round}`);
+  if (!resp.ok) return [];
+  return resp.json();
+}
 
 async function loadHistoryChain() {
   const seasons = [];
@@ -1383,6 +1388,13 @@ async function loadHistoryChain() {
     } else {
       s.draftPicks = [];
     }
+
+    const txProms = [];
+    for (let w = 1; w <= MAX_WEEKS; w++) txProms.push(fetchTransactionsFor(s.id, w));
+    const txResults = await Promise.all(txProms);
+    let allTx = [];
+    txResults.forEach(arr => { if (arr && arr.length) allTx = allTx.concat(arr); });
+    s.transactions = allTx.filter(t => t.status === 'complete');
   }
   return seasons;
 }
@@ -1473,6 +1485,42 @@ function histIsSeasonComplete(season) {
   // haven't accumulated real standings yet — including them in historical aggregates
   // (playoff cutline, career record, weekly scoring) would pollute the numbers with zeros.
   return season.meta && (season.meta.status === 'complete' || season.meta.status === 'post_season');
+}
+function histTransactionSummary(season) {
+  const perOwner = {}; // roster_id -> { waiver, free_agent, trades }
+  const ensure = (rid) => (perOwner[rid] = perOwner[rid] || { waiver: 0, free_agent: 0, trades: 0 });
+  const totals = { waiver: 0, free_agent: 0, trade: 0 };
+  const trades = [];
+
+  (season.transactions || []).forEach(t => {
+    if (t.type === 'waiver') {
+      totals.waiver++;
+      (t.roster_ids || []).forEach(rid => { ensure(rid).waiver++; });
+    } else if (t.type === 'free_agent') {
+      totals.free_agent++;
+      (t.roster_ids || []).forEach(rid => { ensure(rid).free_agent++; });
+    } else if (t.type === 'trade') {
+      totals.trade++;
+      (t.roster_ids || []).forEach(rid => { ensure(rid).trades++; });
+      const teams = (t.roster_ids || []).map(rid => histOwnerName(season, histRosterOwner(season, rid)));
+      const playerCount = Object.keys(t.adds || {}).length;
+      const pickCount = (t.draft_picks || []).length;
+      trades.push({ week: t.leg || null, teams, playerCount, pickCount, created: t.created || 0 });
+    }
+  });
+  trades.sort((a, b) => a.created - b.created);
+
+  const perOwnerRows = Object.entries(perOwner).map(([rid, v]) => ({
+    roster_id: Number(rid),
+    owner_id: histRosterOwner(season, Number(rid)),
+    name: histOwnerName(season, histRosterOwner(season, Number(rid))),
+    waiver: v.waiver,
+    free_agent: v.free_agent,
+    trades: v.trades,
+    total: v.waiver + v.free_agent + v.trades,
+  })).sort((a, b) => b.total - a.total);
+
+  return { totals, trades, perOwnerRows };
 }
 
 /* ============================================================
@@ -2650,6 +2698,48 @@ function renderHistorySeasonHtml(season) {
     <div class="hist-card">
       <h4>${season.season} Draft <span class="hist-badge">${(season.draftPicks || []).length} picks</span></h4>
       ${draftHtml}
+    </div>
+    ${renderHistoryTransactionsHtml(season)}
+  `;
+}
+
+function renderHistoryTransactionsHtml(season) {
+  const { totals, trades, perOwnerRows } = histTransactionSummary(season);
+  const maxTotal = perOwnerRows.length ? Math.max(...perOwnerRows.map(r => r.total), 1) : 1;
+
+  const activityRows = perOwnerRows.map(r => `
+    <div class="ladder-row">
+      <span class="ladder-pick" style="width:130px; ${r.owner_id === CONFIG.MY_OWNER_ID ? 'color:var(--accent);' : ''}">${escapeHtml(r.name)}</span>
+      <div class="ladder-bar"><div class="ladder-bar-fill" style="width:${(r.total / maxTotal) * 100}%;"></div></div>
+      <span class="ladder-val">${r.total}</span>
+    </div>
+  `).join('') || `<p class="hist-note">No waiver/free-agent activity recorded for this season.</p>`;
+
+  const tradeRows = trades.length
+    ? trades.map(t => `<tr>
+        <td class="num">${t.week != null ? 'Wk ' + t.week : '—'}</td>
+        <td>${t.teams.map(escapeHtml).join(' ↔ ')}</td>
+        <td class="num">${t.playerCount}</td>
+        <td class="num">${t.pickCount}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="4" style="color:var(--fg-mute);">No trades recorded for this season.</td></tr>`;
+
+  return `
+    <div class="hist-card">
+      <h4>${season.season} Transactions <span class="hist-badge">${totals.waiver + totals.free_agent + totals.trade} moves</span></h4>
+      <div class="debug-grid" style="margin-bottom:16px;">
+        <div class="debug-card"><h4>Waiver claims</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${totals.waiver}</div></div>
+        <div class="debug-card"><h4>Free agent adds</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${totals.free_agent}</div></div>
+        <div class="debug-card"><h4>Trades</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${totals.trade}</div></div>
+      </div>
+      <div style="font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--fg-mute); margin-bottom:8px;">Wire activity by team</div>
+      ${activityRows}
+      <div style="font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--fg-mute); margin:18px 0 8px;">Trades</div>
+      <table class="hist-table">
+        <thead><tr><th class="num">Week</th><th>Teams</th><th class="num">Players</th><th class="num">Picks</th></tr></thead>
+        <tbody>${tradeRows}</tbody>
+      </table>
+      <p class="hist-note" style="margin-top:10px; margin-bottom:0;">Player names aren't resolved here yet — that needs Sleeper's full player database, which is a heavier fetch we haven't wired in. Counts and teams are accurate.</p>
     </div>
   `;
 }
