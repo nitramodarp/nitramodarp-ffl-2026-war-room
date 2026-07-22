@@ -1468,6 +1468,12 @@ function histChampionQbRound(season) {
     .sort((a, b) => a.pick_no - b.pick_no);
   return qbPicks.length ? qbPicks[0].round : null;
 }
+function histIsSeasonComplete(season) {
+  // Sleeper marks a finished season 'complete'. Seasons still pre_draft/drafting/in_season
+  // haven't accumulated real standings yet — including them in historical aggregates
+  // (playoff cutline, career record, weekly scoring) would pollute the numbers with zeros.
+  return season.meta && (season.meta.status === 'complete' || season.meta.status === 'post_season');
+}
 
 /* ============================================================
    Board normalization
@@ -2468,9 +2474,10 @@ function renderHistoryBody() {
     return;
   }
 
-  // Jumbotron
+  // Jumbotron — only completed seasons count toward career/cutline aggregates;
+  // 2026 is pre_draft with all-zero standings and would otherwise drag these down.
   let champs = 0, wins = 0, losses = 0, ties = 0, cutSum = 0, cutCount = 0;
-  seasons.forEach(s => {
+  seasons.filter(histIsSeasonComplete).forEach(s => {
     const { rows, playoffSlots } = histStandings(s);
     const me = rows.find(r => r.owner_id === CONFIG.MY_OWNER_ID);
     if (me) { wins += me.wins; losses += me.losses; ties += me.ties; if (me.isChamp) champs++; }
@@ -2517,7 +2524,7 @@ function renderHistoryOverviewHtml(seasons) {
     if (champ && champ.isMe) rowCls.push('me');
     return `<tr class="${rowCls.join(' ')}">
       <td>${s.season}</td>
-      <td>${champ ? `<span class="hist-trophy">🏆</span>${escapeHtml(champ.name)}` : '<span style="color:var(--fg-mute)">bracket unavailable</span>'}</td>
+      <td>${champ ? `<span class="hist-trophy">🏆</span>${escapeHtml(champ.name)}` : (histIsSeasonComplete(s) ? '<span style="color:var(--fg-mute)">bracket unavailable</span>' : '<span style="color:var(--fg-mute)">in progress</span>')}</td>
       <td class="num">${champ ? champ.wins + '-' + champ.losses + (champ.ties ? '-' + champ.ties : '') : '—'}</td>
       <td class="num">${champ ? fmt1(champ.fpts) : '—'}</td>
       <td class="num">${qbRound ? 'Rd ' + qbRound : '—'}</td>
@@ -2525,18 +2532,18 @@ function renderHistoryOverviewHtml(seasons) {
   }).join('');
 
   let allWinners = [];
-  seasons.forEach(s => { allWinners = allWinners.concat(histWeeklyWinners(s).winners.map(w => w.points)); });
+  seasons.filter(histIsSeasonComplete).forEach(s => { allWinners = allWinners.concat(histWeeklyWinners(s).winners.map(w => w.points)); });
   allWinners.sort((a, b) => a - b);
   const overallMedian = allWinners.length ? allWinners[Math.floor(allWinners.length / 2)] : null;
 
-  const cutlines = seasons.map(s => {
+  const cutlines = seasons.filter(histIsSeasonComplete).map(s => {
     const { rows, playoffSlots } = histStandings(s);
     return rows.length >= playoffSlots ? rows[playoffSlots - 1].fpts : null;
   }).filter(v => v != null);
   const cutMin = cutlines.length ? Math.min(...cutlines) : null;
   const cutMax = cutlines.length ? Math.max(...cutlines) : null;
 
-  const qbRounds = seasons.map(s => histChampionQbRound(s)).filter(v => v != null);
+  const qbRounds = seasons.filter(histIsSeasonComplete).map(s => histChampionQbRound(s)).filter(v => v != null);
   const qbEarly = qbRounds.filter(r => r <= 6).length;
 
   return `
@@ -2549,7 +2556,7 @@ function renderHistoryOverviewHtml(seasons) {
     </div>
     <div class="hist-card">
       <h4>What the history says</h4>
-      <p class="hist-note">Sanity-checks the re-scored board and the format-edge theses against what actually happened in this league.</p>
+      <p class="hist-note">Sanity-checks the re-scored board and the format-edge theses against what actually happened in this league. Excludes any season still pre-draft/in-progress — only completed seasons count toward these numbers.</p>
       <div class="debug-grid">
         <div class="debug-card">
           <h4>Weekly winning score (median)</h4>
