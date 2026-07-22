@@ -1097,6 +1097,7 @@
       </label>
       <button id="draftConnectBtn" class="chip active" style="padding:6px 14px;">Connect</button>
       <button id="draftDisconnectBtn" class="chip" style="padding:6px 14px; display:none;">Disconnect</button>
+      <button id="notifToggleBtn" class="chip" style="padding:6px 14px;" title="Fires a browser notification when your roster drifts past a target range (e.g. too many RB, not enough WR). Requires this tab to stay open.">Enable alerts</button>
       <span class="hint" id="draftPollStatus">Not connected</span>
     </div>
 
@@ -2246,7 +2247,20 @@ function needMultiplier(pos, counts, round) {
   // ahead of it. Neither position has a scenario where the bench copy beats
   // a same-week streamer, so both get pushed to near-last-resort.
   const REDUNDANT_STARTER_MULT = 0.25;
-  if (pos === 'QB' && have >= 1) return { mult: REDUNDANT_STARTER_MULT, real: false, slotType: 'luxury', reason: 'QB filled — streamable via rolling waivers, byes are known in advance, rarely worth a 2nd' };
+  if (pos === 'QB' && have >= 1) {
+    // Same gate as the DEF fix: the flat 0.25/real:false discount made QB2
+    // nearly unwinnable even in rounds 11 and 14, which the plan explicitly
+    // flags as the QB2 window (champion pattern averaged 2.0 QBs). Loosen it
+    // there — real:true and a fair-not-punitive mult — same as DEF1 only
+    // gets full 'must-fill' weight once its plan window actually opens.
+    // Outside the window, keep the original hard discount: an unplanned
+    // QB2 in, say, round 6 still isn't worth a real bench pick.
+    const inWindow = getRoundPlan(round).primary.includes('QB');
+    if (inWindow) {
+      return { mult: 1.0, real: true, slotType: 'bench', reason: `QB2 window open (Rd ${round} per the plan) — champion pattern carried QB insurance` };
+    }
+    return { mult: REDUNDANT_STARTER_MULT, real: false, slotType: 'luxury', reason: 'QB filled — streamable via rolling waivers, byes are known in advance, rarely worth a 2nd outside the plan window' };
+  }
   if (pos === 'DEF' && have >= 1) return { mult: REDUNDANT_STARTER_MULT, real: false, slotType: 'luxury', reason: 'DEF filled — streamable via rolling waivers, rarely worth a 2nd' };
 
   return { mult: 0.85, real: false, slotType: 'bench', reason: 'bench depth' };
@@ -2459,6 +2473,56 @@ function computeRecommendation(undrafted, round) {
     .sort((a, b) => (SLOT_PRIORITY[b.need.slotType] - SLOT_PRIORITY[a.need.slotType]) || (b.score - a.score));
 
   return { top: scored[0], runnerUp: scored[1], thirdOption: scored[2], counts, mySlot, scored };
+}
+
+/* ============================================================
+   Roster composition alerts
+   Target ranges from the History tab's champion-average data (2.0
+   QB, 4.5 RB, 5.0 WR, 1.5 TE, 2.0 DEF), given a little slack since
+   those are averages from n=2 seasons, not a hard rule. Checked live
+   during the draft so a build drifting off-target (e.g. RB-heavy at
+   WR's expense) surfaces as it happens, not after the fact.
+   ============================================================ */
+const ROSTER_TARGET = {
+  QB: { min: 1, max: 2 },
+  RB: { min: 4, max: 5 },
+  WR: { min: 4, max: 6 },
+  TE: { min: 1, max: 2 },
+  DEF:{ min: 2, max: 2 },
+};
+const compositionAlertsFired = new Set(); // position keys already notified this session, so we alert once per crossing, not every re-render
+let notificationsEnabled = false;
+
+function requestDraftNotifications() {
+  if (!('Notification' in window)) return;
+  Notification.requestPermission().then(perm => {
+    notificationsEnabled = perm === 'granted';
+    const btn = document.getElementById('notifToggleBtn');
+    if (btn) btn.textContent = notificationsEnabled ? 'Alerts on' : 'Alerts blocked';
+  });
+}
+
+function checkCompositionAlerts(counts) {
+  const deviations = [];
+  Object.keys(ROSTER_TARGET).forEach(pos => {
+    const target = ROSTER_TARGET[pos];
+    const have = counts[pos] || 0;
+    if (have > target.max) {
+      deviations.push({ pos, have, target, status: 'over' });
+      const key = `${pos}-over`;
+      if (!compositionAlertsFired.has(key)) {
+        compositionAlertsFired.add(key);
+        if (notificationsEnabled && 'Notification' in window) {
+          new Notification('Draft composition check', {
+            body: `You're at ${have} ${pos} — target was ${target.min}-${target.max}. Might be worth balancing elsewhere.`,
+          });
+        }
+      }
+    } else if (have < target.min) {
+      deviations.push({ pos, have, target, status: 'under' });
+    }
+  });
+  return deviations;
 }
 
 /* ============================================================
@@ -2753,6 +2817,20 @@ function renderDraftTab() {
   // a contradiction.
   const currentPlan = getRoundPlan(round);
   const recTopPos = rec && rec.top ? rec.top.player.pos : null;
+
+  // Composition Check — persistent, not just a one-time popup, since the
+  // notification (if enabled) only fires once per position per crossing
+  // and this tab might not have been in focus when it did.
+  const compCounts = rec ? rec.counts : {};
+  const compDeviations = mySlot != null ? checkCompositionAlerts(compCounts) : [];
+  const compositionCard = compDeviations.length ? `<div class="rec-card" style="background:linear-gradient(135deg, color-mix(in srgb, var(--down) 10%, var(--bg-elev)), var(--bg-elev)); border-color:var(--down);">
+    <div class="rec-label" style="color:var(--down);">Composition Check</div>
+    <div style="font-size:12.5px; color:var(--fg-mute); line-height:1.6;">
+      ${compDeviations.map(d => `<div><strong style="color:${d.status === 'over' ? 'var(--down)' : 'var(--warn)'};">${escapeHtml(d.pos)} ${d.have}</strong> — target ${d.target.min}${d.target.min !== d.target.max ? '-' + d.target.max : ''} (${d.status === 'over' ? 'over' : 'under, so far'})</div>`).join('')}
+    </div>
+    <div style="font-size:11px; color:var(--fg-dim); margin-top:8px;">Target ranges come from the History tab's champion-average roster composition. This isn't a hard rule — just a flag that your build is drifting from what's actually won here.</div>
+  </div>` : '';
+
   const planDivergence = recTopPos && !currentPlan.primary.includes(recTopPos)
     ? `<div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:11.5px; color:var(--warn); line-height:1.5;">
         ⚠ Recommendation below (${escapeHtml(recTopPos)}) isn't in this round's default targets (${currentPlan.primary.join('/')}).
@@ -2785,6 +2863,7 @@ function renderDraftTab() {
   host.innerHTML = `
     ${statusBanner}
     ${roundPlanCard}
+    ${compositionCard}
     ${recHtml}
     <div class="draft-grid">
       <div class="draft-card">
@@ -3443,6 +3522,7 @@ document.getElementById('tradeSend').addEventListener('input', () => renderTrade
 document.getElementById('tradeRecv').addEventListener('input', () => renderTradeCalc());
 
 document.getElementById('draftConnectBtn').addEventListener('click', connectDraft);
+document.getElementById('notifToggleBtn').addEventListener('click', requestDraftNotifications);
 document.getElementById('draftDisconnectBtn').addEventListener('click', disconnectDraft);
 document.getElementById('mySlotOverride').addEventListener('input', () => {
   if (draftState.connected) renderDraftTab();
