@@ -2248,8 +2248,20 @@ function needMultiplier(pos, counts, round) {
     // still claim both flex slots for itself if nothing else is
     // competing, just not by starving another position out first.
     const ownOverflow = Math.max(0, (counts[pos] || 0) - (ROSTER_SLOTS[pos] || 0));
+    // TE excluded from ever contributing to "othersFilled" — a follow-up
+    // fix after the reservation logic above still let WR get locked out at
+    // RB:5/WR:2/TE:2. Two positions (RB capped at 1, TE capped at 1) each
+    // claiming their reserved share summed right back to FLEX_SLOTS(2),
+    // shutting WR out the same way one position doing it alone used to.
+    // The real fix isn't capping harder — it's that TE shouldn't be
+    // treated as a genuine flex-slot claimant to begin with: the board's
+    // own VORP methodology found 0 of 24 flex slots actually went to TE
+    // when replacement levels were computed (see Methodology &
+    // Assumptions), and TE's hard cap already reflects that. Letting TE's
+    // 2nd copy also consume shared reserved room was double-counting a
+    // position that structurally almost never deserves it.
     const othersFilled = FLEX_ELIGIBLE
-      .filter(p => p !== pos)
+      .filter(p => p !== pos && p !== 'TE')
       .reduce((sum, p) => sum + Math.min(FLEX_SLOTS - 1, Math.max(0, (counts[p] || 0) - (ROSTER_SLOTS[p] || 0))), 0);
     const flexFilled = othersFilled + Math.min(FLEX_SLOTS, ownOverflow);
     if (flexFilled < FLEX_SLOTS) return { mult: 1.15, real: true, slotType: 'flex', reason: `flex value (${flexFilled}/${FLEX_SLOTS} flex filled — room reserved so no position locks another out)` };
