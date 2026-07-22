@@ -1486,6 +1486,49 @@ function histIsSeasonComplete(season) {
   // (playoff cutline, career record, weekly scoring) would pollute the numbers with zeros.
   return season.meta && (season.meta.status === 'complete' || season.meta.status === 'post_season');
 }
+const REQUIRED_STARTERS = { QB: 1, RB: 2, WR: 2, TE: 1, DEF: 1 }; // per league settings §2 — excludes the 2 flex slots
+
+function histRosterComposition(season) {
+  const { rows: standingsRows } = histStandings(season);
+  const byRoster = {}; // roster_id -> { QB, RB, WR, TE, DEF, K, other, total }
+  const ensure = (rid) => (byRoster[rid] = byRoster[rid] || { QB: 0, RB: 0, WR: 0, TE: 0, DEF: 0, other: 0, total: 0 });
+
+  (season.draftPicks || []).forEach(p => {
+    const rid = p.roster_id;
+    if (rid == null) return;
+    const pos = (p.metadata && p.metadata.position) || 'other';
+    const bucket = ensure(rid);
+    if (bucket[pos] !== undefined) bucket[pos]++; else bucket.other++;
+    bucket.total++;
+  });
+
+  const rows = standingsRows.map(sr => {
+    const c = byRoster[sr.roster_id] || { QB: 0, RB: 0, WR: 0, TE: 0, DEF: 0, other: 0, total: 0 };
+    return {
+      roster_id: sr.roster_id, owner_id: sr.owner_id, name: sr.name,
+      isChamp: sr.isChamp, isMe: sr.isMe,
+      QB: c.QB, RB: c.RB, WR: c.WR, TE: c.TE, DEF: c.DEF, other: c.other, total: c.total,
+      // "extra beyond required starters" — a rough bench-lean signal, since the 2 flex
+      // slots (RB/WR/TE eligible) make exact bench math ambiguous by design
+      extraRB: Math.max(0, c.RB - REQUIRED_STARTERS.RB),
+      extraWR: Math.max(0, c.WR - REQUIRED_STARTERS.WR),
+      extraTE: Math.max(0, c.TE - REQUIRED_STARTERS.TE),
+      extraQB: Math.max(0, c.QB - REQUIRED_STARTERS.QB),
+      extraDEF: Math.max(0, c.DEF - REQUIRED_STARTERS.DEF),
+    };
+  });
+
+  const n = rows.length || 1;
+  const avg = (key) => rows.reduce((a, r) => a + r[key], 0) / n;
+  const leagueAvg = {
+    QB: avg('QB'), RB: avg('RB'), WR: avg('WR'), TE: avg('TE'), DEF: avg('DEF'),
+    extraRB: avg('extraRB'), extraWR: avg('extraWR'), extraTE: avg('extraTE'),
+    extraQB: avg('extraQB'), extraDEF: avg('extraDEF'),
+  };
+
+  return { rows, leagueAvg };
+}
+
 function histTransactionSummary(season) {
   const perOwner = {}; // roster_id -> { waiver, free_agent, trades }
   const ensure = (rid) => (perOwner[rid] = perOwner[rid] || { waiver: 0, free_agent: 0, trades: 0 });
@@ -2594,6 +2637,37 @@ function renderHistoryOverviewHtml(seasons) {
   const qbRounds = seasons.filter(histIsSeasonComplete).map(s => histChampionQbRound(s)).filter(v => v != null);
   const qbEarly = qbRounds.filter(r => r <= 6).length;
 
+  // Cross-season roster construction — averaged league-wide, and champion vs field
+  const completed = seasons.filter(histIsSeasonComplete);
+  const compByseason = completed.map(s => histRosterComposition(s));
+  const posKeys = ['QB', 'RB', 'WR', 'TE', 'DEF'];
+  const leagueAvgAll = {};
+  posKeys.forEach(k => {
+    const vals = compByseason.map(c => c.leagueAvg[k]).filter(v => v != null);
+    leagueAvgAll[k] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  });
+  const champRowsComp = compByseason.map(c => c.rows.find(r => r.isChamp)).filter(Boolean);
+  const champAvg = {};
+  posKeys.forEach(k => {
+    const vals = champRowsComp.map(r => r[k]);
+    champAvg[k] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  });
+
+  const compositionCard = leagueAvgAll.RB != null ? `
+    <div class="hist-card">
+      <h4>Roster Construction <span class="hist-badge">avg picks by position, ${completed.length} season${completed.length !== 1 ? 's' : ''}</span></h4>
+      <p class="hist-note">Averaged across every completed draft — the field's typical build vs. what the champion actually rostered that year.</p>
+      <table class="hist-table">
+        <thead><tr><th></th><th class="num">QB</th><th class="num">RB</th><th class="num">WR</th><th class="num">TE</th><th class="num">DEF</th></tr></thead>
+        <tbody>
+          <tr><td>League average</td>${posKeys.map(k => `<td class="num">${fmt1(leagueAvgAll[k])}</td>`).join('')}</tr>
+          <tr class="champ"><td><span class="hist-trophy">🏆</span>Champions avg</td>${posKeys.map(k => `<td class="num">${champAvg[k] != null ? fmt1(champAvg[k]) : '—'}</td>`).join('')}</tr>
+        </tbody>
+      </table>
+      <p class="hist-note" style="margin-top:10px; margin-bottom:0;">Required starters are 1 QB · 2 RB · 2 WR · 1 TE · 1 DEF (7 of 9 — the other 2 are flex). Everything above those minimums is bench depth. See each season's tab for the full per-team breakdown.</p>
+    </div>
+  ` : '';
+
   return `
     <div class="hist-card">
       <h4>Champions <span class="hist-badge">${seasons.length} season${seasons.length !== 1 ? 's' : ''}</span></h4>
@@ -2602,6 +2676,7 @@ function renderHistoryOverviewHtml(seasons) {
         <tbody>${champRows}</tbody>
       </table>
     </div>
+    ${compositionCard}
     <div class="hist-card">
       <h4>What the history says</h4>
       <p class="hist-note">Sanity-checks the re-scored board and the format-edge theses against what actually happened in this league. Excludes any season still pre-draft/in-progress — only completed seasons count toward these numbers.</p>
@@ -2699,7 +2774,47 @@ function renderHistorySeasonHtml(season) {
       <h4>${season.season} Draft <span class="hist-badge">${(season.draftPicks || []).length} picks</span></h4>
       ${draftHtml}
     </div>
+    ${renderHistoryCompositionHtml(season)}
     ${renderHistoryTransactionsHtml(season)}
+  `;
+}
+
+function renderHistoryCompositionHtml(season) {
+  const { rows, leagueAvg } = histRosterComposition(season);
+  if (!rows.length || !rows.some(r => r.total > 0)) {
+    return `<div class="hist-card"><h4>${season.season} Roster Composition</h4><p class="hist-note">No draft data to break down for this season.</p></div>`;
+  }
+  const sorted = rows.slice().sort((a, b) => (b.isChamp ? 1 : 0) - (a.isChamp ? 1 : 0) || b.total - a.total);
+  const bodyRows = sorted.map(r => {
+    const cls = [];
+    if (r.isMe) cls.push('me');
+    if (r.isChamp) cls.push('champ');
+    return `<tr class="${cls.join(' ')}">
+      <td>${r.isChamp ? '<span class="hist-trophy">🏆</span>' : ''}${escapeHtml(r.name)}</td>
+      <td class="num">${r.QB}</td><td class="num">${r.RB}</td><td class="num">${r.WR}</td>
+      <td class="num">${r.TE}</td><td class="num">${r.DEF}</td><td class="num">${r.total}</td>
+    </tr>`;
+  }).join('');
+  const fmt = (n) => n.toFixed(1);
+  return `
+    <div class="hist-card">
+      <h4>${season.season} Roster Composition <span class="hist-badge">picks by position, drafted</span></h4>
+      <p class="hist-note">Every pick each team made in the 15-round draft, by position. Champion pinned to top. League-average row below shows the field's typical build.</p>
+      <table class="hist-table">
+        <thead><tr><th>Team</th><th class="num">QB</th><th class="num">RB</th><th class="num">WR</th><th class="num">TE</th><th class="num">DEF</th><th class="num">Total</th></tr></thead>
+        <tbody>${bodyRows}
+          <tr style="border-top:2px solid var(--line-strong);"><td style="color:var(--fg-mute); font-family:var(--font-mono); font-size:11px;">LEAGUE AVG</td>
+            <td class="num" style="color:var(--fg-mute);">${fmt(leagueAvg.QB)}</td>
+            <td class="num" style="color:var(--fg-mute);">${fmt(leagueAvg.RB)}</td>
+            <td class="num" style="color:var(--fg-mute);">${fmt(leagueAvg.WR)}</td>
+            <td class="num" style="color:var(--fg-mute);">${fmt(leagueAvg.TE)}</td>
+            <td class="num" style="color:var(--fg-mute);">${fmt(leagueAvg.DEF)}</td>
+            <td class="num" style="color:var(--fg-mute);">15.0</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="hist-note" style="margin-top:10px; margin-bottom:0;">Required starters (non-flex) are 1 QB · 2 RB · 2 WR · 1 TE · 1 DEF. Everything past that — plus whatever fills the 2 flex slots — is bench-building. RB/WR counts above required show how each team leaned its flex + bench.</p>
+    </div>
   `;
 }
 
