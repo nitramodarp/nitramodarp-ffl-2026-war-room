@@ -2051,6 +2051,46 @@ const FLEX_SLOTS = 2;               // W/R/T flex, filled by RB/WR/TE
 const FLEX_ELIGIBLE = ['RB', 'WR', 'TE'];
 const BENCH_SLOTS = 6;
 
+/* ============================================================
+   Bye week coverage
+   6 bench spots have to absorb every starter's bye across the
+   season. DEF is excluded from this — rolling waivers with a
+   1-day claim window make DEF genuinely streamable week-to-week
+   (see needMultiplier), so its bye isn't a bench-planning problem.
+   QB/RB/WR/TE are the positions where a good same-week replacement
+   isn't reliably sitting on waivers, so those are what this tracks.
+   ============================================================ */
+const BYE_TRACKED_POS = ['QB', 'RB', 'WR', 'TE'];
+
+function computeMyByeHistogram() {
+  const { mySlot } = computeMyRosterCounts();
+  const histogram = {}; // week -> count
+  const byWeek = {};    // week -> [{name,pos}]
+  if (mySlot == null) return { histogram, byWeek, mySlot };
+  draftState.matchedPicks.forEach(pk => {
+    if (pk.draft_slot !== mySlot) return;
+    const p = pk.boardMatch;
+    if (!p || !BYE_TRACKED_POS.includes(p.pos) || p.bye == null) return;
+    histogram[p.bye] = (histogram[p.bye] || 0) + 1;
+    (byWeek[p.bye] = byWeek[p.bye] || []).push({ name: p.name, pos: p.pos });
+  });
+  return { histogram, byWeek, mySlot };
+}
+
+function byeDiversityFactor(player, histogram) {
+  if (player.bye == null || !BYE_TRACKED_POS.includes(player.pos)) {
+    return { mult: 1.0, label: '' };
+  }
+  const stacked = histogram[player.bye] || 0;
+  if (stacked >= 2) {
+    return { mult: 0.92, label: `bye wk ${player.bye} already has ${stacked} rostered — bench coverage getting thin that week` };
+  }
+  if (stacked === 0) {
+    return { mult: 1.03, label: `bye wk ${player.bye} open — helps spread bye-week risk` };
+  }
+  return { mult: 1.0, label: `bye wk ${player.bye}` };
+}
+
 function computeMyRosterCounts() {
   const counts = { QB: 0, RB: 0, WR: 0, TE: 0, DEF: 0 };
   const mySlot = resolveMySlot();
@@ -2186,6 +2226,8 @@ function computeRecommendation(undrafted, round) {
   const undraftedByPos = {};
   pool.forEach(p => { (undraftedByPos[p.pos] = undraftedByPos[p.pos] || []).push(p); });
 
+  const { histogram: byeHistogram } = computeMyByeHistogram();
+
   const SLOT_PRIORITY = { 'must-fill': 3, 'flex': 2, 'bench': 1, 'luxury': 0 };
 
   const scored = pool
@@ -2217,8 +2259,13 @@ function computeRecommendation(undrafted, round) {
       if (p.pos === 'DEF' && need.slotType === 'must-fill' && tier.remaining >= 3) {
         mult *= 0.7;
       }
-      const score = p.vorp * mult * appliedTierBonus;
-      return { player: p, score, need, tier, appliedTierBonus };
+      // Bye-week diversity: a modest nudge, not a real need. Only applied to
+      // QB/RB/WR/TE (see computeMyByeHistogram) and kept small (±3-8%) so it
+      // only breaks ties between comparable options rather than overriding
+      // real VORP or an open starter slot.
+      const bye = byeDiversityFactor(p, byeHistogram);
+      const score = p.vorp * mult * appliedTierBonus * bye.mult;
+      return { player: p, score, need, tier, appliedTierBonus, bye };
     })
     // Priority tier first: a genuinely empty required starter slot always
     // outranks a luxury/bench pick, no matter how the raw VORP compares.
@@ -2468,7 +2515,7 @@ function renderDraftTab() {
       <div style="color:var(--fg-mute); font-size:13px;">Set "My Slot" above to get a personalized recommendation based on your actual roster needs. Until then, use Best Available on the right.</div>
     </div>`;
   } else if (rec && rec.top) {
-    const { player, need, tier, appliedTierBonus } = rec.top;
+    const { player, need, tier, appliedTierBonus, bye } = rec.top;
     const needPills = Object.keys(ROSTER_SLOTS).map(pos => {
       const have = rec.counts[pos] || 0;
       const want = ROSTER_SLOTS[pos];
@@ -2490,11 +2537,32 @@ function renderDraftTab() {
         <span class="rec-name">${escapeHtml(player.name)}</span>
         <span class="rec-vorp">VORP ${player.vorp.toFixed(1)}</span>
       </div>
-      <div class="rec-reason">${need.reason} · ${tierText}</div>
+      <div class="rec-reason">${need.reason} · ${tierText}${bye.label ? ' · ' + bye.label : ''}</div>
       <div class="need-meter">${needPills}</div>
       ${altText ? `<div class="rec-alt">Next best: ${escapeHtml(altText)}</div>` : ''}
     </div>`;
   }
+
+  // Bye week map — QB/RB/WR/TE only; DEF excluded (see BYE_TRACKED_POS note),
+  // since it's the one position this league's rolling waivers make genuinely
+  // streamable week-to-week.
+  const { histogram: myByeHistogram, byWeek: myByeByWeek } = computeMyByeHistogram();
+  const byeWeeksSorted = Object.keys(myByeByWeek).map(Number).sort((a, b) => a - b);
+  const maxByeCount = Math.max(1, ...Object.values(myByeHistogram));
+  const byeMapHtml = byeWeeksSorted.length
+    ? byeWeeksSorted.map(wk => {
+        const players = myByeByWeek[wk];
+        const count = players.length;
+        const barColor = count >= 3 ? 'var(--down)' : count === 2 ? 'var(--warn)' : 'var(--accent-dim)';
+        const names = players.map(p => `${p.name} (${p.pos})`).join(', ');
+        return `<div class="ladder-row">
+          <span class="ladder-pick" style="width:56px;">Wk ${wk}</span>
+          <div class="ladder-bar"><div class="ladder-bar-fill" style="width:${(count / maxByeCount) * 100}%; background:${barColor};"></div></div>
+          <span class="ladder-val" style="width:auto; max-width:230px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; color:var(--fg-mute);" title="${escapeHtml(names)}">${escapeHtml(names)}</span>
+        </div>`;
+      }).join('')
+    : '<p style="color:var(--fg-dim); font-size:12px;">No QB/RB/WR/TE drafted yet.</p>';
+  const byeWarnCount = Object.values(myByeHistogram).filter(c => c >= 3).length;
 
   host.innerHTML = `
     ${statusBanner}
@@ -2515,6 +2583,11 @@ function renderDraftTab() {
       <div class="draft-card">
         <h4>My Picks</h4>
         <div class="pick-feed">${myPicksHtml}</div>
+      </div>
+      <div class="draft-card" style="grid-column: 1 / -1;">
+        <h4>Bye Week Map ${byeWarnCount ? `<span style="color:var(--down); font-weight:400; text-transform:none; letter-spacing:0;">· ${byeWarnCount} week${byeWarnCount > 1 ? 's' : ''} at 3+ starters</span>` : ''}</h4>
+        <div class="hist-note" style="font-size:11px; color:var(--fg-mute); margin-bottom:10px;">QB/RB/WR/TE only — DEF is excluded since it's streamable via rolling waivers regardless of bye. Red = 3+ rostered same week, the bench-coverage risk the recommendation engine now nudges away from.</div>
+        ${byeMapHtml}
       </div>
     </div>`;
 }
