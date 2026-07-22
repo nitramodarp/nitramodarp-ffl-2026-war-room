@@ -2282,6 +2282,45 @@ function tierUrgencyBonus(player, undraftedByPos) {
    entirely — a longshot skill-position flier is strictly more useful
    than a 3rd+ copy of a position that can only ever start 1 player.
    ============================================================ */
+/* ============================================================
+   Round-by-round draft plan
+   Mirrors the "Draft Day Plan" tab in the workbook — same strategy,
+   same rationale, now live in the tool that's actually open during
+   the draft. `primary` positions get a small, explainable nudge in
+   the recommendation engine (see planAlignmentFactor); everything
+   else is reference text shown alongside the recommendation.
+   ============================================================ */
+const ROUND_PLAN = {
+  1:  { primary: ['RB','WR'], strategy: 'Best RB/WR available', rationale: 'Room prices Round 1 correctly — no market edge to chase. Take the highest true-VORP RB/WR on the board.' },
+  2:  { primary: ['QB','RB','WR'], strategy: 'QB reach window opens', rationale: 'True value has a top-5 QB here — the room hasn\u2019t taken QB1 before pick 23 in either real draft. If a top-tier QB is alive, this beats a WR2/RB2-tier player on VORP.' },
+  3:  { primary: ['QB','RB','WR','TE'], strategy: 'QB reach window \u2014 last shot at elite tier', rationale: 'Both 2024 and 2025 saw the room\u2019s first QB go in this range (picks 23-36). Last round you\u2019re truly ahead of the market. Take the QB if the tier is thinning, else best RB/WR/TE1.' },
+  4:  { primary: ['RB','WR'], strategy: 'Best RB/WR; QB5-9 tier still real', rationale: 'If QB1 is filled, keep stacking skill-position value. If not, this tier still carries real VORP over a 2nd shot.' },
+  5:  { primary: ['RB','WR','TE'], strategy: 'RB/WR depth', rationale: 'Keep taking the best true-VORP skill player. TE1 tier starts to matter here if you want a difference-making TE.' },
+  6:  { primary: ['RB','WR','TE'], strategy: 'RB/WR depth or TE1 decision', rationale: 'Last realistic window for a true difference-making TE before the position flattens into streaming-tier.' },
+  7:  { primary: ['RB','WR'], strategy: 'RB/WR depth', rationale: 'Bench-building begins \u2014 favor RB/WR over a 2nd QB or early DEF; both are cheaper later.' },
+  8:  { primary: ['RB','WR'], strategy: 'RB/WR depth', rationale: 'Champions drafted fewer RB/WR than the field on average \u2014 don\u2019t force volume, just take real value.' },
+  9:  { primary: ['DEF','RB','WR','TE'], strategy: 'DEF1 window opens', rationale: 'History shows the room doesn\u2019t seriously engage DEF until deep rounds \u2014 a real DEF1-vs-replacement gap (~+40 pts) still exists uncontested here.' },
+  10: { primary: ['DEF','RB','WR','TE'], strategy: 'DEF1 (if not yet) or best flier', rationale: 'Last round with a meaningful DEF1 tier gap in most mocks.' },
+  11: { primary: ['RB','WR','QB'], strategy: 'Bench RB/WR or QB2 flier', rationale: 'A 2nd QB here matches the champion pattern of carrying QB insurance.' },
+  12: { primary: ['DEF'], strategy: 'DEF2', rationale: 'Champions in both real seasons rostered 2 DEFs. Churn data showed no win correlation either way \u2014 this is bye/matchup coverage, not chasing streams.' },
+  13: { primary: ['RB','WR'], strategy: 'Bench RB/WR, bye-week coverage', rationale: 'Check the Bye Week Map below \u2014 target whichever position has the thinnest bye coverage on your actual roster right now.' },
+  14: { primary: ['QB','RB','WR','TE','DEF'], strategy: 'QB2 (if not yet) or lottery ticket', rationale: 'Backfill remaining bench needs \u2014 handcuffs, rookie fliers, or your 2nd QB if still open.' },
+  15: { primary: ['RB','WR','TE','QB','DEF'], strategy: 'Final bench slot \u2014 best remaining upside', rationale: 'Pure lottery ticket. Fill whatever gap the Bye Week Map or Roster Needs tab still shows.' },
+};
+function getRoundPlan(round) {
+  return ROUND_PLAN[round] || ROUND_PLAN[15];
+}
+function planAlignmentFactor(player, round) {
+  const plan = getRoundPlan(round);
+  const idx = plan.primary.indexOf(player.pos);
+  if (idx === -1) return { mult: 1.0, label: '' };
+  // Earlier in the primary list = closer to that round's actual intent
+  // (e.g. round 2's list is QB,RB,WR — QB gets the full nudge, RB/WR less).
+  const strength = 1 - idx * 0.15;
+  const mult = 1.0 + 0.05 * Math.max(0, strength);
+  return { mult, label: `fits Rd ${round} plan: ${plan.strategy}` };
+}
+
 const HARD_ROSTER_CAP = { QB: 2, DEF: 2 };
 
 function computeRecommendation(undrafted, round) {
@@ -2335,8 +2374,15 @@ function computeRecommendation(undrafted, round) {
       // only breaks ties between comparable options rather than overriding
       // real VORP or an open starter slot.
       const bye = byeDiversityFactor(p, byeHistogram);
-      const score = p.vorp * mult * appliedTierBonus * bye.mult;
-      return { player: p, score, need, tier, appliedTierBonus, bye };
+      // Plan alignment: same modest-nudge philosophy, tied to the round-by-
+      // round plan derived from league history (see ROUND_PLAN). A QB in the
+      // round-2/3 reach window or a DEF in the round-9+ window gets a small
+      // (+5% max) boost; nothing here overrides an open starter slot or a
+      // real VORP gap, it just breaks ties toward the historically-grounded
+      // play when options are close.
+      const plan = planAlignmentFactor(p, round);
+      const score = p.vorp * mult * appliedTierBonus * bye.mult * plan.mult;
+      return { player: p, score, need, tier, appliedTierBonus, bye, plan };
     })
     // Priority tier first: a genuinely empty required starter slot always
     // outranks a luxury/bench pick, no matter how the raw VORP compares.
@@ -2586,7 +2632,7 @@ function renderDraftTab() {
       <div style="color:var(--fg-mute); font-size:13px;">Set "My Slot" above to get a personalized recommendation based on your actual roster needs. Until then, use Best Available on the right.</div>
     </div>`;
   } else if (rec && rec.top) {
-    const { player, need, tier, appliedTierBonus, bye } = rec.top;
+    const { player, need, tier, appliedTierBonus, bye, plan } = rec.top;
     const needPills = Object.keys(ROSTER_SLOTS).map(pos => {
       const have = rec.counts[pos] || 0;
       const want = ROSTER_SLOTS[pos];
@@ -2608,7 +2654,7 @@ function renderDraftTab() {
         <span class="rec-name">${escapeHtml(player.name)}</span>
         <span class="rec-vorp">VORP ${player.vorp.toFixed(1)}</span>
       </div>
-      <div class="rec-reason">${need.reason} · ${tierText}${bye.label ? ' · ' + bye.label : ''}</div>
+      <div class="rec-reason">${need.reason} · ${tierText}${bye.label ? ' · ' + bye.label : ''}${plan.label ? ' · ' + plan.label : ''}</div>
       <div class="need-meter">${needPills}</div>
       ${altText ? `<div class="rec-alt">Next best: ${escapeHtml(altText)}</div>` : ''}
     </div>`;
@@ -2635,8 +2681,32 @@ function renderDraftTab() {
     : '<p style="color:var(--fg-dim); font-size:12px;">No QB/RB/WR/TE drafted yet.</p>';
   const byeWarnCount = Object.values(myByeHistogram).filter(c => c >= 3).length;
 
+  // Round Plan — current round's strategy front and center, full 15-round
+  // reference collapsed below it. Same data the recommendation engine's
+  // planAlignmentFactor uses, so the card and the recommendation never
+  // disagree with each other.
+  const currentPlan = getRoundPlan(round);
+  const fullPlanRows = Object.keys(ROUND_PLAN).map(Number).sort((a, b) => a - b).map(r => {
+    const p = ROUND_PLAN[r];
+    const isCurrent = r === round;
+    return `<div class="pick-feed-row" style="${isCurrent ? 'background:color-mix(in srgb, var(--accent) 10%, transparent);' : ''}">
+      <span class="pk-no">Rd ${r}</span>
+      <span class="pk-player" style="flex:1;">${escapeHtml(p.strategy)}</span>
+    </div>`;
+  }).join('');
+  const roundPlanCard = `<div class="rec-card" style="background:linear-gradient(135deg, color-mix(in srgb, var(--warn) 10%, var(--bg-elev)), var(--bg-elev)); border-color:var(--warn);">
+    <div class="rec-label" style="color:var(--warn);">Round ${round} Plan</div>
+    <div style="font-family:var(--font-display); font-weight:700; font-size:17px; margin-bottom:6px;">${escapeHtml(currentPlan.strategy)}</div>
+    <div style="font-size:12.5px; color:var(--fg-mute); line-height:1.5;">${escapeHtml(currentPlan.rationale)}</div>
+    <details style="margin-top:10px;">
+      <summary style="cursor:pointer; font-family:var(--font-mono); font-size:11px; color:var(--accent);">Show all 15 rounds</summary>
+      <div class="pick-feed" style="margin-top:8px; max-height:280px;">${fullPlanRows}</div>
+    </details>
+  </div>`;
+
   host.innerHTML = `
     ${statusBanner}
+    ${roundPlanCard}
     ${recHtml}
     <div class="draft-grid">
       <div class="draft-card">
