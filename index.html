@@ -2409,6 +2409,24 @@ function planAlignmentFactor(player, round) {
    stops the runaway the same way it already does for QB/DEF, without
    touching the (much rarer, legitimately valuable) case of a real
    TE1/TE2 pairing.
+
+   RB added after the same failure mode showed up on a different
+   position, twice: two separate mocks landed on 7 RB / 2 WR despite
+   the compositionAlignmentFactor's continuous pull toward WR's ideal.
+   The mechanism: RB overflow past its 2 dedicated slots silently
+   consumes both FLEX slots (RB is flex-eligible too — see
+   needMultiplier's flexFilled calculation), so once RB reaches ~4,
+   WR has already lost its 1.15x flex multiplier and both positions
+   are competing in the same flat 'bench' category on raw VORP alone.
+   A modest ±8% composition nudge can't reliably overcome a real,
+   sustained VORP gap once that happens — proportional discounts have
+   the same runaway problem described above regardless of which
+   position triggers it. Capped higher than TE (6, not 2) because RB
+   genuinely has more legitimate bench value — handcuffs and injury
+   volatility are real in a way a 3rd TE isn't — but a 7th RB has the
+   same "can't ever start it" problem as a redundant QB/DEF once you
+   account for the 4 realistic starting spots (2 dedicated + at most
+   2 flex).
    ============================================================ */
 /* ============================================================
    Projected season points — running total of the best starting
@@ -2457,7 +2475,7 @@ function computeProjectedLineup(mySlot) {
   return { lineup, bench, total, filledCount, totalSlots: lineup.length };
 }
 
-const HARD_ROSTER_CAP = { QB: 2, DEF: 2, TE: 2 };
+const HARD_ROSTER_CAP = { QB: 2, DEF: 2, TE: 2, RB: 6 };
 
 function computeRecommendation(undrafted, round) {
   if (!undrafted.length) return null;
