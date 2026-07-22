@@ -2248,9 +2248,11 @@ function tierUrgencyBonus(player, undraftedByPos) {
   if (!nextTier.length) {
     // Last meaningful tier at this position — nothing to measure a cliff
     // against. Running out here just means the position tapers off, not
-    // that value falls off a ledge. Mild nod to scarcity only.
+    // that value falls off a ledge. Mild nod to scarcity only — and
+    // `measured: false` so the recommendation card doesn't call this a
+    // "real cliff," which is language reserved for an actual measured gap.
     const bonus = remaining <= 2 ? 1.1 : 1.0;
-    return { bonus, remaining, gapVorp: 0, label: `${remaining} left in tier ${player.tier} (final tier)` };
+    return { bonus, remaining, gapVorp: 0, measured: false, label: `${remaining} left in tier ${player.tier} (final tier)` };
   }
 
   // The real question isn't "how many are left" — it's "how much do I lose
@@ -2271,7 +2273,7 @@ function tierUrgencyBonus(player, undraftedByPos) {
 
   const bonus = 1.0 + gapFraction * 0.6;
   const label = `${remaining} left in tier ${player.tier} · ${gapVorp.toFixed(1)}pt cliff to tier ${player.tier + 1}`;
-  return { bonus, remaining, gapVorp, label };
+  return { bonus, remaining, gapVorp, measured: true, label };
 }
 
 /* ============================================================
@@ -2677,7 +2679,7 @@ function renderDraftTab() {
       ? ' (DEF cliff trusted at half strength — defensive rankings swing more than skill positions)'
       : '';
     const tierText = need.real
-      ? `${tier.label}${appliedTierBonus >= 1.10 ? ' — real cliff, take now or lose the tier' : ''}${dampNote}`
+      ? `${tier.label}${(tier.measured && appliedTierBonus >= 1.10) ? ' — real cliff, take now or lose the tier' : (!tier.measured && tier.remaining <= 2 ? ' — down to the last one or two, but no measured gap behind it' : '')}${dampNote}`
       : `${tier.remaining} left in tier ${player.tier} (scarcity irrelevant — not a real need)`;
     recHtml = `<div class="rec-card">
       <div class="rec-label">Recommended Pick — Pick ${round}.${String(slot).padStart(2,'0')}</div>
@@ -2714,10 +2716,20 @@ function renderDraftTab() {
   const byeWarnCount = Object.values(myByeHistogram).filter(c => c >= 3).length;
 
   // Round Plan — current round's strategy front and center, full 15-round
-  // reference collapsed below it. Same data the recommendation engine's
-  // planAlignmentFactor uses, so the card and the recommendation never
-  // disagree with each other.
+  // reference collapsed below it. This text is generic (same for everyone
+  // in Round 4, say) — it doesn't know your roster is already filled at QB.
+  // The recommendation below IS roster-aware, so the two can genuinely
+  // disagree; when they do, say so explicitly rather than let it look like
+  // a contradiction.
   const currentPlan = getRoundPlan(round);
+  const recTopPos = rec && rec.top ? rec.top.player.pos : null;
+  const planDivergence = recTopPos && !currentPlan.primary.includes(recTopPos)
+    ? `<div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:11.5px; color:var(--warn); line-height:1.5;">
+        ⚠ Recommendation below (${escapeHtml(recTopPos)}) isn't in this round's default targets (${currentPlan.primary.join('/')}).
+        That's expected here, not a bug — this plan text is generic per round; the recommendation reacts to your actual roster
+        (see the need pills below it). When they disagree, trust the recommendation — it knows what you've already drafted, this card doesn't.
+      </div>`
+    : '';
   const fullPlanRows = Object.keys(ROUND_PLAN).map(Number).sort((a, b) => a - b).map(r => {
     const p = ROUND_PLAN[r];
     const isCurrent = r === round;
@@ -2733,6 +2745,7 @@ function renderDraftTab() {
     </div>
     <div style="font-family:var(--font-display); font-weight:700; font-size:17px; margin-bottom:6px;">${escapeHtml(currentPlan.strategy)}</div>
     <div style="font-size:12.5px; color:var(--fg-mute); line-height:1.5;">${escapeHtml(currentPlan.rationale)}</div>
+    ${planDivergence}
     <details style="margin-top:10px;">
       <summary style="cursor:pointer; font-family:var(--font-mono); font-size:11px; color:var(--accent);">Show all 15 rounds</summary>
       <div class="pick-feed" style="margin-top:8px; max-height:280px;">${fullPlanRows}</div>
