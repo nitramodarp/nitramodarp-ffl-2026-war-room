@@ -1814,7 +1814,19 @@ function computeRecommendation(undrafted, round) {
       if (p.pos === 'DEF' && appliedTierBonus > 1.0) {
         appliedTierBonus = 1.0 + (appliedTierBonus - 1.0) * 0.5;
       }
-      const score = p.vorp * need.mult * appliedTierBonus;
+      let mult = need.mult;
+      // Survival discount: even a genuinely open DEF starter slot (must-fill)
+      // shouldn't beat a skill-position starter need on value alone if the
+      // draft's own evidence shows waiting is safe — i.e., 2+ comparable
+      // alternatives remain in the same tier. This league's top DEF tier has
+      // survived untouched into the mid-rounds in every mock run so far;
+      // that's a real, observable pattern, not a hope. If it's down to the
+      // last one or two in the tier, that safety margin is gone and the
+      // slot gets its full must-fill weight back.
+      if (p.pos === 'DEF' && need.slotType === 'must-fill' && tier.remaining >= 3) {
+        mult *= 0.7;
+      }
+      const score = p.vorp * mult * appliedTierBonus;
       return { player: p, score, need, tier, appliedTierBonus };
     })
     // Priority tier first: a genuinely empty required starter slot always
