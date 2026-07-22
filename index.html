@@ -972,6 +972,7 @@
     <span class="pill" id="statusDraft"><span class="dot"></span><span>Draft</span></span>
     <span class="pill" id="statusHistory"><span class="dot"></span><span>History</span></span>
     <span class="pill" id="statusPlan"><span class="dot"></span><span>Plan</span></span>
+    <span class="pill" id="statusTargets"><span class="dot"></span><span>Targets</span></span>
   </div>
 </header>
 
@@ -1151,6 +1152,7 @@ const CONFIG = {
     mispricing: 'ADP Mispricings',
     pickcurve:  'Pick Value Curve',
     roundPlan:  'Round Plan',
+    targets:    'Sleeper Targets',
   },
 
   // Sleeper API base
@@ -1231,6 +1233,13 @@ const state = {
     error: null,
     activeTab: 'overview',
   },
+
+  // Sleeper Targets — personal watchlist maintained in the sheet, fetched
+  // the same way as Round Plan. Empty array (not an error) if the sheet
+  // isn't published yet or has no rows — this is optional content, not
+  // something the app depends on.
+  targets: [],
+  targetsSource: 'not loaded',
 };
 
 /* ============================================================
@@ -2406,6 +2415,51 @@ async function loadRoundPlan() {
 function getRoundPlan(round) {
   return ROUND_PLAN[round] || ROUND_PLAN[15];
 }
+
+/* ============================================================
+   Sleeper Targets — personal watchlist
+   Maintained in its own sheet (Player/Position/Note/Priority),
+   matched against the live board by name so each target shows real
+   VORP/ADP context instead of just a note. Matching against the
+   board is best-effort (same normalizer as draft-pick matching) —
+   an unmatched name still displays, just without the enrichment.
+   ============================================================ */
+function normalizeTargets(rows) {
+  return rows
+    .map(r => ({
+      name: (r['Player'] || '').trim(),
+      posHint: (r['Position'] || '').trim(),
+      note: (r['Note'] || '').trim(),
+      priority: (r['Priority'] || '').trim(),
+    }))
+    .filter(t => t.name);
+}
+
+async function loadSleeperTargets() {
+  const rows = await fetchSheet(CONFIG.SHEETS.targets);
+  const parsed = normalizeTargets(rows);
+  state.targets = parsed;
+  state.targetsSource = `sheet \u00b7 ${parsed.length} player${parsed.length !== 1 ? 's' : ''}`;
+}
+
+function targetBoardMatch(target) {
+  if (!state.board) return null;
+  const norm = draftNormName(target.name);
+  if (!norm) return null;
+  return state.board.find(p => draftNormName(p.name) === norm) || null;
+}
+
+// Cross-references a target against live draft picks (if connected) to
+// show whether it's still available, taken by you, or taken by someone
+// else — not just a static list.
+function targetDraftStatus(boardMatch) {
+  if (!boardMatch || !draftState.connected) return { status: 'unknown' };
+  const pick = draftState.matchedPicks.find(pk => pk.boardMatch && pk.boardMatch.name === boardMatch.name);
+  if (!pick) return { status: 'available' };
+  const mySlot = resolveMySlot();
+  if (mySlot != null && pick.draft_slot === mySlot) return { status: 'mine' };
+  return { status: 'taken', by: ownerNameForSlot(pick.draft_slot) };
+}
 function planAlignmentFactor(player, round) {
   const plan = getRoundPlan(round);
   const idx = plan.primary.indexOf(player.pos);
@@ -3031,6 +3085,38 @@ function renderDraftTab() {
     </details>
   </div>`;
 
+  const myTargetsHtml = (() => {
+    if (!state.targets.length) {
+      return `<p style="color:var(--fg-dim); font-size:12px;">No targets yet — add them to the "Sleeper Targets" tab in the sheet as you read up on players. Player name has to match the Overall Board spelling to link up.</p>`;
+    }
+    const enriched = state.targets.map(t => {
+      const board = targetBoardMatch(t);
+      const draft = targetDraftStatus(board);
+      return { t, board, draft };
+    });
+    // Available targets surface first — that's the actionable list during
+    // a live draft. Taken/mine sink to the bottom as reference only.
+    const order = { available: 0, unknown: 0, mine: 1, taken: 2 };
+    enriched.sort((a, b) => (order[a.draft.status] ?? 0) - (order[b.draft.status] ?? 0));
+    return enriched.map(({ t, board, draft }) => {
+      let statusBadge = '';
+      if (draft.status === 'mine') statusBadge = `<span style="color:var(--accent); font-size:10px; font-family:var(--font-mono);">DRAFTED BY YOU</span>`;
+      else if (draft.status === 'taken') statusBadge = `<span style="color:var(--down); font-size:10px; font-family:var(--font-mono);">TAKEN · ${escapeHtml(draft.by)}</span>`;
+      else if (draft.status === 'available') statusBadge = `<span style="color:var(--up); font-size:10px; font-family:var(--font-mono);">AVAILABLE</span>`;
+      const statLine = board
+        ? `<span class="pos-tag pos-${board.pos}">${board.pos}</span> VORP ${board.vorp != null ? board.vorp.toFixed(1) : '—'} · ADP ${board.adp ?? '—'}`
+        : `<span style="color:var(--fg-dim);">${escapeHtml(t.posHint || '—')} · not matched on board</span>`;
+      return `<div class="pick-feed-row" style="flex-direction:column; align-items:flex-start; gap:2px; padding:8px 10px;">
+        <div style="display:flex; justify-content:space-between; width:100%; align-items:baseline;">
+          <strong style="font-size:13px;">${escapeHtml(t.name)}</strong>
+          ${statusBadge}
+        </div>
+        <div style="font-size:11px;">${statLine}${t.priority ? ` · <span style="color:var(--warn);">${escapeHtml(t.priority)} priority</span>` : ''}</div>
+        ${t.note ? `<div style="font-size:11px; color:var(--fg-mute); line-height:1.4;">${escapeHtml(t.note)}</div>` : ''}
+      </div>`;
+    }).join('');
+  })();
+
   host.innerHTML = `
     ${statusBanner}
     ${projectedCard}
@@ -3053,6 +3139,10 @@ function renderDraftTab() {
       <div class="draft-card">
         <h4>My Picks</h4>
         <div class="pick-feed">${myPicksHtml}</div>
+      </div>
+      <div class="draft-card" style="grid-column: 1 / -1;">
+        <h4>My Targets <span style="font-family:var(--font-mono); font-size:10px; font-weight:400; color:var(--fg-dim); text-transform:none; letter-spacing:0;">${escapeHtml(state.targetsSource)}</span></h4>
+        <div class="pick-feed">${myTargetsHtml}</div>
       </div>
       <div class="draft-card" style="grid-column: 1 / -1;">
         <h4>Bye Week Map ${byeWarnCount ? `<span style="color:var(--down); font-weight:400; text-transform:none; letter-spacing:0;">· ${byeWarnCount} week${byeWarnCount > 1 ? 's' : ''} at 3+ starters</span>` : ''}</h4>
@@ -3635,6 +3725,18 @@ async function boot() {
     // Round Plan card and recommendation engine still work either way.
     state.errors.push('Round Plan: ' + e.message);
     setPill('statusPlan', 'warn', 'Plan · using fallback');
+  }
+  renderDebug();
+
+  setPill('statusTargets', '', 'Targets…');
+  try {
+    await loadSleeperTargets();
+    setPill('statusTargets', state.targets.length ? 'ok' : '', state.targetsSource);
+  } catch (e) {
+    // Non-fatal, and an empty/missing sheet isn't really an error — this
+    // is optional personal content, not something the app depends on.
+    state.errors.push('Sleeper Targets: ' + e.message);
+    setPill('statusTargets', 'warn', 'Targets · not published yet');
   }
   renderDebug();
 }
