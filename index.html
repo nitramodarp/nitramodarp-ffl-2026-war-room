@@ -2543,11 +2543,11 @@ function computeRecommendation(undrafted, round) {
    WR's expense) surfaces as it happens, not after the fact.
    ============================================================ */
 const ROSTER_TARGET = {
-  QB: { min: 1, max: 2 },
-  RB: { min: 4, max: 5 },
-  WR: { min: 4, max: 6 },
-  TE: { min: 1, max: 2 },
-  DEF:{ min: 2, max: 2 },
+  QB: { min: 1, max: 2, ideal: 2.0 },
+  RB: { min: 4, max: 5, ideal: 4.5 },
+  WR: { min: 4, max: 6, ideal: 5.0 },
+  TE: { min: 1, max: 2, ideal: 1.5 },
+  DEF:{ min: 2, max: 2, ideal: 2.0 },
 };
 const compositionAlertsFired = new Set(); // position keys already notified this session, so we alert once per crossing, not every re-render
 let notificationsEnabled = false;
@@ -2585,24 +2585,31 @@ function checkCompositionAlerts(counts) {
 }
 
 // Same modest-nudge philosophy as byeDiversityFactor/planAlignmentFactor —
-// pulls gently toward a position still under its target and away from one
-// already over, but never enough to override real VORP or an open starter
-// slot. Added after RB overshot its 4-5 target two mock drafts running
-// (reached 7) with only a passive alert card and no actual scoring
-// influence — visibility alone wasn't changing the outcome. Positions with
-// a hard mechanism already (TE's cap, QB/DEF's window gates) are mostly
-// unaffected by this in practice; RB/WR are the ones with no other guard.
+// pulls toward each position's ideal count and away from overshooting it,
+// but never enough to override real VORP or an open starter slot.
+//
+// Originally this only compared against min/max and went neutral the
+// moment a position cleared its floor. That produced a real, repeatable
+// bug: WR's range (4-6) is wider than RB's (4-5), so RB kept getting
+// pulled up toward its tight ceiling while WR's pull vanished the instant
+// it hit 4 — two mocks running landed on RB 5 / WR 4, even though the
+// champion-average ideal for WR is a clean 5.0, not "4 is fine." Scoring
+// against an explicit `ideal` (the exact champion average) and measuring
+// whether THIS pick moves the count closer to or further from it fixes
+// that: the pull continues all the way to the real target, not just to
+// whichever boundary happens to be nearest.
 function compositionAlignmentFactor(player, counts) {
   const target = ROSTER_TARGET[player.pos];
   if (!target) return { mult: 1.0, label: '' };
   const have = counts[player.pos] || 0;
-  if (have >= target.max) {
-    return { mult: 0.93, label: `already at ${have} ${player.pos} (target ${target.min}-${target.max})` };
-  }
-  if (have < target.min) {
-    return { mult: 1.06, label: `under target at ${have} ${player.pos} (target ${target.min}-${target.max})` };
-  }
-  return { mult: 1.0, label: '' };
+  const beforeGap = Math.abs(have - target.ideal);
+  const afterGap = Math.abs((have + 1) - target.ideal);
+  const improvement = beforeGap - afterGap; // positive = this pick moves toward ideal
+  const mult = Math.max(0.88, Math.min(1.08, 1.0 + improvement * 0.04));
+  let label = '';
+  if (improvement > 0) label = `moves ${player.pos} toward its ${target.ideal} target (${have}\u2192${have + 1})`;
+  else if (improvement < 0) label = `${player.pos} already past its ${target.ideal} target (at ${have})`;
+  return { mult, label };
 }
 
 /* ============================================================
