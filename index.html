@@ -1542,6 +1542,51 @@ function countDefAdds(adds) {
   return Object.keys(adds || {}).filter(pid => NFL_TEAM_ABBRS.has(pid)).length;
 }
 
+function pearsonCorr(xs, ys) {
+  const n = xs.length;
+  if (n < 2) return null;
+  const mx = xs.reduce((a, b) => a + b, 0) / n;
+  const my = ys.reduce((a, b) => a + b, 0) / n;
+  let num = 0, dx2 = 0, dy2 = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = xs[i] - mx, dy = ys[i] - my;
+    num += dx * dy; dx2 += dx * dx; dy2 += dy * dy;
+  }
+  const denom = Math.sqrt(dx2 * dy2);
+  return denom === 0 ? null : num / denom;
+}
+
+// Pools every team's season (across all completed seasons — n=24 for 2 seasons
+// x 12 teams, a real sample) to test two things: (1) is DEF churn a distinct
+// pattern, or does it just ride along with how active a manager is overall,
+// and (2) does overall wire activity actually correlate with winning, or is
+// heavy churn more a symptom of a bad season (chasing points while behind)
+// than a cause of a good one.
+function histChurnPerformanceAnalysis(seasons) {
+  const teamSeasons = [];
+  seasons.filter(histIsSeasonComplete).forEach(s => {
+    const { rows: standingsRows } = histStandings(s);
+    const { perOwnerRows } = histTransactionSummary(s);
+    const txByRoster = {};
+    perOwnerRows.forEach(r => { txByRoster[r.roster_id] = r; });
+    standingsRows.forEach(sr => {
+      const tx = txByRoster[sr.roster_id] || { defAdds: 0, total: 0 };
+      teamSeasons.push({
+        season: s.season, name: sr.name, isChamp: sr.isChamp, isMe: sr.isMe,
+        wins: sr.wins, rank: sr.rank,
+        defAdds: tx.defAdds || 0,
+        nonDefMoves: Math.max(0, (tx.total || 0) - (tx.defAdds || 0)),
+        totalMoves: tx.total || 0,
+      });
+    });
+  });
+
+  const defVsNonDef = pearsonCorr(teamSeasons.map(t => t.defAdds), teamSeasons.map(t => t.nonDefMoves));
+  const churnVsWins = pearsonCorr(teamSeasons.map(t => t.totalMoves), teamSeasons.map(t => t.wins));
+
+  return { teamSeasons, defVsNonDef, churnVsWins };
+}
+
 function histTransactionSummary(season) {
   const perOwner = {}; // roster_id -> { waiver, free_agent, trades, defAdds }
   const ensure = (rid) => (perOwner[rid] = perOwner[rid] || { waiver: 0, free_agent: 0, trades: 0, defAdds: 0 });
@@ -2781,6 +2826,48 @@ function renderHistoryOverviewHtml(seasons) {
     </div>
   ` : '';
 
+  // Churn vs performance — is DEF churn distinct from general wire activity,
+  // and does overall churn actually track winning or just chasing?
+  const churnAnalysis = histChurnPerformanceAnalysis(seasons);
+  const churnRows = churnAnalysis.teamSeasons.slice()
+    .sort((a, b) => b.totalMoves - a.totalMoves)
+    .map(t => `<tr class="${t.isChamp ? 'champ' : ''}${t.isMe ? ' me' : ''}">
+      <td class="mono">${t.season}</td>
+      <td>${t.isChamp ? '🏆 ' : ''}${escapeHtml(t.name)}</td>
+      <td class="num">${t.wins}</td>
+      <td class="num">${t.defAdds}</td>
+      <td class="num">${t.nonDefMoves}</td>
+      <td class="num">${t.totalMoves}</td>
+    </tr>`).join('');
+  const corrLabel = (r) => {
+    if (r == null) return '—';
+    const abs = Math.abs(r);
+    const strength = abs >= 0.5 ? 'strong' : abs >= 0.3 ? 'moderate' : abs >= 0.1 ? 'weak' : 'negligible';
+    return `${r >= 0 ? '+' : ''}${r.toFixed(2)} (${strength})`;
+  };
+  const churnCard = churnAnalysis.teamSeasons.length ? `
+    <div class="hist-card">
+      <h4>Churn vs. Performance <span class="hist-badge">${churnAnalysis.teamSeasons.length} team-seasons pooled</span></h4>
+      <p class="hist-note">Checks whether DEF churn is a distinct signal or just rides along with how active a manager is generally — and whether wire activity actually predicts winning, or tracks chasing points while behind instead.</p>
+      <div class="debug-grid" style="margin-bottom:16px;">
+        <div class="debug-card">
+          <h4>DEF adds ↔ non-DEF moves</h4>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${corrLabel(churnAnalysis.defVsNonDef)}</div>
+          <p style="font-size:11px; color:var(--fg-mute); margin-top:6px;">High correlation = DEF churn just rides along with overall activity, not a DEF-specific pattern. Low = it's genuinely distinct.</p>
+        </div>
+        <div class="debug-card">
+          <h4>Total moves ↔ wins</h4>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${corrLabel(churnAnalysis.churnVsWins)}</div>
+          <p style="font-size:11px; color:var(--fg-mute); margin-top:6px;">Negative = heavy churn tracks losing (chasing points). Positive = active managers actually win more.</p>
+        </div>
+      </div>
+      <table class="hist-table">
+        <thead><tr><th>Season</th><th>Team</th><th class="num">Wins</th><th class="num">DEF adds</th><th class="num">Other moves</th><th class="num">Total</th></tr></thead>
+        <tbody>${churnRows}</tbody>
+      </table>
+    </div>
+  ` : '';
+
   return `
     <div class="hist-card">
       <h4>Champions <span class="hist-badge">${seasons.length} season${seasons.length !== 1 ? 's' : ''}</span></h4>
@@ -2790,6 +2877,7 @@ function renderHistoryOverviewHtml(seasons) {
       </table>
     </div>
     ${compositionCard}
+    ${churnCard}
     <div class="hist-card">
       <h4>What the history says</h4>
       <p class="hist-note">Sanity-checks the re-scored board and the format-edge theses against what actually happened in this league. Excludes any season still pre-draft/in-progress — only completed seasons count toward these numbers.</p>
