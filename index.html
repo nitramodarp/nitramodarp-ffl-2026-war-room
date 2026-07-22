@@ -2209,7 +2209,20 @@ function needMultiplier(pos, counts, round) {
     // round 10 — by then a bench slot is nearly free anyway.
     const t = Math.min(1, Math.max(0, (round - 1) / 9));
     const mult = 0.65 + t * (1.4 - 0.65);
-    return { mult, real: true, slotType: 'must-fill', reason: `DEF streamable via rolling waivers — value discounted pre-round-10 (rd ${round})` };
+    // Categorical priority (see SLOT_PRIORITY below) puts 'must-fill' above
+    // 'flex' unconditionally, before scores are ever compared — so without
+    // this check, a heavily-discounted early DEF would still categorically
+    // outrank a genuinely great flex-tier RB/WR, silently defeating the
+    // discount above. Gate the category on the same Round Plan data driving
+    // the plan banner (single source of truth — see ROUND_PLAN), so DEF only
+    // jumps the queue once its real window (history-backed: round 9+) has
+    // actually opened. Before that it's scored, just not prioritized.
+    const inWindow = getRoundPlan(round).primary.includes('DEF');
+    const slotType = inWindow ? 'must-fill' : 'bench';
+    const reason = inWindow
+      ? `DEF1 window open (Rd ${round} per the plan) — real replacement gap still uncontested`
+      : `DEF streamable via rolling waivers — discounted and not yet prioritized (plan's DEF window opens later; rd ${round})`;
+    return { mult, real: true, slotType, reason };
   }
 
   if (dedicatedRemaining > 0) return { mult: 1.4, real: true, slotType: 'must-fill', reason: `starter slot open (have ${have}/${ROSTER_SLOTS[pos]})` };
@@ -2276,16 +2289,6 @@ function tierUrgencyBonus(player, undraftedByPos) {
   return { bonus, remaining, gapVorp, measured: true, label };
 }
 
-/* ============================================================
-   Hard roster caps — separate from the proportional need discount.
-   Proportional discounts can't stop a runaway: a tiny positive score
-   from a redundant DEF/QB will always beat a negative-VORP skill
-   player once bench depth runs dry, no matter how small the discount,
-   because multiplying by a positive number preserves sign. Past 2 at
-   either position, exclude them from recommendation candidacy
-   entirely — a longshot skill-position flier is strictly more useful
-   than a 3rd+ copy of a position that can only ever start 1 player.
-   ============================================================ */
 /* ============================================================
    Round-by-round draft plan
    Single source of truth is the workbook's "Round Plan" sheet,
@@ -2355,7 +2358,34 @@ function planAlignmentFactor(player, round) {
   return { mult, label: `fits Rd ${round} plan: ${plan.strategy}` };
 }
 
-const HARD_ROSTER_CAP = { QB: 2, DEF: 2 };
+/* ============================================================
+   Hard roster caps — separate from the proportional need discount.
+   Proportional discounts can't stop a runaway: a tiny positive score
+   from a redundant DEF/QB will always beat a negative-VORP skill
+   player once bench depth runs dry, no matter how small the discount,
+   because multiplying by a positive number preserves sign. Past the
+   cap, exclude the position from recommendation candidacy entirely —
+   a longshot skill-position flier is strictly more useful than
+   another copy of a position that can only ever start 1 (or, for
+   flex-eligible TE, effectively never wins a flex slot in practice —
+   see below).
+
+   TE added after a real failure mode showed up in testing: TE's
+   position tiers are naturally sparse (a handful of real difference-
+   makers, then a hard drop — see the position-importance ranking),
+   so nearly every remaining TE looks like "last one in its tier" and
+   earns the tier-cliff bonus almost every pick. Combined with TE
+   being flex-eligible, the engine kept recommending TE well past any
+   real roster need — 3 TEs drafted in a short stretch in one test
+   run. This directly contradicts what the board's own VORP
+   methodology already assumes (TE's replacement level was computed
+   with ZERO flex slots going to TE — see Methodology & Assumptions
+   in the workbook) and the Foundation Target of 1-2 TE. Capping at 2
+   stops the runaway the same way it already does for QB/DEF, without
+   touching the (much rarer, legitimately valuable) case of a real
+   TE1/TE2 pairing.
+   ============================================================ */
+const HARD_ROSTER_CAP = { QB: 2, DEF: 2, TE: 2 };
 
 function computeRecommendation(undrafted, round) {
   if (!undrafted.length) return null;
