@@ -2399,6 +2399,53 @@ function planAlignmentFactor(player, round) {
    touching the (much rarer, legitimately valuable) case of a real
    TE1/TE2 pairing.
    ============================================================ */
+/* ============================================================
+   Projected season points — running total of the best starting
+   lineup your current picks can field, under this league's scoring.
+   Purely additive from the board's FPS field (static preseason
+   projections) — doesn't adjust for bye weeks or in-season variance,
+   so treat it as a ceiling estimate, not a literal predicted score.
+   Compared against the History tab's ~1680 playoff-cutline floor.
+   ============================================================ */
+function computeProjectedLineup(mySlot) {
+  const myPlayers = draftState.matchedPicks
+    .filter(pk => pk.draft_slot === mySlot && pk.boardMatch)
+    .map(pk => pk.boardMatch);
+
+  const byPos = {};
+  myPlayers.forEach(p => { (byPos[p.pos] = byPos[p.pos] || []).push(p); });
+  Object.values(byPos).forEach(list => list.sort((a, b) => (b.fps ?? -Infinity) - (a.fps ?? -Infinity)));
+
+  const used = new Set();
+  const lineup = [];
+
+  Object.keys(ROSTER_SLOTS).forEach(pos => {
+    const need = ROSTER_SLOTS[pos];
+    for (let i = 0; i < need; i++) {
+      const pick = (byPos[pos] || []).find(p => !used.has(p.name)) || null;
+      if (pick) used.add(pick.name);
+      lineup.push({ slotLabel: pos, player: pick });
+    }
+  });
+
+  let flexPool = [];
+  FLEX_ELIGIBLE.forEach(pos => {
+    (byPos[pos] || []).forEach(p => { if (!used.has(p.name)) flexPool.push(p); });
+  });
+  flexPool.sort((a, b) => (b.fps ?? -Infinity) - (a.fps ?? -Infinity));
+  for (let i = 0; i < FLEX_SLOTS; i++) {
+    const pick = flexPool[i] || null;
+    if (pick) used.add(pick.name);
+    lineup.push({ slotLabel: 'FLEX', player: pick });
+  }
+
+  const bench = myPlayers.filter(p => !used.has(p.name));
+  const total = lineup.reduce((sum, l) => sum + (l.player ? (l.player.fps || 0) : 0), 0);
+  const filledCount = lineup.filter(l => l.player).length;
+
+  return { lineup, bench, total, filledCount, totalSlots: lineup.length };
+}
+
 const HARD_ROSTER_CAP = { QB: 2, DEF: 2, TE: 2 };
 
 function computeRecommendation(undrafted, round) {
@@ -2818,6 +2865,38 @@ function renderDraftTab() {
   const currentPlan = getRoundPlan(round);
   const recTopPos = rec && rec.top ? rec.top.player.pos : null;
 
+  // Projected Season Points — the running total, shown before anything
+  // else in the grid since it's the headline number, not a conditional
+  // alert like Composition Check.
+  const PLAYOFF_CUTLINE_FLOOR = 1680; // matches the History tab's avg. playoff cutline
+  const projectedCard = mySlot != null ? (() => {
+    const pl = computeProjectedLineup(mySlot);
+    const pct = Math.min(100, (pl.total / PLAYOFF_CUTLINE_FLOOR) * 100);
+    const rows = pl.lineup.map(l => `
+      <div class="ladder-row">
+        <span class="ladder-pick" style="width:56px; ${!l.player ? 'color:var(--down);' : ''}">${l.slotLabel}</span>
+        <span style="flex:1; font-size:12px; ${!l.player ? 'color:var(--fg-dim); font-style:italic;' : ''}">${l.player ? escapeHtml(l.player.name) : 'empty'}</span>
+        <span class="ladder-val" style="width:44px;">${l.player ? (l.player.fps || 0).toFixed(0) : '—'}</span>
+      </div>`).join('');
+    const benchNote = pl.bench.length
+      ? `<div style="font-size:10px; color:var(--fg-dim); margin-top:8px; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.04em;">Bench (not counted): ${pl.bench.map(b => escapeHtml(b.name)).join(', ')}</div>`
+      : '';
+    return `<div class="rec-card" style="background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--bg-elev)), var(--bg-elev)); border-color:var(--accent-dim);">
+      <div class="rec-label" style="color:var(--accent);">Projected Season Points — Starting Lineup</div>
+      <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+        <span style="font-family:var(--font-display); font-weight:800; font-size:32px;">${pl.total.toFixed(0)}</span>
+        <span style="font-size:12px; color:var(--fg-mute);">vs. ~${PLAYOFF_CUTLINE_FLOOR} target (History playoff cutline) · ${pl.filledCount}/${pl.totalSlots} starter slots filled</span>
+      </div>
+      <div class="ladder-bar" style="height:7px; margin-bottom:10px;"><div class="ladder-bar-fill" style="width:${pct}%; background:${pl.total >= PLAYOFF_CUTLINE_FLOOR ? 'var(--up)' : 'var(--accent-dim)'};"></div></div>
+      <details>
+        <summary style="cursor:pointer; font-family:var(--font-mono); font-size:11px; color:var(--accent);">Show lineup breakdown</summary>
+        <div style="margin-top:8px;">${rows}</div>
+        ${benchNote}
+      </details>
+      <p class="hist-note" style="margin:10px 0 0; font-size:10.5px;">Static preseason projections summed for your best-possible lineup right now — doesn't account for byes or in-season variance, so treat this as a ceiling, not a literal predicted score.</p>
+    </div>`;
+  })() : '';
+
   // Composition Check — persistent, not just a one-time popup, since the
   // notification (if enabled) only fires once per position per crossing
   // and this tab might not have been in focus when it did.
@@ -2862,6 +2941,7 @@ function renderDraftTab() {
 
   host.innerHTML = `
     ${statusBanner}
+    ${projectedCard}
     ${roundPlanCard}
     ${compositionCard}
     ${recHtml}
