@@ -831,6 +831,120 @@
   .legend-sep { color: var(--fg-dim); }
 
   /* ============================================================
+     History tab
+     ============================================================ */
+  .hist-jumbotron {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 900px) { .hist-jumbotron { grid-template-columns: repeat(2, 1fr); } }
+  .hist-jm-cell {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .hist-jm-num {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .hist-jm-num.gold { color: var(--warn); }
+  .hist-jm-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fg-mute);
+    margin-top: 6px;
+  }
+  .hist-season-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 3px;
+    margin-bottom: 16px;
+    width: fit-content;
+    flex-wrap: wrap;
+  }
+  .hist-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .hist-card h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hist-card .hist-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--fg-mute);
+    background: var(--bg-elev-2);
+    border: 1px solid var(--line);
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+  .hist-card p.hist-note {
+    font-size: 12px;
+    color: var(--fg-mute);
+    line-height: 1.5;
+    margin: 4px 0 14px;
+  }
+  .hist-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .hist-table th {
+    text-align: left;
+    padding: 7px 10px;
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--line);
+  }
+  .hist-table th.num, .hist-table td.num { text-align: right; font-family: var(--font-mono); }
+  .hist-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .hist-table tr:last-child td { border-bottom: none; }
+  .hist-table tr.me td { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .hist-table tr.champ td:first-child { color: var(--warn); }
+  .hist-table tr.cutline td { border-bottom: 2px dashed var(--accent-dim); }
+  .hist-cutline-note {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    margin-top: 8px;
+    text-align: center;
+  }
+  .hist-trophy { margin-right: 4px; }
+  .hist-pos-QB { color: #8fb3ff; } .hist-pos-RB { color: var(--up); }
+  .hist-pos-WR { color: var(--accent); } .hist-pos-TE { color: var(--warn); }
+  .hist-pos-DEF, .hist-pos-K { color: var(--fg-mute); }
+  .hist-log {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-dim);
+    margin-top: 10px;
+  }
+
+  /* ============================================================
      Responsive
      ============================================================ */
   @media (max-width: 720px) {
@@ -856,6 +970,7 @@
     <span class="pill" id="statusSleeper"><span class="dot"></span><span>Sleeper</span></span>
     <span class="pill" id="statusBoard"><span class="dot"></span><span>Board</span></span>
     <span class="pill" id="statusDraft"><span class="dot"></span><span>Draft</span></span>
+    <span class="pill" id="statusHistory"><span class="dot"></span><span>History</span></span>
   </div>
 </header>
 
@@ -865,6 +980,7 @@
   <button class="tab" data-tab="pickcurve">Pick Values</button>
   <button class="tab" data-tab="draft">Live Draft</button>
   <button class="tab" data-tab="roster">Roster Needs</button>
+  <button class="tab" data-tab="history">History</button>
   <button class="tab" data-tab="debug">Debug</button>
 </nav>
 
@@ -998,6 +1114,15 @@
     </div>
   </section>
 
+  <section class="tab-panel" id="tab-history">
+    <div id="historyHost">
+      <div class="state">
+        <h3>League History</h3>
+        <p>Walks the Sleeper league chain back through <code>previous_league_id</code> to pull standings, playoff results, weekly scoring, and draft boards from prior seasons. Loads on first open.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="tab-panel" id="tab-debug">
     <div class="debug-grid" id="debugGrid"></div>
   </section>
@@ -1095,6 +1220,14 @@ const state = {
   errors: [],
   // Fetch trace (for the debug tab)
   fetchTrace: null,
+
+  // League history (lazy-loaded on first History tab open)
+  history: {
+    seasons: null,      // array, oldest -> newest, once loaded
+    loading: false,
+    error: null,
+    activeTab: 'overview',
+  },
 };
 
 /* ============================================================
@@ -1173,6 +1306,167 @@ async function fetchLeagueRosters() {
   const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${CONFIG.LEAGUE_ID}/rosters`);
   if (!resp.ok) throw new Error(`League rosters fetch failed (${resp.status})`);
   return resp.json();
+}
+
+/* ============================================================
+   History data layer — season-scoped Sleeper fetches.
+   Mirrors fetchSleeperLeague/fetchLeagueUsers/fetchLeagueRosters
+   above, but parameterized by league id since history walks back
+   through prior seasons via previous_league_id. fetchDraftPicks
+   is reused as-is.
+   ============================================================ */
+async function fetchLeagueMetaFor(id) {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${id}`);
+  if (!resp.ok) throw new Error(`League meta fetch failed (${resp.status})`);
+  return resp.json();
+}
+async function fetchUsersFor(id) {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${id}/users`);
+  if (!resp.ok) throw new Error(`Users fetch failed (${resp.status})`);
+  return resp.json();
+}
+async function fetchRostersFor(id) {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${id}/rosters`);
+  if (!resp.ok) throw new Error(`Rosters fetch failed (${resp.status})`);
+  return resp.json();
+}
+async function fetchBracketFor(id) {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${id}/winners_bracket`);
+  if (!resp.ok) return [];
+  return resp.json();
+}
+async function fetchMatchupsFor(id, week) {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${id}/matchups/${week}`);
+  if (!resp.ok) return [];
+  return resp.json();
+}
+async function fetchDraftsFor(id) {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${id}/drafts`);
+  if (!resp.ok) return [];
+  return resp.json();
+}
+
+async function loadHistoryChain() {
+  const seasons = [];
+  let currentId = CONFIG.LEAGUE_ID;
+  let hops = 0;
+  const MAX_SEASONS_BACK = 6;
+  const MAX_WEEKS = 18;
+
+  while (currentId && currentId !== '0' && hops < MAX_SEASONS_BACK) {
+    hops++;
+    const meta = await fetchLeagueMetaFor(currentId);
+    seasons.push({ id: currentId, season: meta.season, meta });
+    currentId = meta.previous_league_id;
+  }
+  seasons.reverse(); // oldest first
+
+  for (const s of seasons) {
+    const [users, rosters] = await Promise.all([fetchUsersFor(s.id), fetchRostersFor(s.id)]);
+    s.users = users;
+    s.rosters = rosters;
+    s.userMap = {};
+    users.forEach(u => { s.userMap[u.user_id] = u; });
+
+    s.bracket = await fetchBracketFor(s.id);
+
+    s.weeklyMatchups = [];
+    const weekProms = [];
+    for (let w = 1; w <= MAX_WEEKS; w++) weekProms.push(fetchMatchupsFor(s.id, w));
+    const weekResults = await Promise.all(weekProms);
+    weekResults.forEach((wk, idx) => { if (wk && wk.length) s.weeklyMatchups.push({ week: idx + 1, matchups: wk }); });
+
+    const drafts = await fetchDraftsFor(s.id);
+    if (drafts && drafts.length) {
+      s.draftId = drafts[0].draft_id;
+      s.draftPicks = await fetchDraftPicks(s.draftId);
+    } else {
+      s.draftPicks = [];
+    }
+  }
+  return seasons;
+}
+
+/* ---- History computation ---- */
+function histOwnerName(season, ownerId) {
+  const u = season.userMap[ownerId];
+  if (!u) return 'Unknown';
+  return (u.metadata && u.metadata.team_name) ? u.metadata.team_name : u.display_name;
+}
+function histRosterOwner(season, rosterId) {
+  const r = season.rosters.find(r => r.roster_id === rosterId);
+  return r ? r.owner_id : null;
+}
+function histChampionRosterId(season) {
+  if (!season.bracket || !season.bracket.length) return null;
+  const maxRound = Math.max(...season.bracket.map(m => m.r));
+  const final = season.bracket.find(m => m.r === maxRound && m.p === 1);
+  if (final && final.w) return final.w;
+  const finals = season.bracket.filter(m => m.r === maxRound && m.w);
+  return finals.length ? finals[0].w : null;
+}
+function histStandings(season) {
+  const playoffSlots = (season.meta.settings && season.meta.settings.playoff_teams) || 6;
+  const champRosterId = histChampionRosterId(season);
+  const rows = season.rosters.map(r => {
+    const s = r.settings || {};
+    return {
+      roster_id: r.roster_id,
+      owner_id: r.owner_id,
+      name: histOwnerName(season, r.owner_id),
+      wins: s.wins || 0,
+      losses: s.losses || 0,
+      ties: s.ties || 0,
+      fpts: (s.fpts || 0) + ((s.fpts_decimal || 0) / 100),
+      fpts_against: (s.fpts_against || 0) + ((s.fpts_against_decimal || 0) / 100),
+    };
+  });
+  rows.sort((a, b) => b.wins - a.wins || b.fpts - a.fpts);
+  rows.forEach((r, i) => {
+    r.rank = i + 1;
+    r.isChamp = r.roster_id === champRosterId;
+    r.isMe = r.owner_id === CONFIG.MY_OWNER_ID;
+  });
+  return { rows, playoffSlots };
+}
+function histWeeklyWinners(season) {
+  const winners = [];
+  const allScores = [];
+  season.weeklyMatchups.forEach(wk => {
+    const byMatchup = {};
+    wk.matchups.forEach(m => {
+      if (m.matchup_id == null) return;
+      (byMatchup[m.matchup_id] = byMatchup[m.matchup_id] || []).push(m);
+    });
+    Object.values(byMatchup).forEach(pair => {
+      pair.forEach(p => { if (p.points) allScores.push(p.points); });
+      if (pair.length === 2 && pair[0].points != null && pair[1].points != null) {
+        const hi = pair[0].points >= pair[1].points ? pair[0] : pair[1];
+        winners.push({ week: wk.week, roster_id: hi.roster_id, points: hi.points });
+      }
+    });
+  });
+  winners.sort((a, b) => a.points - b.points);
+  const median = winners.length ? winners[Math.floor(winners.length / 2)].points : null;
+  const mean = winners.length ? winners.reduce((a, b) => a + b.points, 0) / winners.length : null;
+  const top = allScores.length ? Math.max(...allScores) : null;
+  return { winners, median, mean, top };
+}
+function histDraftRounds(season) {
+  if (!season.draftPicks || !season.draftPicks.length) return {};
+  const rounds = {};
+  season.draftPicks.forEach(p => { (rounds[p.round] = rounds[p.round] || []).push(p); });
+  Object.values(rounds).forEach(arr => arr.sort((a, b) => a.pick_no - b.pick_no));
+  return rounds;
+}
+function histChampionQbRound(season) {
+  const champRosterId = histChampionRosterId(season);
+  if (!champRosterId || !season.draftPicks || !season.draftPicks.length) return null;
+  const champOwner = histRosterOwner(season, champRosterId);
+  const qbPicks = season.draftPicks
+    .filter(p => p.picked_by === champOwner && p.metadata && p.metadata.position === 'QB')
+    .sort((a, b) => a.pick_no - b.pick_no);
+  return qbPicks.length ? qbPicks[0].round : null;
 }
 
 /* ============================================================
@@ -2131,6 +2425,228 @@ function renderDraftTab() {
 /* ============================================================
    Rendering — debug
    ============================================================ */
+/* ============================================================
+   Rendering — History
+   ============================================================ */
+function fmt1(n) { return (n == null) ? '—' : n.toFixed(1); }
+
+async function renderHistory() {
+  const host = document.getElementById('historyHost');
+  const h = state.history;
+
+  if (h.seasons === null && !h.loading) {
+    h.loading = true;
+    h.error = null;
+    setPill('statusHistory', '', 'History…');
+    host.innerHTML = `<div class="state"><span class="spinner"></span><h3 style="margin-top:12px;">Loading league history…</h3><p>Walking the Sleeper chain back through previous seasons — standings, brackets, weekly scores, and drafts.</p><div class="hist-log" id="histLoadingLog"></div></div>`;
+    try {
+      h.seasons = await loadHistoryChain();
+      h.loading = false;
+      h.activeTab = 'overview';
+      setPill('statusHistory', 'ok', `History · ${h.seasons.length} szn`);
+    } catch (e) {
+      h.loading = false;
+      h.error = e.message;
+      state.errors.push('History: ' + e.message);
+      setPill('statusHistory', 'err', 'History failed');
+      host.innerHTML = `<div class="hist-card"><div class="state" style="padding:30px 20px;"><h3 style="color:var(--down);">Couldn't load league history</h3><p>${escapeHtml(e.message)}</p><p>Check the Debug tab for a fuller trace, or confirm the league chain still resolves at <code>${CONFIG.SLEEPER_API}/league/${CONFIG.LEAGUE_ID}</code>.</p></div></div>`;
+      return;
+    }
+  }
+  if (h.error) return; // already rendered above
+  if (h.loading) return; // mid-flight, will re-render on completion
+
+  renderHistoryBody();
+}
+
+function renderHistoryBody() {
+  const host = document.getElementById('historyHost');
+  const h = state.history;
+  const seasons = h.seasons;
+  if (!seasons || !seasons.length) {
+    host.innerHTML = `<div class="state"><h3>No seasons found</h3><p>The league chain didn't resolve any prior seasons.</p></div>`;
+    return;
+  }
+
+  // Jumbotron
+  let champs = 0, wins = 0, losses = 0, ties = 0, cutSum = 0, cutCount = 0;
+  seasons.forEach(s => {
+    const { rows, playoffSlots } = histStandings(s);
+    const me = rows.find(r => r.owner_id === CONFIG.MY_OWNER_ID);
+    if (me) { wins += me.wins; losses += me.losses; ties += me.ties; if (me.isChamp) champs++; }
+    if (rows.length >= playoffSlots) { cutSum += rows[playoffSlots - 1].fpts; cutCount++; }
+  });
+
+  let html = `
+    <div class="hist-jumbotron">
+      <div class="hist-jm-cell"><div class="hist-jm-num gold">${champs}</div><div class="hist-jm-label">Your titles</div></div>
+      <div class="hist-jm-cell"><div class="hist-jm-num">${wins}-${losses}${ties ? '-' + ties : ''}</div><div class="hist-jm-label">Your career record</div></div>
+      <div class="hist-jm-cell"><div class="hist-jm-num">${seasons.length}</div><div class="hist-jm-label">Seasons on record</div></div>
+      <div class="hist-jm-cell"><div class="hist-jm-num">${cutCount ? fmt1(cutSum / cutCount) : '—'}</div><div class="hist-jm-label">Avg. playoff cut score</div></div>
+    </div>
+    <div class="hist-season-tabs" id="histSeasonTabs">
+      <button class="chip${h.activeTab === 'overview' ? ' active' : ''}" data-histtab="overview">Overview</button>
+      ${seasons.slice().reverse().map(s => `<button class="chip${h.activeTab === s.season ? ' active' : ''}" data-histtab="${s.season}">${s.season}</button>`).join('')}
+    </div>
+    <div id="histPanelHost"></div>
+  `;
+  host.innerHTML = html;
+
+  document.getElementById('histSeasonTabs').addEventListener('click', e => {
+    const btn = e.target.closest('.chip');
+    if (!btn) return;
+    state.history.activeTab = btn.dataset.histtab;
+    renderHistoryBody();
+  });
+
+  const panelHost = document.getElementById('histPanelHost');
+  if (h.activeTab === 'overview') {
+    panelHost.innerHTML = renderHistoryOverviewHtml(seasons);
+  } else {
+    const season = seasons.find(s => s.season === h.activeTab);
+    panelHost.innerHTML = season ? renderHistorySeasonHtml(season) : '';
+  }
+}
+
+function renderHistoryOverviewHtml(seasons) {
+  const champRows = seasons.slice().reverse().map(s => {
+    const { rows } = histStandings(s);
+    const champ = rows.find(r => r.isChamp);
+    const qbRound = histChampionQbRound(s);
+    const rowCls = [];
+    if (champ && champ.isMe) rowCls.push('me');
+    return `<tr class="${rowCls.join(' ')}">
+      <td>${s.season}</td>
+      <td>${champ ? `<span class="hist-trophy">🏆</span>${escapeHtml(champ.name)}` : '<span style="color:var(--fg-mute)">bracket unavailable</span>'}</td>
+      <td class="num">${champ ? champ.wins + '-' + champ.losses + (champ.ties ? '-' + champ.ties : '') : '—'}</td>
+      <td class="num">${champ ? fmt1(champ.fpts) : '—'}</td>
+      <td class="num">${qbRound ? 'Rd ' + qbRound : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  let allWinners = [];
+  seasons.forEach(s => { allWinners = allWinners.concat(histWeeklyWinners(s).winners.map(w => w.points)); });
+  allWinners.sort((a, b) => a - b);
+  const overallMedian = allWinners.length ? allWinners[Math.floor(allWinners.length / 2)] : null;
+
+  const cutlines = seasons.map(s => {
+    const { rows, playoffSlots } = histStandings(s);
+    return rows.length >= playoffSlots ? rows[playoffSlots - 1].fpts : null;
+  }).filter(v => v != null);
+  const cutMin = cutlines.length ? Math.min(...cutlines) : null;
+  const cutMax = cutlines.length ? Math.max(...cutlines) : null;
+
+  const qbRounds = seasons.map(s => histChampionQbRound(s)).filter(v => v != null);
+  const qbEarly = qbRounds.filter(r => r <= 6).length;
+
+  return `
+    <div class="hist-card">
+      <h4>Champions <span class="hist-badge">${seasons.length} season${seasons.length !== 1 ? 's' : ''}</span></h4>
+      <table class="hist-table">
+        <thead><tr><th>Season</th><th>Champion</th><th class="num">Record</th><th class="num">Points For</th><th class="num">QB drafted</th></tr></thead>
+        <tbody>${champRows}</tbody>
+      </table>
+    </div>
+    <div class="hist-card">
+      <h4>What the history says</h4>
+      <p class="hist-note">Sanity-checks the re-scored board and the format-edge theses against what actually happened in this league.</p>
+      <div class="debug-grid">
+        <div class="debug-card">
+          <h4>Weekly winning score (median)</h4>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:22px; color:var(--accent);">${fmt1(overallMedian)}</div>
+          <p style="font-size:11px; color:var(--fg-mute); margin-top:6px;">Across all captured weeks, all seasons. Compare against projected weekly totals on the Board tab.</p>
+        </div>
+        <div class="debug-card">
+          <h4>Playoff cutline (points for)</h4>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:22px; color:var(--accent);">${cutMin != null ? fmt1(cutMin) + ' – ' + fmt1(cutMax) : '—'}</div>
+          <p style="font-size:11px; color:var(--fg-mute); margin-top:6px;">Range of the last playoff seed's season points-for. The real bar for "good enough."</p>
+        </div>
+        <div class="debug-card">
+          <h4>Champs w/ QB in rounds 1–6</h4>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:22px; color:var(--accent);">${qbRounds.length ? qbEarly + ' / ' + qbRounds.length : '—'}</div>
+          <p style="font-size:11px; color:var(--fg-mute); margin-top:6px;">Tests whether the room has already priced the 7-pt passing TD boost.</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHistorySeasonHtml(season) {
+  const { rows, playoffSlots } = histStandings(season);
+  const weekly = histWeeklyWinners(season);
+
+  const standRows = rows.map(r => {
+    const cls = [];
+    if (r.isMe) cls.push('me');
+    if (r.isChamp) cls.push('champ');
+    if (r.rank === playoffSlots) cls.push('cutline');
+    return `<tr class="${cls.join(' ')}">
+      <td class="num" style="color:var(--fg-mute);">${r.rank}</td>
+      <td>${r.isChamp ? '<span class="hist-trophy">🏆</span>' : ''}${escapeHtml(r.name)}</td>
+      <td class="num">${r.wins}</td>
+      <td class="num">${r.losses}</td>
+      <td class="num">${r.ties}</td>
+      <td class="num">${fmt1(r.fpts)}</td>
+      <td class="num">${fmt1(r.fpts_against)}</td>
+    </tr>`;
+  }).join('');
+
+  const rounds = histDraftRounds(season);
+  const roundKeys = Object.keys(rounds).map(Number).sort((a, b) => a - b);
+  let draftHtml = `<p class="hist-note">No draft data available for this season.</p>`;
+  if (roundKeys.length) {
+    const rowHtml = (p) => {
+      const meta = p.metadata || {};
+      const name = ((meta.first_name || '') + ' ' + (meta.last_name || p.player_id || '')).trim();
+      const owner = season.userMap[p.picked_by];
+      const ownerLabel = owner ? ((owner.metadata && owner.metadata.team_name) || owner.display_name) : (p.picked_by || '—');
+      return `<tr${p.picked_by === CONFIG.MY_OWNER_ID ? ' class="me"' : ''}>
+        <td class="num">${p.pick_no}</td><td>${escapeHtml(name)}</td>
+        <td class="hist-pos-${meta.position || ''}">${meta.position || '—'}</td><td>${escapeHtml(ownerLabel)}</td>
+      </tr>`;
+    };
+    const r1 = rounds[roundKeys[0]] || [];
+    draftHtml = `
+      <details open>
+        <summary style="cursor:pointer; font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:8px;">Round 1</summary>
+        <table class="hist-table"><thead><tr><th class="num">Pick</th><th>Player</th><th>Pos</th><th>Drafted by</th></tr></thead>
+        <tbody>${r1.map(rowHtml).join('')}</tbody></table>
+      </details>
+      <details style="margin-top:10px;">
+        <summary style="cursor:pointer; font-family:var(--font-mono); font-size:11px; color:var(--accent);">Show full draft board</summary>
+        ${roundKeys.map(rk => `
+          <div style="font-family:var(--font-mono); color:var(--fg-mute); font-size:10px; margin:12px 0 6px; text-transform:uppercase; letter-spacing:0.06em;">Round ${rk}</div>
+          <table class="hist-table"><thead><tr><th class="num">Pick</th><th>Player</th><th>Pos</th><th>Drafted by</th></tr></thead>
+          <tbody>${rounds[rk].map(rowHtml).join('')}</tbody></table>
+        `).join('')}
+      </details>
+    `;
+  }
+
+  return `
+    <div class="hist-card">
+      <h4>${season.season} Standings <span class="hist-badge">top ${playoffSlots} make playoffs</span></h4>
+      <table class="hist-table">
+        <thead><tr><th>#</th><th>Team</th><th class="num">W</th><th class="num">L</th><th class="num">T</th><th class="num">PF</th><th class="num">PA</th></tr></thead>
+        <tbody>${standRows}</tbody>
+      </table>
+      <div class="hist-cutline-note">- - - playoff cutline (rank ${playoffSlots}) - - -</div>
+    </div>
+    <div class="hist-card">
+      <h4>Weekly Scoring <span class="hist-badge">${weekly.winners.length} matchup weeks</span></h4>
+      <div class="debug-grid">
+        <div class="debug-card"><h4>Median winning score</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${fmt1(weekly.median)}</div></div>
+        <div class="debug-card"><h4>Mean winning score</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${fmt1(weekly.mean)}</div></div>
+        <div class="debug-card"><h4>Top single-week score</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${fmt1(weekly.top)}</div></div>
+      </div>
+    </div>
+    <div class="hist-card">
+      <h4>${season.season} Draft <span class="hist-badge">${(season.draftPicks || []).length} picks</span></h4>
+      ${draftHtml}
+    </div>
+  `;
+}
+
 function renderDebug() {
   const host = document.getElementById('debugGrid');
   const cards = [];
@@ -2304,6 +2820,7 @@ document.getElementById('tabs').addEventListener('click', e => {
   if (target === 'debug') renderDebug();
   if (target === 'mispricing') renderMispricing();
   if (target === 'pickcurve') renderPickValues();
+  if (target === 'history') renderHistory();
 });
 
 state.mispricingPos = 'ALL';
