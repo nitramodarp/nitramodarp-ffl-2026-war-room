@@ -1770,13 +1770,32 @@ function tierUrgencyBonus(player, undraftedByPos) {
   return { bonus, remaining, gapVorp, label };
 }
 
+/* ============================================================
+   Hard roster caps — separate from the proportional need discount.
+   Proportional discounts can't stop a runaway: a tiny positive score
+   from a redundant DEF/QB will always beat a negative-VORP skill
+   player once bench depth runs dry, no matter how small the discount,
+   because multiplying by a positive number preserves sign. Past 2 at
+   either position, exclude them from recommendation candidacy
+   entirely — a longshot skill-position flier is strictly more useful
+   than a 3rd+ copy of a position that can only ever start 1 player.
+   ============================================================ */
+const HARD_ROSTER_CAP = { QB: 2, DEF: 2 };
+
 function computeRecommendation(undrafted, round) {
   if (!undrafted.length) return null;
   const { counts, mySlot } = computeMyRosterCounts();
-  const undraftedByPos = {};
-  undrafted.forEach(p => { (undraftedByPos[p.pos] = undraftedByPos[p.pos] || []).push(p); });
 
-  const scored = undrafted
+  const eligible = undrafted.filter(p => {
+    const cap = HARD_ROSTER_CAP[p.pos];
+    return cap == null || (counts[p.pos] || 0) < cap;
+  });
+  const pool = eligible.length ? eligible : undrafted; // never return nothing
+
+  const undraftedByPos = {};
+  pool.forEach(p => { (undraftedByPos[p.pos] = undraftedByPos[p.pos] || []).push(p); });
+
+  const scored = pool
     .filter(p => p.vorp != null)
     .map(p => {
       const need = needMultiplier(p.pos, counts, round);
