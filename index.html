@@ -2528,15 +2528,23 @@ async function loadDisagreements() {
 
 // Returns a compact badge string for a board player, or '' if not flagged.
 // Advisory only — this never touches VORP or recommendation scoring.
+// Prominence scales with gap size: a small disagreement is a quiet outline;
+// a big one (>=35 pts, genuinely decision-relevant) gets a filled, bold
+// treatment so it can't be skimmed past — the Nabers +48 problem.
 function disagreementBadge(playerName) {
   const d = state.disagreements[draftNormName(playerName || '')];
   if (!d || d.diff == null) return '';
-  // Positive gap = Ciely higher than FP; negative = FP higher.
   const fpHigher = d.diff < 0;
-  const mag = Math.abs(d.diff).toFixed(0);
-  const color = d.flag === 'REVIEW' ? 'var(--warn)' : 'var(--fg-dim)';
+  const mag = Math.abs(d.diff);
+  const magStr = mag.toFixed(0);
   const dir = fpHigher ? 'FP' : 'Ciely';
-  return `<span title="${dir} projects this player ${mag} pts higher under league scoring — worth a look" style="font-family:var(--font-mono); font-size:9px; color:${color}; border:1px solid ${color}; border-radius:4px; padding:0 4px; margin-left:6px;">${dir}+${mag}</span>`;
+  const big = mag >= 35;
+  const color = d.flag === 'REVIEW' ? 'var(--warn)' : 'var(--fg-dim)';
+  if (big) {
+    // Filled, bold — loud on purpose.
+    return `<span title="${dir} projects this player ${magStr} pts higher under league scoring — big disagreement, worth a look before drafting" style="font-family:var(--font-mono); font-size:10px; font-weight:700; color:#1a0f04; background:${color}; border-radius:4px; padding:1px 5px; margin-left:6px;">${dir}+${magStr}</span>`;
+  }
+  return `<span title="${dir} projects this player ${magStr} pts higher under league scoring — worth a look" style="font-family:var(--font-mono); font-size:9px; color:${color}; border:1px solid ${color}; border-radius:4px; padding:0 4px; margin-left:6px;">${dir}+${magStr}</span>`;
 }
 
 // Cross-references a target against live draft picks (if connected) to
@@ -3015,13 +3023,25 @@ function renderDraftTab() {
     const mag = Math.abs(d.diff).toFixed(0);
     const color = d.flag === 'REVIEW' ? 'var(--warn)' : 'var(--fg-dim)';
     const dir = fpHigher ? 'FP' : 'Ciely';
-    return `<div class="best-avail-row">
+    const big = Math.abs(d.diff) >= 35;
+    return `<div class="best-avail-row"${big ? ' style="background:color-mix(in srgb, var(--warn) 8%, transparent);"' : ''}>
       <span class="ba-tier tier-${p.tier || 8}"></span>
       <span class="pos-tag pos-${p.pos}">${p.pos}</span>
       <span class="ba-name">${escapeHtml(p.name)}</span>
-      <span class="ba-diff" style="color:${color}; font-family:var(--font-mono); font-size:11px;">${dir}+${mag}</span>
+      <span class="ba-diff" style="color:${color}; font-family:var(--font-mono); font-size:11px; ${big ? 'font-weight:700;' : ''}">${dir}+${mag}</span>
     </div>`;
   }).join('') || '<p style="color:var(--fg-dim); font-size:12px;">No flagged players remaining — or flags not published to the sheet yet.</p>';
+
+  // Loudest signal: the single biggest disagreement still on the board, as a
+  // banner — so even mid-draft, not-on-the-clock, the most notable flag is
+  // impossible to miss (fixes the "I didn't notice Nabers" problem).
+  let biggestFlagBanner = '';
+  if (flagged.length && Math.abs(flagged[0].d.diff) >= 35) {
+    const top = flagged[0];
+    const fpHigher = top.d.diff < 0;
+    const mag = Math.abs(top.d.diff).toFixed(0);
+    biggestFlagBanner = `<div style="margin-bottom:10px; padding:8px 10px; border-radius:6px; background:color-mix(in srgb, var(--warn) 14%, transparent); border-left:3px solid var(--warn); font-size:12px;">Biggest disagreement on the board: <strong>${escapeHtml(top.p.name)}</strong> (${top.p.pos}) — ${fpHigher ? 'FantasyPros' : 'your board'} rates ${mag} pts higher${fpHigher ? '. A second source likes this player more than your board does.' : '. You\'d be the high source on this one.'}</div>`;
+  }
 
   // My picks so far — identified by draft_slot, which works in both
   // mock tests (manual override) and the real draft (auto-resolved)
@@ -3071,6 +3091,16 @@ function renderDraftTab() {
     const tierText = need.real
       ? `${tier.label}${(tier.measured && appliedTierBonus >= 1.10) ? ' — real cliff, take now or lose the tier' : (!tier.measured && tier.remaining <= 2 ? ' — down to the last one or two, but no measured gap behind it' : '')}${dampNote}`
       : `${tier.remaining} left in tier ${player.tier} (scarcity irrelevant — not a real need)`;
+    const recFlag = state.disagreements[draftNormName(player.name)];
+    let recFlagCallout = '';
+    if (recFlag && recFlag.diff != null && Math.abs(recFlag.diff) >= 35) {
+      const fpHigher = recFlag.diff < 0;
+      const mag = Math.abs(recFlag.diff).toFixed(0);
+      const msg = fpHigher
+        ? `FantasyPros rates this player ${mag} pts HIGHER than your board — a second source thinks Ciely is low here. Lean toward taking.`
+        : `Your board rates this player ${mag} pts higher than FantasyPros — you'd be the high source. Make sure you're comfortable being out on a limb.`;
+      recFlagCallout = `<div style="margin:8px 0; padding:8px 10px; border-radius:6px; background:color-mix(in srgb, var(--warn) 15%, transparent); border-left:3px solid var(--warn); font-size:12px; color:var(--fg);">⚠ <strong>Source disagreement:</strong> ${msg}</div>`;
+    }
     recHtml = `<div class="rec-card">
       <div class="rec-label">Recommended Pick — Pick ${round}.${String(slot).padStart(2,'0')}</div>
       <div class="rec-main">
@@ -3078,6 +3108,7 @@ function renderDraftTab() {
         <span class="rec-name">${escapeHtml(player.name)}${disagreementBadge(player.name)}</span>
         <span class="rec-vorp">VORP ${player.vorp.toFixed(1)}</span>
       </div>
+      ${recFlagCallout}
       <div class="rec-reason">${need.reason} · ${tierText}${bye.label ? ' · ' + bye.label : ''}${plan.label ? ' · ' + plan.label : ''}${comp.label ? ' · ' + comp.label : ''}</div>
       <div class="need-meter">${needPills}</div>
       ${altText ? `<div class="rec-alt">Next best: ${escapeHtml(altText)}</div>` : ''}
@@ -3237,6 +3268,7 @@ function renderDraftTab() {
       </div>
       <div class="draft-card">
         <h4>Source Flags <span style="font-family:var(--font-mono); font-size:10px; font-weight:400; color:var(--fg-dim); text-transform:none; letter-spacing:0;">${escapeHtml(state.disagreementsSource)}</span></h4>
+        ${biggestFlagBanner}
         <div class="pick-feed">${flagsHtml}</div>
       </div>
       <div class="draft-card">
