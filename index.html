@@ -3423,23 +3423,32 @@ function renderHistoryOverviewHtml(seasons) {
       const aMap = {}; a.rows.forEach(r => { aMap[r.team] = r; });
       const bMap = {}; b.rows.forEach(r => { bMap[r.team] = r; });
       const common = Object.keys(aMap).filter(t => bMap[t]);
+      // A defense rostered only a week or two has a "season total" that's
+      // really a 1-2 game total — its huge point delta the next year is
+      // mostly games-counted, not a real performance swing. Flag those so
+      // they're not read as signal, and base the headline averages only on
+      // defenses that were meaningfully rostered in BOTH seasons.
+      const MIN_WEEKS = 6;
       const deltas = common.map(t => ({
         team: t,
-        aTotal: aMap[t].total, aRank: aMap[t].rank,
-        bTotal: bMap[t].total, bRank: bMap[t].rank,
+        aTotal: aMap[t].total, aRank: aMap[t].rank, aWeeks: aMap[t].weeksCounted,
+        bTotal: bMap[t].total, bRank: bMap[t].rank, bWeeks: bMap[t].weeksCounted,
         delta: bMap[t].total - aMap[t].total,
         rankDelta: Math.abs(bMap[t].rank - aMap[t].rank),
+        lowSample: (aMap[t].weeksCounted < MIN_WEEKS || bMap[t].weeksCounted < MIN_WEEKS),
       })).sort((x, y) => y.delta - x.delta);
-      const avgAbsSwing = deltas.length ? deltas.reduce((s2, d2) => s2 + Math.abs(d2.delta), 0) / deltas.length : null;
-      const avgRankSwing = deltas.length ? deltas.reduce((s2, d2) => s2 + d2.rankDelta, 0) / deltas.length : null;
+      // Headline averages use only full-season defenses — the clean signal.
+      const clean = deltas.filter(d2 => !d2.lowSample);
+      const avgAbsSwing = clean.length ? clean.reduce((s2, d2) => s2 + Math.abs(d2.delta), 0) / clean.length : null;
+      const avgRankSwing = clean.length ? clean.reduce((s2, d2) => s2 + d2.rankDelta, 0) / clean.length : null;
       yoyHtml = `
         <div class="debug-grid" style="margin-bottom:14px;">
-          <div class="debug-card"><h4>Avg. point swing, ${a.season}→${b.season}</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${avgAbsSwing != null ? '±' + fmt1(avgAbsSwing) : '—'}</div></div>
-          <div class="debug-card"><h4>Avg. rank swing</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${avgRankSwing != null ? avgRankSwing.toFixed(1) + ' spots' : '—'}</div></div>
+          <div class="debug-card"><h4>Avg. point swing, ${a.season}→${b.season}</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${avgAbsSwing != null ? '±' + fmt1(avgAbsSwing) : '—'}</div><p style="font-size:11px; color:var(--fg-mute); margin-top:6px;">Full-season defenses only (rostered ${MIN_WEEKS}+ weeks both years) — excludes short-stint pickups whose swing is mostly games-counted.</p></div>
+          <div class="debug-card"><h4>Avg. rank swing</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${avgRankSwing != null ? avgRankSwing.toFixed(1) + ' spots' : '—'}</div><p style="font-size:11px; color:var(--fg-mute); margin-top:6px;">The real volatility finding — this is what the DEF-cliff damping is built on.</p></div>
         </div>
         <table class="hist-table">
-          <thead><tr><th>Team</th><th class="num">${a.season}</th><th class="num">${a.season} Rk</th><th class="num">${b.season}</th><th class="num">${b.season} Rk</th><th class="num">Δ pts</th></tr></thead>
-          <tbody>${deltas.map(d2 => `<tr><td>${escapeHtml(d2.team)}</td><td class="num">${fmt1(d2.aTotal)}</td><td class="num">${d2.aRank}</td><td class="num">${fmt1(d2.bTotal)}</td><td class="num">${d2.bRank}</td><td class="num" style="color:${d2.delta<0?'var(--down)':'var(--up)'};">${d2.delta>=0?'+':''}${fmt1(d2.delta)}</td></tr>`).join('')}</tbody>
+          <thead><tr><th>Team</th><th class="num">${a.season}</th><th class="num">wks</th><th class="num">Rk</th><th class="num">${b.season}</th><th class="num">wks</th><th class="num">Rk</th><th class="num">Δ pts</th></tr></thead>
+          <tbody>${deltas.map(d2 => `<tr${d2.lowSample ? ' style="opacity:0.5;"' : ''}><td>${escapeHtml(d2.team)}${d2.lowSample ? ' <span style="color:var(--warn); font-size:9px;">low sample</span>' : ''}</td><td class="num">${fmt1(d2.aTotal)}</td><td class="num" style="color:${d2.aWeeks < MIN_WEEKS ? 'var(--warn)' : 'var(--fg-mute)'};">${d2.aWeeks}</td><td class="num">${d2.aRank}</td><td class="num">${fmt1(d2.bTotal)}</td><td class="num" style="color:${d2.bWeeks < MIN_WEEKS ? 'var(--warn)' : 'var(--fg-mute)'};">${d2.bWeeks}</td><td class="num">${d2.bRank}</td><td class="num" style="color:${d2.delta<0?'var(--down)':'var(--up)'};">${d2.delta>=0?'+':''}${fmt1(d2.delta)}</td></tr>`).join('')}</tbody>
         </table>`;
     }
 
