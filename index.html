@@ -979,7 +979,6 @@
 
 <nav class="tabs" id="tabs">
   <button class="tab active" data-tab="board">Board</button>
-  <button class="tab" data-tab="mispricing">Mispricings</button>
   <button class="tab" data-tab="pickcurve">Pick Values</button>
   <button class="tab" data-tab="draft">Live Draft</button>
   <button class="tab" data-tab="roster">Roster Needs</button>
@@ -1026,23 +1025,6 @@
       <span>VORP = points over replacement (this format)</span>
       <span class="legend-sep">·</span>
       <span>Diff = ADP rank − our rank. <span style="color:var(--up)">+</span> = market drafts too late.</span>
-    </div>
-  </section>
-
-  <section class="tab-panel" id="tab-mispricing">
-    <div class="controls">
-      <div class="chips" id="mispricingPosFilter">
-        <button class="chip active" data-pos="ALL">All</button>
-        <button class="chip" data-pos="QB">QB</button>
-        <button class="chip" data-pos="RB">RB</button>
-        <button class="chip" data-pos="WR">WR</button>
-        <button class="chip" data-pos="TE">TE</button>
-        <button class="chip" data-pos="DEF">DEF</button>
-      </div>
-      <span class="hint">Our VORP rank vs FFC half-PPR ADP · noise-filtered by minimum projected role</span>
-    </div>
-    <div id="mispricingHost">
-      <div class="state"><div class="spinner"></div><p style="margin-top:12px">Waiting for board…</p></div>
     </div>
   </section>
 
@@ -2063,47 +2045,6 @@ function parsePickList(str) {
     const value = pickCurve ? (pickCurve.normalized[overall] ?? 0) : 0;
     return { round, slot, overall, value, label: tok };
   }).filter(Boolean);
-}
-
-/* ============================================================
-   Rendering — Mispricings tab
-   ============================================================ */
-function renderMispricing() {
-  const host = document.getElementById('mispricingHost');
-  if (!state.board) {
-    host.innerHTML = '<div class="state"><div class="spinner"></div><p style="margin-top:12px">Waiting for board…</p></div>';
-    return;
-  }
-  const pos = state.mispricingPos || 'ALL';
-  const floor = { RB: 70, WR: 70, TE: 45, QB: 150, DEF: 0 };
-
-  let candidates = state.board.filter(p => p.adprk != null && p.ovr != null);
-  if (pos !== 'ALL') candidates = candidates.filter(p => p.pos === pos);
-  candidates = candidates.filter(p => (p.fps ?? 0) >= (floor[p.pos] ?? 0));
-  candidates.forEach(p => { p.diff = p.adprk - p.ovr; });
-
-  const under = candidates.slice().sort((a, b) => b.diff - a.diff).slice(0, 20);
-  const over  = candidates.slice().sort((a, b) => a.diff - b.diff).slice(0, 20);
-
-  const row = (p) => `
-    <div class="mis-row">
-      <span class="pos-tag pos-${p.pos}">${p.pos}</span>
-      <span class="mis-name">${escapeHtml(p.name)}</span>
-      <span class="mis-meta">Rk ${p.ovr} · ADP ${p.adprk}</span>
-      <span class="mis-diff" style="color:${p.diff > 0 ? 'var(--up)' : 'var(--down)'}">${formatSigned(p.diff)}</span>
-    </div>`;
-
-  host.innerHTML = `
-    <div class="mis-columns">
-      <div>
-        <div class="mis-col-header up">Undervalued — market drafts too late</div>
-        <div class="mis-list">${under.map(row).join('') || '<div class="mis-row"><span class="mis-name" style="color:var(--fg-dim)">No matches at this filter</span></div>'}</div>
-      </div>
-      <div>
-        <div class="mis-col-header down">Overvalued — market drafts too early</div>
-        <div class="mis-list">${over.map(row).join('') || '<div class="mis-row"><span class="mis-name" style="color:var(--fg-dim)">No matches at this filter</span></div>'}</div>
-      </div>
-    </div>`;
 }
 
 /* ============================================================
@@ -4004,18 +3945,8 @@ document.getElementById('tabs').addEventListener('click', e => {
   const target = btn.dataset.tab;
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${target}`));
   if (target === 'debug') renderDebug();
-  if (target === 'mispricing') renderMispricing();
   if (target === 'pickcurve') renderPickValues();
   if (target === 'history') renderHistory();
-});
-
-state.mispricingPos = 'ALL';
-document.getElementById('mispricingPosFilter').addEventListener('click', e => {
-  const btn = e.target.closest('.chip');
-  if (!btn) return;
-  document.querySelectorAll('#mispricingPosFilter .chip').forEach(c => c.classList.toggle('active', c === btn));
-  state.mispricingPos = btn.dataset.pos;
-  renderMispricing();
 });
 
 document.getElementById('mySlotInput').addEventListener('input', () => renderPickValues());
