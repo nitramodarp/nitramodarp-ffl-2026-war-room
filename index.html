@@ -3051,7 +3051,7 @@ function renderDraftTab() {
     const top = topDraftableFlag;
     const fpHigher = top.d.diff < 0;
     const mag = Math.abs(top.d.diff).toFixed(0);
-    biggestFlagBanner = `<div style="margin-bottom:10px; padding:8px 10px; border-radius:6px; background:color-mix(in srgb, var(--warn) 14%, transparent); border-left:3px solid var(--warn); font-size:12px;">Biggest disagreement on a draftable player: <strong>${escapeHtml(top.p.name)}</strong> (${top.p.pos}) — ${fpHigher ? 'FantasyPros' : 'your board'} rates ${mag} pts higher${fpHigher ? '. A second source likes this player more than your board does.' : '. You\'d be the high source on this one.'}</div>`;
+    biggestFlagBanner = `<div style="margin:0 0 6px; padding:10px 12px; border-radius:8px; background:color-mix(in srgb, var(--warn) 14%, transparent); border-left:3px solid var(--warn); font-size:12.5px;">⚠ Biggest disagreement on a draftable player: <strong>${escapeHtml(top.p.name)}</strong> (${top.p.pos}) — ${fpHigher ? 'FantasyPros' : 'your board'} rates ${mag} pts higher${fpHigher ? '. A second source likes this player more than your board does.' : '. You\'d be the high source on this one.'}</div>`;
   }
 
   // My picks so far — identified by draft_slot, which works in both
@@ -3268,6 +3268,7 @@ function renderDraftTab() {
     ${roundPlanCard}
     ${compositionCard}
     ${recHtml}
+    ${biggestFlagBanner}
     <div class="draft-grid">
       <div class="draft-card">
         <h4>Recent Picks</h4>
@@ -3279,7 +3280,6 @@ function renderDraftTab() {
       </div>
       <div class="draft-card">
         <h4>Source Flags <span style="font-family:var(--font-mono); font-size:10px; font-weight:400; color:var(--fg-dim); text-transform:none; letter-spacing:0;">${escapeHtml(state.disagreementsSource)}</span></h4>
-        ${biggestFlagBanner}
         <div class="pick-feed">${flagsHtml}</div>
       </div>
       <div class="draft-card">
