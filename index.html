@@ -2988,7 +2988,13 @@ function renderDraftTab() {
   // has a real disagreement," which is the Nabers case it exists to catch.
   let biggestFlagBanner = '';
   const topDraftableFlag = flagged.find(x => x.p.ovr != null && x.p.ovr <= DRAFTABLE_OVR && Math.abs(x.d.diff) >= 35);
-  if (topDraftableFlag) {
+  // Don't duplicate: if the biggest draftable disagreement IS the recommended
+  // player, the callout inside the recommendation card already says it — a
+  // second standalone banner right below would just repeat the same warning
+  // verbatim and read like a glitch. Only show the banner when it's flagging
+  // a DIFFERENT player than the one being recommended.
+  const recName = rec && rec.top ? draftNormName(rec.top.player.name) : null;
+  if (topDraftableFlag && draftNormName(topDraftableFlag.p.name) !== recName) {
     const top = topDraftableFlag;
     const fpHigher = top.d.diff < 0;
     const mag = Math.abs(top.d.diff).toFixed(0);
