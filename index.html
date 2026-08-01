@@ -1498,6 +1498,48 @@ function histIsSeasonComplete(season) {
   // (playoff cutline, career record, weekly scoring) would pollute the numbers with zeros.
   return season.meta && (season.meta.status === 'complete' || season.meta.status === 'post_season');
 }
+
+// Real, realized DEF scoring — not projected. Sleeper's matchup payload
+// already includes `players_points`, computed under this league's actual
+// configured scoring settings (the same "PTS" column Sleeper's own UI
+// shows) — so no need to re-derive from raw stat categories, which would
+// mean guessing at Sleeper's defensive stat field names without a way to
+// verify them. A defense is identified the same way as everywhere else in
+// this app: Sleeper keys it by team abbreviation instead of a numeric ID.
+// `players_points` only contains players who were rostered by someone that
+// week, so a DEF nobody in the league picked up that week won't appear —
+// an honest gap, not a bug, and arguably the more relevant universe anyway
+// (defenses this league actually used, not all 32 in the abstract).
+function histDstWeeklyScores(season) {
+  const seen = {}; // "TEAM-week" -> true, so we don't double count across multiple rosters
+  const byTeam = {}; // team -> [{week, points}]
+  (season.weeklyMatchups || []).forEach(wk => {
+    wk.matchups.forEach(m => {
+      const pp = m.players_points || {};
+      Object.keys(pp).forEach(pid => {
+        if (!NFL_TEAM_ABBRS.has(pid)) return;
+        const key = `${pid}-${wk.week}`;
+        if (seen[key]) return;
+        seen[key] = true;
+        (byTeam[pid] = byTeam[pid] || []).push({ week: wk.week, points: pp[pid] });
+      });
+    });
+  });
+  return byTeam;
+}
+
+function histDstSeasonTotals(season) {
+  const byTeam = histDstWeeklyScores(season);
+  const rows = Object.entries(byTeam).map(([team, weeks]) => ({
+    team,
+    total: Math.round(weeks.reduce((a, w) => a + (w.points || 0), 0) * 10) / 10,
+    weeksCounted: weeks.length,
+  }));
+  rows.sort((a, b) => b.total - a.total);
+  rows.forEach((r, i) => { r.rank = i + 1; });
+  return rows;
+}
+
 const REQUIRED_STARTERS = { QB: 1, RB: 2, WR: 2, TE: 1, DEF: 1 }; // per league settings §2 — excludes the 2 flex slots
 
 function histRosterComposition(season) {
@@ -3357,6 +3399,65 @@ function renderHistoryOverviewHtml(seasons) {
     </div>
   ` : '';
 
+  // DEF Volatility — real, realized scoring (not projected) pulled from
+  // Sleeper's own matchup data. Validates (or would have falsified) the
+  // recommendation engine's DEF-cliff damping, which was previously
+  // justified by assertion only ("defensive rankings swing more than
+  // skill positions"). Two consecutive completed seasons is a thin sample,
+  // same caveat as everything else in History — but it's real outcomes,
+  // not another model.
+  const dstBySeasonComplete = seasons.filter(histIsSeasonComplete).map(s => ({
+    season: s.season,
+    rows: histDstSeasonTotals(s),
+  })).filter(d => d.rows.length > 0);
+  let dstVolatilityCard = '';
+  if (dstBySeasonComplete.length >= 1) {
+    const spreadRows = dstBySeasonComplete.map(d => {
+      const top = d.rows[0], bottom = d.rows[d.rows.length - 1];
+      return `<tr><td class="mono">${d.season}</td><td>${escapeHtml(top.team)}</td><td class="num">${fmt1(top.total)}</td><td>${escapeHtml(bottom.team)}</td><td class="num">${fmt1(bottom.total)}</td><td class="num">${fmt1(top.total - bottom.total)}</td></tr>`;
+    }).join('');
+
+    let yoyHtml = '<p class="hist-note">Need 2+ completed seasons to compare year-over-year swings.</p>';
+    if (dstBySeasonComplete.length >= 2) {
+      const [a, b] = dstBySeasonComplete; // chronological, oldest first (seasons array is already ascending)
+      const aMap = {}; a.rows.forEach(r => { aMap[r.team] = r; });
+      const bMap = {}; b.rows.forEach(r => { bMap[r.team] = r; });
+      const common = Object.keys(aMap).filter(t => bMap[t]);
+      const deltas = common.map(t => ({
+        team: t,
+        aTotal: aMap[t].total, aRank: aMap[t].rank,
+        bTotal: bMap[t].total, bRank: bMap[t].rank,
+        delta: bMap[t].total - aMap[t].total,
+        rankDelta: Math.abs(bMap[t].rank - aMap[t].rank),
+      })).sort((x, y) => y.delta - x.delta);
+      const avgAbsSwing = deltas.length ? deltas.reduce((s2, d2) => s2 + Math.abs(d2.delta), 0) / deltas.length : null;
+      const avgRankSwing = deltas.length ? deltas.reduce((s2, d2) => s2 + d2.rankDelta, 0) / deltas.length : null;
+      yoyHtml = `
+        <div class="debug-grid" style="margin-bottom:14px;">
+          <div class="debug-card"><h4>Avg. point swing, ${a.season}→${b.season}</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${avgAbsSwing != null ? '±' + fmt1(avgAbsSwing) : '—'}</div></div>
+          <div class="debug-card"><h4>Avg. rank swing</h4><div style="font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent);">${avgRankSwing != null ? avgRankSwing.toFixed(1) + ' spots' : '—'}</div></div>
+        </div>
+        <table class="hist-table">
+          <thead><tr><th>Team</th><th class="num">${a.season}</th><th class="num">${a.season} Rk</th><th class="num">${b.season}</th><th class="num">${b.season} Rk</th><th class="num">Δ pts</th></tr></thead>
+          <tbody>${deltas.map(d2 => `<tr><td>${escapeHtml(d2.team)}</td><td class="num">${fmt1(d2.aTotal)}</td><td class="num">${d2.aRank}</td><td class="num">${fmt1(d2.bTotal)}</td><td class="num">${d2.bRank}</td><td class="num" style="color:${d2.delta<0?'var(--down)':'var(--up)'};">${d2.delta>=0?'+':''}${fmt1(d2.delta)}</td></tr>`).join('')}</tbody>
+        </table>`;
+    }
+
+    dstVolatilityCard = `
+      <div class="hist-card">
+        <h4>DEF Volatility <span class="hist-badge">real scoring, from Sleeper matchups</span></h4>
+        <p class="hist-note">Not projected — pulled from actual weekly points scored under this league's real settings. Tests whether "defensive rankings swing more than skill positions" (the recommendation engine's DEF-cliff damping) holds up against real outcomes, not just theory.</p>
+        <table class="hist-table">
+          <thead><tr><th>Season</th><th>Top DEF</th><th class="num">Pts</th><th>Bottom (rostered)</th><th class="num">Pts</th><th class="num">Spread</th></tr></thead>
+          <tbody>${spreadRows}</tbody>
+        </table>
+        <div style="font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--fg-mute); margin:16px 0 8px;">Year-over-year swings (teams rostered in both seasons)</div>
+        ${yoyHtml}
+        <p class="hist-note" style="margin-top:10px; margin-bottom:0;">Only includes defenses someone in this league actually rostered that week — not all 32 teams league-wide. That's the relevant universe for this question, not a gap.</p>
+      </div>
+    `;
+  }
+
   return `
     <div class="hist-card">
       <h4>Champions <span class="hist-badge">${seasons.length} season${seasons.length !== 1 ? 's' : ''}</span></h4>
@@ -3367,6 +3468,7 @@ function renderHistoryOverviewHtml(seasons) {
     </div>
     ${compositionCard}
     ${churnCard}
+    ${dstVolatilityCard}
     <div class="hist-card">
       <h4>What the history says</h4>
       <p class="hist-note">Sanity-checks the re-scored board and the format-edge theses against what actually happened in this league. Excludes any season still pre-draft/in-progress — only completed seasons count toward these numbers.</p>
