@@ -3051,7 +3051,14 @@ function renderDraftTab() {
       : `${tier.remaining} left in tier ${player.tier} (scarcity irrelevant — not a real need)`;
     const recFlag = state.disagreements[draftNormName(player.name)];
     let recFlagCallout = '';
-    if (recFlag && recFlag.diff != null && Math.abs(recFlag.diff) >= 35) {
+    // Only fire on a player who's a REAL pick — positive VORP. A big source
+    // gap on a negative-VORP dart (e.g. Emanuel Wilson at -38 in round 14) is
+    // technically a disagreement but not a decision: both sources agree he's
+    // below replacement, they just differ on HOW far below, which doesn't
+    // matter when you're filling a last bench slot with the least-bad option.
+    // Loud warnings there imply a consequential choice that isn't happening.
+    const VORP_FLAG_FLOOR = 5;
+    if (recFlag && recFlag.diff != null && Math.abs(recFlag.diff) >= 35 && player.vorp != null && player.vorp >= VORP_FLAG_FLOOR) {
       const fpHigher = recFlag.diff < 0;
       const mag = Math.abs(recFlag.diff).toFixed(0);
       const msg = fpHigher
