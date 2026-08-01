@@ -3004,15 +3004,24 @@ function renderDraftTab() {
       <span class="ba-vorp">${p.vorp != null ? p.vorp.toFixed(1) : ''}</span>
     </div>`).join('') || '<p style="color:var(--fg-dim); font-size:12px;">—</p>';
 
-  // Source Flags — undrafted players where Ciely and FantasyPros disagree,
-  // surfaced right on the draft tab so you never have to open the workbook.
-  // Advisory only; sorted REVIEW-first then by gap magnitude, capped so it
-  // stays a glanceable shortlist of the most notable disagreements still on
-  // the board.
+  // Source Flags — undrafted players where Ciely and FantasyPros disagree.
+  // Critical sort fix (learned live): raw gap size is the WRONG priority.
+  // The biggest gaps cluster on backup QBs and role-ambiguous RBs where the
+  // sources disagree about whether the guy plays AT ALL (Kirk Cousins +136,
+  // etc.) — loud but useless, and they bury the genuinely actionable flags
+  // on startable players (a Nabers +48 tier disagreement). So: draftable
+  // players (top ~150 overall by VORP) always sort ABOVE undraftable ones,
+  // regardless of gap size. Within each group, REVIEW-first then by gap.
+  // The huge-gap backup noise still appears, just below anything you'd
+  // realistically draft.
+  const DRAFTABLE_OVR = 150;
   const flagged = undrafted
     .map(p => ({ p, d: state.disagreements[draftNormName(p.name)] }))
     .filter(x => x.d && x.d.diff != null)
     .sort((a, b) => {
+      const da = (a.p.ovr != null && a.p.ovr <= DRAFTABLE_OVR) ? 1 : 0;
+      const db = (b.p.ovr != null && b.p.ovr <= DRAFTABLE_OVR) ? 1 : 0;
+      if (da !== db) return db - da; // draftable first, always
       const fa = a.d.flag === 'REVIEW' ? 1 : 0;
       const fb = b.d.flag === 'REVIEW' ? 1 : 0;
       return (fb - fa) || (Math.abs(b.d.diff) - Math.abs(a.d.diff));
@@ -3032,15 +3041,17 @@ function renderDraftTab() {
     </div>`;
   }).join('') || '<p style="color:var(--fg-dim); font-size:12px;">No flagged players remaining — or flags not published to the sheet yet.</p>';
 
-  // Loudest signal: the single biggest disagreement still on the board, as a
-  // banner — so even mid-draft, not-on-the-clock, the most notable flag is
-  // impossible to miss (fixes the "I didn't notice Nabers" problem).
+  // Loudest signal: the biggest disagreement on a DRAFTABLE player still on
+  // the board (not a backup-QB artifact). Only fires when that player's gap
+  // is genuinely large (>=35) — so the banner means "a real, takeable player
+  // has a real disagreement," which is the Nabers case it exists to catch.
   let biggestFlagBanner = '';
-  if (flagged.length && Math.abs(flagged[0].d.diff) >= 35) {
-    const top = flagged[0];
+  const topDraftableFlag = flagged.find(x => x.p.ovr != null && x.p.ovr <= DRAFTABLE_OVR && Math.abs(x.d.diff) >= 35);
+  if (topDraftableFlag) {
+    const top = topDraftableFlag;
     const fpHigher = top.d.diff < 0;
     const mag = Math.abs(top.d.diff).toFixed(0);
-    biggestFlagBanner = `<div style="margin-bottom:10px; padding:8px 10px; border-radius:6px; background:color-mix(in srgb, var(--warn) 14%, transparent); border-left:3px solid var(--warn); font-size:12px;">Biggest disagreement on the board: <strong>${escapeHtml(top.p.name)}</strong> (${top.p.pos}) — ${fpHigher ? 'FantasyPros' : 'your board'} rates ${mag} pts higher${fpHigher ? '. A second source likes this player more than your board does.' : '. You\'d be the high source on this one.'}</div>`;
+    biggestFlagBanner = `<div style="margin-bottom:10px; padding:8px 10px; border-radius:6px; background:color-mix(in srgb, var(--warn) 14%, transparent); border-left:3px solid var(--warn); font-size:12px;">Biggest disagreement on a draftable player: <strong>${escapeHtml(top.p.name)}</strong> (${top.p.pos}) — ${fpHigher ? 'FantasyPros' : 'your board'} rates ${mag} pts higher${fpHigher ? '. A second source likes this player more than your board does.' : '. You\'d be the high source on this one.'}</div>`;
   }
 
   // My picks so far — identified by draft_slot, which works in both
