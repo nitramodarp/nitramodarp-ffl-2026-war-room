@@ -1130,6 +1130,11 @@ const CONFIG = {
   // overridable in either input for mock-draft testing.
   MY_DRAFT_SLOT: 1,
 
+  // NFL team to run the History tab's "Homer Watch" against. This league
+  // is a room full of Falcons fans, so ATL is the one worth measuring —
+  // change to any team abbreviation to re-point the analysis.
+  HOMER_WATCH_TEAM: 'ATL',
+
   // Google Sheets (published board data)
   SHEET_ID:   '1iMdzr7FAu6qFi5JlV7eGHNhSjIWQ6DyFyoV5wmrOMSg',
   SHEETS: {
@@ -1406,6 +1411,111 @@ async function loadHistoryChain() {
     s.transactions = allTx.filter(t => t.status === 'complete');
   }
   return seasons;
+}
+
+/* ============================================================
+   NFL-team draft bias ("homer premium")
+   HONEST SCOPE NOTE: this does NOT measure overpay-vs-ADP. Historical
+   ADP for prior seasons isn't available from Sleeper and isn't in the
+   workbook, so a true price delta can't be computed. What this DOES
+   measure, entirely from Sleeper draft data:
+     - who drafts a given NFL team's players, and how many
+     - how early they take them (avg round) vs. the league-wide average
+       round for that same NFL team's players
+   A negative "vs. field" number = that owner takes those players
+   EARLIER than the rest of the room does. That's a fandom signal, not
+   a proven overpay — a genuinely good player gets taken early by
+   everyone. Read it as "who to expect to jump the queue," not as a
+   valuation. Team is read from each pick's own metadata, which is the
+   team at time of draft, so a player who later changed teams is
+   attributed to the team he was on then — correct for this purpose.
+   ============================================================ */
+function histTeamDraftBias(seasons, nflTeam) {
+  const perOwner = {};   // ownerId -> { name, picks: [], rounds: [] }
+  const allRounds = [];  // every pick of this NFL team, any owner
+  let totalDraftedPlayers = 0;
+
+  seasons.forEach(season => {
+    if (!season.draftPicks || !season.draftPicks.length) return;
+    const teams = (season.meta && season.meta.settings && season.meta.settings.teams) || 12;
+    season.draftPicks.forEach(pk => {
+      totalDraftedPlayers++;
+      const md = pk.metadata || {};
+      if ((md.team || '').toUpperCase() !== nflTeam) return;
+      const round = pk.round || Math.floor((pk.pick_no - 1) / teams) + 1;
+      const ownerId = pk.picked_by || histRosterOwner(season, pk.roster_id);
+      if (!ownerId) return;
+      if (!perOwner[ownerId]) {
+        perOwner[ownerId] = { ownerId, name: histOwnerName(season, ownerId), picks: [], rounds: [] };
+      }
+      const name = `${md.first_name || ''} ${md.last_name || ''}`.trim() || '(unknown)';
+      perOwner[ownerId].picks.push({ season: season.season, round, pick_no: pk.pick_no, name, pos: md.position || '' });
+      perOwner[ownerId].rounds.push(round);
+      allRounds.push(round);
+    });
+  });
+
+  if (!allRounds.length) return null;
+  const fieldAvgRound = allRounds.reduce((a, b) => a + b, 0) / allRounds.length;
+
+  const rows = Object.values(perOwner).map(o => {
+    const avgRound = o.rounds.reduce((a, b) => a + b, 0) / o.rounds.length;
+    return {
+      ...o,
+      count: o.picks.length,
+      avgRound,
+      // negative = earlier than the field's average round for this team
+      vsField: avgRound - fieldAvgRound,
+      earliest: Math.min(...o.rounds),
+      isMe: o.ownerId === CONFIG.MY_OWNER_ID,
+    };
+  }).sort((a, b) => b.count - a.count || a.avgRound - b.avgRound);
+
+  return { rows, fieldAvgRound, total: allRounds.length, totalDraftedPlayers, nflTeam };
+}
+
+function renderTeamBiasCardHtml(seasons, nflTeam) {
+  const data = histTeamDraftBias(seasons, nflTeam);
+  if (!data) {
+    return `<div class="hist-card">
+      <h4>Homer Watch — ${escapeHtml(nflTeam)}</h4>
+      <p class="hist-note">No ${escapeHtml(nflTeam)} players found in the captured draft boards. Either the chain didn't return draft picks, or picks lack team metadata.</p>
+    </div>`;
+  }
+  const share = data.totalDraftedPlayers ? (data.total / data.totalDraftedPlayers * 100) : 0;
+  const rows = data.rows.map(o => {
+    const early = o.vsField < -0.5;
+    const late  = o.vsField > 0.5;
+    const color = early ? 'var(--warn)' : (late ? 'var(--fg-dim)' : 'var(--fg-mute)');
+    const sign = o.vsField <= 0 ? '' : '+';
+    const players = o.picks
+      .sort((a, b) => a.pick_no - b.pick_no)
+      .map(p => `${escapeHtml(p.name)} <span style="color:var(--fg-dim)">(${p.season} Rd${p.round})</span>`)
+      .join(', ');
+    return `<tr${o.isMe ? ' class="me"' : ''}>
+      <td>${escapeHtml(o.name)}${o.isMe ? ' <span style="color:var(--accent); font-size:10px;">(you)</span>' : ''}</td>
+      <td class="num">${o.count}</td>
+      <td class="num">${o.avgRound.toFixed(1)}</td>
+      <td class="num" style="color:${color}; font-weight:${early ? '700' : '400'};">${sign}${o.vsField.toFixed(1)}</td>
+      <td class="num">${o.earliest}</td>
+      <td style="font-size:11px;">${players}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="hist-card">
+    <h4>Homer Watch — ${escapeHtml(nflTeam)} <span class="hist-badge">${data.total} pick${data.total !== 1 ? 's' : ''} · ${share.toFixed(1)}% of all picks</span></h4>
+    <p class="hist-note">
+      Who drafts ${escapeHtml(nflTeam)} players, and how early. <strong>"vs. field"</strong> compares each owner's average round for
+      ${escapeHtml(nflTeam)} players against the league-wide average round for those same players (${data.fieldAvgRound.toFixed(1)}).
+      Negative = takes them <em>earlier</em> than the room does.
+      <strong>This is not an overpay-vs-ADP measure</strong> — historical ADP isn't available, so this can't prove a price premium.
+      Good players go early to everyone. Read it as "who jumps the queue," and use it to predict who reaches, not to value a player.
+    </p>
+    <table class="hist-table">
+      <thead><tr><th>Owner</th><th class="num">Picks</th><th class="num">Avg Rd</th><th class="num">vs. field</th><th class="num">Earliest</th><th>Players</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
 }
 
 /* ---- History computation ---- */
@@ -3704,6 +3814,7 @@ function renderHistoryOverviewHtml(seasons) {
         <tbody>${champRows}</tbody>
       </table>
     </div>
+    ${renderTeamBiasCardHtml(seasons, CONFIG.HOMER_WATCH_TEAM)}
     ${compositionCard}
     ${churnCard}
     ${dstVolatilityCard}
