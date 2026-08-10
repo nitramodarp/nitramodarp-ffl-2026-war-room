@@ -1032,7 +1032,7 @@
     <div class="controls">
       <label class="search" style="max-width:220px;">
         <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-mute); white-space:nowrap;">MY SLOT</span>
-        <input type="number" id="mySlotInput" min="1" max="12" value="6" style="width:40px; text-align:right;">
+        <input type="number" id="mySlotInput" min="1" max="12" style="width:40px; text-align:right;">
         <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-dim);">of 12</span>
       </label>
       <span class="hint">Pick 1.01 = 1000 baseline · derived from VORP available at each ADP slot, smoothed + forced monotonic</span>
@@ -1122,6 +1122,13 @@ const CONFIG = {
   LEAGUE_ID:  '1359038733340389376',
   DRAFT_ID:   '1359038733352988672',
   MY_OWNER_ID:'634248191616888832',
+
+  // Set by the commissioner's live draft-order lottery (Aug 9, 2026).
+  // Single source of truth for slot — drives the Draft Plan tab, and
+  // pre-fills the Pick Values and Live Draft "My Slot" inputs on load
+  // so nobody has to remember to type it in on draft day. Still
+  // overridable in either input for mock-draft testing.
+  MY_DRAFT_SLOT: 1,
 
   // Google Sheets (published board data)
   SHEET_ID:   '1iMdzr7FAu6qFi5JlV7eGHNhSjIWQ6DyFyoV5wmrOMSg',
@@ -2823,6 +2830,31 @@ function draftOverallToSlot(pickNo, teams) {
   return { round, slot };
 }
 
+// Inverse of draftOverallToSlot: given a fixed draft slot, compute every
+// pick number that slot owns across a snake draft. Used to build the
+// pre-draft Draft Plan (Roster Needs tab) before any live connection
+// exists — pure math off CONFIG.MY_DRAFT_SLOT, no Sleeper draft_order
+// needed. A "turn" is any pair of consecutive picks (end of one round,
+// start of the next) — those are the slots with real leverage since two
+// picks land before anyone else picks once.
+function computeMyPickSequence(slot, teams = 12, rounds = 15) {
+  const picks = [];
+  for (let round = 1; round <= rounds; round++) {
+    const posInRound = round % 2 === 1 ? slot : teams - slot + 1;
+    const pickNo = (round - 1) * teams + posInRound;
+    picks.push({ round, pickNo });
+  }
+  // Flag turns: this round's pick and the next round's pick are adjacent
+  // overall picks (i.e. nobody else picks in between).
+  picks.forEach((p, i) => {
+    const next = picks[i + 1];
+    p.isTurnStart = next ? Math.abs(next.pickNo - p.pickNo) === 1 : false;
+    const prev = picks[i - 1];
+    p.isTurnEnd = prev ? Math.abs(p.pickNo - prev.pickNo) === 1 : false;
+  });
+  return picks;
+}
+
 function ownerNameForSlot(slot) {
   if (!draftState.meta || !draftState.users) return `Slot ${slot}`;
   const draftOrder = draftState.meta.draft_order || {};
@@ -2926,6 +2958,7 @@ function disconnectDraft() {
   document.getElementById('draftConnectBtn').style.display = '';
   document.getElementById('draftDisconnectBtn').style.display = 'none';
   document.getElementById('draftPollStatus').textContent = 'Disconnected';
+  renderRosterTab(); // fall back to the pre-draft plan view
 }
 
 async function pollDraft() {
@@ -2942,6 +2975,59 @@ async function pollDraft() {
     document.getElementById('draftPollStatus').textContent = `Poll error: ${e.message}`;
   }
   renderDraftTab();
+}
+
+/* ============================================================
+   Draft Plan (Roster Needs tab, pre-draft mode)
+   Before a live draft connects there's no roster to track, but the
+   slot is known well in advance (commissioner's lottery, Aug 9) — so
+   this renders the full 15-pick sequence for CONFIG.MY_DRAFT_SLOT
+   against the Round Plan sheet, with turn picks called out. Once a
+   live draft connects and you have actual roster counts, that detail
+   lives in the Live Draft tab's Composition Check instead — this tab
+   stays the static pre-draft reference either way.
+   ============================================================ */
+function renderRosterTab() {
+  const host = document.getElementById('tab-roster');
+  if (!host) return;
+  const teams = 12;
+  const slot = CONFIG.MY_DRAFT_SLOT;
+  const seq = computeMyPickSequence(slot, teams, 15);
+
+  const rows = seq.map(p => {
+    const plan = getRoundPlan(p.round);
+    const turnTag = p.isTurnStart
+      ? '<span class="pos-tag" style="background:var(--accent); color:var(--bg); font-size:9px;">TURN →</span>'
+      : (p.isTurnEnd ? '<span class="pos-tag" style="background:var(--accent); color:var(--bg); font-size:9px;">← TURN</span>' : '');
+    const primaryTags = plan.primary.map(pos => `<span class="pos-tag pos-${pos}">${pos}</span>`).join(' ');
+    return `<tr${p.isTurnStart || p.isTurnEnd ? ' style="background:color-mix(in srgb, var(--accent) 6%, transparent);"' : ''}>
+      <td class="num">${p.round}</td>
+      <td class="num">#${p.pickNo}</td>
+      <td>${turnTag}</td>
+      <td>${primaryTags}</td>
+      <td>
+        <div style="font-weight:600; font-size:12.5px;">${escapeHtml(plan.strategy)}</div>
+        <div style="font-size:11px; color:var(--fg-mute); margin-top:2px;">${escapeHtml(plan.rationale)}</div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  host.innerHTML = `
+    <div class="state" style="text-align:left; padding-bottom:10px;">
+      <h3>Draft Plan — Slot ${slot} of ${teams}</h3>
+      <p style="font-size:12px; color:var(--fg-mute);">
+        Set by the commissioner's lottery (Aug 9, 2026). Your full pick sequence below, mapped to the
+        <code>Round Plan</code> strategy for each round. <strong>Turn picks</strong> (highlighted) are back-to-back —
+        the two picks that land before anyone else picks once. Once the live draft connects (Live Draft tab),
+        this tab will switch to tracking your actual roster fill against these targets instead.
+      </p>
+    </div>
+    <table class="hist-table">
+      <thead><tr><th class="num">Rd</th><th class="num">Pick</th><th></th><th>Primary</th><th>Strategy</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p style="font-size:10.5px; color:var(--fg-dim); margin-top:8px; font-family:var(--font-mono);">${escapeHtml(state.roundPlanSource || '')}</p>
+  `;
 }
 
 function renderDraftTab() {
@@ -3925,6 +4011,18 @@ async function boot() {
   updateDraftCountdown();
   setInterval(updateDraftCountdown, 60000);
 
+  // Seed both "My Slot" inputs from CONFIG.MY_DRAFT_SLOT so Pick Values
+  // and Live Draft open already correct on draft day — no more retyping
+  // a slot number by hand or trusting the old placeholder guess. Both
+  // stay manually editable (mock-draft testing, or if the commish
+  // re-runs the lottery for any reason).
+  if (CONFIG.MY_DRAFT_SLOT != null) {
+    const slotInput = document.getElementById('mySlotInput');
+    const slotOverride = document.getElementById('mySlotOverride');
+    if (slotInput && !slotInput.value) slotInput.value = CONFIG.MY_DRAFT_SLOT;
+    if (slotOverride && !slotOverride.value) slotOverride.value = CONFIG.MY_DRAFT_SLOT;
+  }
+
   // Fetch in parallel
   setPill('statusSleeper', '', 'Sleeper…');
   setPill('statusBoard', '', 'Board…');
@@ -3981,6 +4079,7 @@ async function boot() {
     setPill('statusPlan', 'warn', 'Plan · using fallback');
   }
   renderDebug();
+  renderRosterTab();
 
   setPill('statusTargets', '', 'Targets…');
   try {
@@ -4045,6 +4144,7 @@ document.getElementById('tabs').addEventListener('click', e => {
   if (target === 'debug') renderDebug();
   if (target === 'pickcurve') renderPickValues();
   if (target === 'history') renderHistory();
+  if (target === 'roster' && !draftState.connected) renderRosterTab();
 });
 
 document.getElementById('mySlotInput').addEventListener('input', () => renderPickValues());
