@@ -1135,6 +1135,16 @@ const CONFIG = {
   // change to any team abbreviation to re-point the analysis.
   HOMER_WATCH_TEAM: 'ATL',
 
+  // Prior-season Sleeper league IDs, newest first. Only needed when the
+  // commissioner creates a new league each year instead of renewing —
+  // that leaves previous_league_id null and the History tab resolves
+  // only the current season. Find each year's ID in its Sleeper URL:
+  // sleeper.com/leagues/<THIS NUMBER>/team
+  PRIOR_LEAGUE_IDS: [
+    // '2025 league id here',
+    // '2024 league id here',
+  ],
+
   // Google Sheets (published board data)
   SHEET_ID:   '1iMdzr7FAu6qFi5JlV7eGHNhSjIWQ6DyFyoV5wmrOMSg',
   SHEETS: {
@@ -1378,7 +1388,34 @@ async function loadHistoryChain() {
     seasons.push({ id: currentId, season: meta.season, meta });
     currentId = meta.previous_league_id;
   }
-  seasons.reverse(); // oldest first
+
+  // Manual chain seeding. Sleeper only links seasons via previous_league_id
+  // when the commissioner uses "renew league"; a commish who creates a brand
+  // new league each year leaves that field null, so the walk above stops at
+  // the current season and the whole History tab comes back empty. Listing
+  // prior league IDs in CONFIG.PRIOR_LEAGUE_IDS splices them in manually.
+  // Each is walked too, so naming just the most recent orphan can pull in
+  // anything chained behind it. Failures here are non-fatal — a bad ID is
+  // recorded and skipped rather than blowing up the whole tab.
+  state.historySeedErrors = [];
+  for (const seedId of (CONFIG.PRIOR_LEAGUE_IDS || [])) {
+    let cid = seedId;
+    let seedHops = 0;
+    while (cid && cid !== '0' && seedHops < MAX_SEASONS_BACK) {
+      seedHops++;
+      if (seasons.some(s => s.id === cid)) break; // already have it, don't duplicate
+      try {
+        const meta = await fetchLeagueMetaFor(cid);
+        seasons.push({ id: cid, season: meta.season, meta });
+        cid = meta.previous_league_id;
+      } catch (e) {
+        state.historySeedErrors.push(`${cid}: ${e.message}`);
+        break;
+      }
+    }
+  }
+
+  seasons.sort((a, b) => Number(a.season) - Number(b.season)); // oldest first
 
   for (const s of seasons) {
     const [users, rosters] = await Promise.all([fetchUsersFor(s.id), fetchRostersFor(s.id)]);
@@ -1477,9 +1514,16 @@ function histTeamDraftBias(seasons, nflTeam) {
 function renderTeamBiasCardHtml(seasons, nflTeam) {
   const data = histTeamDraftBias(seasons, nflTeam);
   if (!data) {
+    const withDrafts = seasons.filter(s => s.draftPicks && s.draftPicks.length);
+    let why;
+    if (!withDrafts.length) {
+      why = `None of the ${seasons.length} loaded season${seasons.length !== 1 ? 's' : ''} contain draft picks — the ${seasons.length === 1 ? 'only season on record is the current one, which hasn\'t drafted yet' : 'chain returned no draft boards'}. If prior seasons exist on Sleeper but aren't showing up, the commissioner likely created a new league each year instead of renewing, which leaves <code>previous_league_id</code> null. Add those league IDs to <code>CONFIG.PRIOR_LEAGUE_IDS</code> to splice them in.`;
+    } else {
+      why = `Draft boards loaded (${withDrafts.map(s => s.season).join(', ')}) but no ${escapeHtml(nflTeam)} players were found in them. Either no one drafted this team, or picks lack team metadata.`;
+    }
     return `<div class="hist-card">
       <h4>Homer Watch — ${escapeHtml(nflTeam)}</h4>
-      <p class="hist-note">No ${escapeHtml(nflTeam)} players found in the captured draft boards. Either the chain didn't return draft picks, or picks lack team metadata.</p>
+      <p class="hist-note">${why}</p>
     </div>`;
   }
   const share = data.totalDraftedPlayers ? (data.total / data.totalDraftedPlayers * 100) : 0;
@@ -4048,6 +4092,15 @@ function renderDebug() {
       <div class="kv"><span class="kv-k">trade_deadline</span><span class="kv-v">${l.settings ? l.settings.trade_deadline : ''}</span></div>
     </div>`);
   }
+
+  cards.push(`<div class="debug-card">
+    <h4>League History chain</h4>
+    <div class="kv"><span class="kv-k">seasons loaded</span><span class="kv-v">${state.history.seasons ? state.history.seasons.length : 'not loaded yet'}</span></div>
+    <div class="kv"><span class="kv-k">seasons w/ draft</span><span class="kv-v">${state.history.seasons ? state.history.seasons.filter(s => s.draftPicks && s.draftPicks.length).map(s => s.season).join(', ') || 'none' : '—'}</span></div>
+    <div class="kv"><span class="kv-k">CONFIG.PRIOR_LEAGUE_IDS</span><span class="kv-v">${(CONFIG.PRIOR_LEAGUE_IDS || []).length ? escapeHtml((CONFIG.PRIOR_LEAGUE_IDS || []).join(', ')) : 'empty'}</span></div>
+    ${(state.historySeedErrors && state.historySeedErrors.length) ? `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">seed errors: ${escapeHtml(state.historySeedErrors.join(' · '))}</div>` : ''}
+    ${state.history.seasons && state.history.seasons.length === 1 && !(CONFIG.PRIOR_LEAGUE_IDS || []).length ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Only 1 season resolved and no manual IDs set — previous_league_id is likely null (new league created each year rather than renewed). Add prior IDs to CONFIG.PRIOR_LEAGUE_IDS.</div>` : ''}
+  </div>`);
 
   cards.push(`<div class="debug-card">
     <h4>Round Plan</h4>
