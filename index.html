@@ -2923,9 +2923,17 @@ function perishabilityFor(player, ctx) {
     return { mult: 1.0, perish: null, repl: null, frac: 1, deferrable: false, label: '' };
   }
   const perish = player.vorp - repl;
-  // Negative-VORP players are last-bench darts; damping them is noise.
+  // A player at or below replacement is the MOST deferrable thing on the
+  // board — there is by definition nothing to lose by waiting. The earlier
+  // version bailed out here and left them at full must-fill urgency, which
+  // is exactly backwards: it let a 0.0-VORP DEF outrank a 41.3-VORP DEF on
+  // slot priority, because only the good one had been correctly demoted.
   if (player.vorp <= 0) {
-    return { mult: 1.0, perish, repl, frac: 1, deferrable: false, label: '' };
+    return {
+      mult: 1.0, perish, repl, frac: 0, deferrable: true,
+      surv: Math.round(pSurviveTo(player, ctx.nextPickNo, ctx.roomBias) * 100),
+      label: `at or below replacement (${player.vorp.toFixed(1)} VORP) — nothing is lost by waiting`
+    };
   }
   const frac = Math.max(0, Math.min(1, perish / player.vorp));
   const mult = 1.0;  // scoring is handled additively by lookaheadValue(); see note there
