@@ -3014,7 +3014,14 @@ function computeRecommendation(undrafted, round, currentPickNo = null, teams = 1
       // help my lineup at all" (a redundant QB2 outside its window), which
       // lookahead has no way to see. Bonuses are clamped away, penalties kept.
       const needFactor = perishCtx.nextPickNo != null ? Math.min(1, mult) : mult;
-      const ownValue = p.vorp * needFactor * appliedTierBonus * bye.mult * plan.mult * comp.mult;
+      // The tier-cliff bonus is ALSO an urgency claim ("take now or lose the
+      // tier"), and lookahead already measures that far better: E[replacement]
+      // is ADP-aware, so it knows a 21-point TE cliff doesn't matter if the
+      // guy's ADP says he survives to your next pick anyway. Left unclamped it
+      // double-counted and let a 1.6x multiplier on a 60-VORP TE beat an
+      // 84-VORP RB. Penalties are kept, bonuses are surrendered to lookahead.
+      const tierFactor = perishCtx.nextPickNo != null ? Math.min(1, appliedTierBonus) : appliedTierBonus;
+      const ownValue = p.vorp * needFactor * tierFactor * bye.mult * plan.mult * comp.mult;
       const score = ownValue + look.bonus;
 
       // Effective slot priority. A must-fill slot is only URGENT if it's
