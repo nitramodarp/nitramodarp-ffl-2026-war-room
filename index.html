@@ -1258,6 +1258,7 @@ const state = {
   // League history (lazy-loaded on first History tab open)
   history: {
     seasons: null,      // array, oldest -> newest, once loaded
+    lightweight: false, // true when only draftPicks/rosters/bracket were fetched (boot background load), not weekly scoring/transactions
     loading: false,
     error: null,
     activeTab: 'overview',
@@ -1403,7 +1404,7 @@ async function fetchTransactionsFor(id, round) {
   return resp.json();
 }
 
-async function loadHistoryChain() {
+async function loadHistoryChain(light = false) {
   const seasons = [];
   let currentId = CONFIG.LEAGUE_ID;
   let hops = 0;
@@ -1454,12 +1455,6 @@ async function loadHistoryChain() {
 
     s.bracket = await fetchBracketFor(s.id);
 
-    s.weeklyMatchups = [];
-    const weekProms = [];
-    for (let w = 1; w <= MAX_WEEKS; w++) weekProms.push(fetchMatchupsFor(s.id, w));
-    const weekResults = await Promise.all(weekProms);
-    weekResults.forEach((wk, idx) => { if (wk && wk.length) s.weeklyMatchups.push({ week: idx + 1, matchups: wk }); });
-
     const drafts = await fetchDraftsFor(s.id);
     if (drafts && drafts.length) {
       s.draftId = drafts[0].draft_id;
@@ -1468,12 +1463,32 @@ async function loadHistoryChain() {
       s.draftPicks = [];
     }
 
-    const txProms = [];
-    for (let w = 1; w <= MAX_WEEKS; w++) txProms.push(fetchTransactionsFor(s.id, w));
-    const txResults = await Promise.all(txProms);
-    let allTx = [];
-    txResults.forEach(arr => { if (arr && arr.length) allTx = allTx.concat(arr); });
-    s.transactions = allTx.filter(t => t.status === 'complete');
+    // weeklyMatchups (18 calls) and transactions (18 calls) per season only
+    // feed History-tab-only cards (weekly scoring medians, churn analysis,
+    // DEF-streaming-activity) — nothing applyHistoricalPlan() uses for the
+    // Round Plan / roster-target / DEF-discount math needs them. `light`
+    // skips ~36 of ~41 calls per season. Used for the automatic background
+    // load at boot (which now runs on EVERY page load, including live on
+    // draft day) so it doesn't hammer Sleeper's API or a phone's connection
+    // for data nobody's looking at yet. The History tab itself always asks
+    // for the full fetch when actually opened.
+    if (!light) {
+      s.weeklyMatchups = [];
+      const weekProms = [];
+      for (let w = 1; w <= MAX_WEEKS; w++) weekProms.push(fetchMatchupsFor(s.id, w));
+      const weekResults = await Promise.all(weekProms);
+      weekResults.forEach((wk, idx) => { if (wk && wk.length) s.weeklyMatchups.push({ week: idx + 1, matchups: wk }); });
+
+      const txProms = [];
+      for (let w = 1; w <= MAX_WEEKS; w++) txProms.push(fetchTransactionsFor(s.id, w));
+      const txResults = await Promise.all(txProms);
+      let allTx = [];
+      txResults.forEach(arr => { if (arr && arr.length) allTx = allTx.concat(arr); });
+      s.transactions = allTx.filter(t => t.status === 'complete');
+    } else {
+      s.weeklyMatchups = [];
+      s.transactions = [];
+    }
   }
   return seasons;
 }
@@ -3892,13 +3907,21 @@ async function renderHistory() {
   const host = document.getElementById('historyHost');
   const h = state.history;
 
-  if (h.seasons === null && !h.loading) {
+  // Two triggers: nothing loaded yet, or the background boot fetch already
+  // populated a LIGHT set (draftPicks/rosters/bracket only, no weekly
+  // scoring or transactions — see loadHistoryChain's `light` param). Opening
+  // this tab is the signal the person actually wants the full picture, so
+  // top it up to a full fetch rather than silently showing empty churn/
+  // weekly-scoring cards from data that was deliberately never fetched.
+  const needsFullFetch = (h.seasons === null || h.lightweight) && !h.loading;
+  if (needsFullFetch) {
     h.loading = true;
     h.error = null;
     setPill('statusHistory', '', 'History…');
     host.innerHTML = `<div class="state"><span class="spinner"></span><h3 style="margin-top:12px;">Loading league history…</h3><p>Walking the Sleeper chain back through previous seasons — standings, brackets, weekly scores, and drafts.</p><div class="hist-log" id="histLoadingLog"></div></div>`;
     try {
-      h.seasons = await loadHistoryChain();
+      h.seasons = await loadHistoryChain(false);
+      h.lightweight = false;
       h.loading = false;
       h.activeTab = 'overview';
       setPill('statusHistory', 'ok', `History · ${h.seasons.length} szn`);
@@ -4598,17 +4621,25 @@ async function boot() {
     // instead of kicking off a second, duplicate chain walk.
     state.history.loading = true;
     try {
-      const seasons = await loadHistoryChain();
+      // light:true — skips the ~36 weekly-matchup/transaction calls per
+      // season that only feed History-tab-only cards. This background load
+      // now runs on every page load (including live on draft day), so it
+      // only fetches what applyHistoricalPlan actually needs: draftPicks,
+      // rosters, users, bracket. The History tab tops itself up to a full
+      // fetch the moment it's actually opened (see renderHistory).
+      const seasons = await loadHistoryChain(true);
       state.history.seasons = seasons;
+      state.history.lightweight = true;
       state.history.loading = false;
       const applied = applyHistoricalPlan(seasons);
       setPill('statusHistory', applied ? 'ok' : 'warn', applied ? `History \u00b7 ${seasons.length} szn` : 'History · no drafts found');
       if (applied) { renderDebug(); if (state.board) renderRosterTab(); }
-      // If the person is already sitting on the History tab, refresh it —
-      // renderHistory() only self-triggers on tab click, so a background
-      // finish would otherwise leave a stale/loading view on screen.
+      // If the person is already sitting on the History tab, route back
+      // through renderHistory() rather than rendering directly — that's the
+      // entry point that knows to top a lightweight load up to a full one
+      // instead of showing incomplete weekly/churn cards.
       if (document.getElementById('tab-history')?.classList.contains('active')) {
-        renderHistoryBody();
+        renderHistory();
       }
     } catch (e) {
       state.history.loading = false;
