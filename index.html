@@ -1892,7 +1892,6 @@ const COL_ALIASES = {
   vorp:   ['VORP', 'Value Over Replacement'],
   adp:    ['FFC ADP', 'ADP', 'ADP (FFC half-PPR)', 'ADP (Half PPR)'],
   adprk:  ['ADP Rk', 'ADP Rank', 'ADP Rank (non-K)', 'ADP Rk (non-K)'],
-  fmtd:   ['Fmt Δ vs Std', 'Format Delta', 'Fmt Delta'],
 };
 
 // Round Plan / Sleeper Targets / Source Disagreements used to read hardcoded
@@ -4216,7 +4215,7 @@ function renderDebug() {
       return `<div class="kv"><span class="kv-k">${k}</span><span class="kv-v" style="color:${col};">${hit ? escapeHtml(hit) : 'NOT FOUND'}</span></div>`;
     }).join('')}
     ${(state.derived && state.derived.length) ? `<div style="color:var(--fg-mute); font-size:11px; margin-top:8px; font-family:var(--font-mono);">Derived client-side: ${escapeHtml(state.derived.join(' \u00b7 '))}</div>` : ''}
-    ${unres.length ? `<div style="color:var(--warn); font-size:11px; margin-top:8px; font-family:var(--font-mono);">Unresolved: ${escapeHtml(unres.join(', '))}. Expected \u2014 this workbook has no ADP-rank or format-delta column. adprk is derived from FFC ADP; fmtd is unused.</div>` : ''}
+    ${unres.length ? `<div style="color:var(--warn); font-size:11px; margin-top:8px; font-family:var(--font-mono);">Unresolved: ${escapeHtml(unres.join(', '))}. Expected \u2014 this workbook has no ADP-rank column; adprk is derived client-side from FFC ADP.</div>` : ''}
   </div>`);
 
   const traces = state.fetchTraces || {};
@@ -4267,7 +4266,7 @@ function renderDebug() {
     const aliasRows = state.resolvedAliases ? Object.entries(state.resolvedAliases)
       .map(([k, v]) => `<div class="kv"><span class="kv-k">${k}</span><span class="kv-v" style="font-size:10px;">${escapeHtml(v)}</span></div>`)
       .join('') : '';
-    const expected = ['ovr','pos','posrk','tier','name','team','bye','fps','vorp','adp','adprk','fmtd'];
+    const expected = ['ovr','pos','posrk','tier','name','team','bye','fps','vorp','adp','adprk'];
     const unresolved = state.resolvedAliases ? expected.filter(k => !state.resolvedAliases[k]) : expected;
     const unresolvedWarn = unresolved.length ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Unmatched fields: ${unresolved.join(', ')}</div>` : '';
     const derivedNote = state.derived && state.derived.length ? `<div style="color:var(--accent); font-size:11px; margin-top:6px; font-family:var(--font-mono);">↻ Derived client-side: ${state.derived.join(' · ')}</div>` : '';
