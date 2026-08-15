@@ -1671,6 +1671,18 @@ function histChampionQbRound(season) {
     .sort((a, b) => a.pick_no - b.pick_no);
   return qbPicks.length ? qbPicks[0].round : null;
 }
+// League-WIDE first pick of a position — i.e. "what round did the room's
+// very first DEF/QB actually go," across every team, not just the champion.
+// This is the number ROUND_PLAN's DEF1/QB-reach windows are supposed to be
+// based on. A draft that hasn't happened yet (this season) has no picks and
+// correctly returns null rather than a false zero.
+function histFirstPositionRound(season, pos) {
+  if (!season.draftPicks || !season.draftPicks.length) return null;
+  const picks = season.draftPicks.filter(p => p.metadata && p.metadata.position === pos);
+  if (!picks.length) return null;
+  return Math.min(...picks.map(p => p.round));
+}
+
 function histIsSeasonComplete(season) {
   // Sleeper marks a finished season 'complete'. Seasons still pre_draft/drafting/in_season
   // haven't accumulated real standings yet — including them in historical aggregates
@@ -2954,13 +2966,114 @@ function computeRecommendation(undrafted, round) {
    during the draft so a build drifting off-target (e.g. RB-heavy at
    WR's expense) surfaces as it happens, not after the fact.
    ============================================================ */
-const ROSTER_TARGET = {
+const ROSTER_TARGET_FALLBACK = {
   QB: { min: 1, max: 2, ideal: 2.0 },
   RB: { min: 4, max: 5, ideal: 4.5 },
   WR: { min: 4, max: 6, ideal: 5.0 },
   TE: { min: 1, max: 2, ideal: 1.5 },
   DEF:{ min: 2, max: 2, ideal: 2.0 },
 };
+// Mutated in place by applyHistoricalPlan() once real league history loads —
+// same object identity throughout so every existing reference (recommendation
+// engine, Composition Check) picks up the update automatically.
+const ROSTER_TARGET = { ...ROSTER_TARGET_FALLBACK };
+
+/* ============================================================
+   Derive ROUND_PLAN / ROSTER_TARGET from REAL league history
+   ------------------------------------------------------------
+   ROUND_PLAN and ROSTER_TARGET started as narrative text and round-number
+   guesses that read as if they came from this league's history but were
+   never actually computed from it. This is the fix: once loadHistoryChain()
+   resolves, pull the real numbers — league-wide first-DEF/QB pick round per
+   season (histFirstPositionRound) and real champion roster composition
+   (histRosterComposition, already used by the History tab) — and splice them
+   over the hardcoded rounds. Text stays close to the original phrasing so the
+   UI doesn't jar, but every number in it is now a real average, not a guess.
+   Falls back to the original hardcoded ROUND_PLAN when there's no usable
+   history (e.g. a fresh league, or the chain fails to resolve) — same
+   fallback behavior the sheet path already had, just a second-tier source
+   ahead of the sheet-less hardcoded text: SHEET > HISTORY > HARDCODED.
+   ============================================================ */
+function computeHistoricalRoundData(seasons) {
+  const completed = (seasons || []).filter(histIsSeasonComplete);
+  const withDraft = completed.filter(s => s.draftPicks && s.draftPicks.length);
+  if (withDraft.length < 1) return null; // nothing real to compute from yet
+
+  const round = (pos) => {
+    const vals = withDraft.map(s => histFirstPositionRound(s, pos)).filter(v => v != null);
+    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+  };
+  const defRound = round('DEF');
+  const qbRound = round('QB');
+
+  const compByseason = withDraft.map(s => histRosterComposition(s));
+  const posKeys = ['QB', 'RB', 'WR', 'TE', 'DEF'];
+  const champAvg = {};
+  posKeys.forEach(k => {
+    const rows = compByseason.map(c => c.rows.find(r => r.isChamp)).filter(Boolean);
+    const vals = rows.map(r => r[k]);
+    champAvg[k] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  });
+
+  return { seasonCount: withDraft.length, defRound, qbRound, champAvg,
+    seasonsLabel: withDraft.map(s => s.season).join(', ') };
+}
+
+function applyHistoricalPlan(seasons) {
+  const data = computeHistoricalRoundData(seasons);
+  if (!data) return false;
+
+  // Roster targets — only overwrite a position where we actually have a real
+  // champion-average number; keep the fallback ideal otherwise rather than
+  // silently zeroing something out.
+  Object.keys(ROSTER_TARGET_FALLBACK).forEach(pos => {
+    const real = data.champAvg[pos];
+    if (real == null) return;
+    const fb = ROSTER_TARGET_FALLBACK[pos];
+    ROSTER_TARGET[pos] = { min: fb.min, max: fb.max, ideal: Math.round(real * 10) / 10 };
+  });
+
+  // Round windows — splice real rounds into the existing ROUND_PLAN object
+  // in place (don't replace the object) so every reference elsewhere keeps
+  // working. Text is regenerated to cite the real observed round instead of
+  // the old guessed one.
+  if (data.defRound != null) {
+    const d1 = data.defRound, d2 = Math.min(d1 + 1, 15);
+    if (ROUND_PLAN[d1]) {
+      ROUND_PLAN[d1].primary = Array.from(new Set([...ROUND_PLAN[d1].primary, 'DEF']));
+      ROUND_PLAN[d1].strategy = 'DEF1 window opens';
+      ROUND_PLAN[d1].rationale = `Real history: the room's first DEF goes around round ${d1} on average across ${data.seasonCount} season${data.seasonCount !== 1 ? 's' : ''} (${data.seasonsLabel}) — a real DEF1-vs-replacement gap still exists uncontested this early.`;
+    }
+    if (ROUND_PLAN[d2] && d2 !== d1) {
+      ROUND_PLAN[d2].primary = Array.from(new Set([...ROUND_PLAN[d2].primary, 'DEF']));
+    }
+    const d3 = Math.min(d1 + 3, 15); // DEF2 window, a few rounds after DEF1
+    if (ROUND_PLAN[d3]) {
+      ROUND_PLAN[d3].primary = Array.from(new Set([...ROUND_PLAN[d3].primary, 'DEF']));
+      ROUND_PLAN[d3].strategy = 'DEF2';
+      ROUND_PLAN[d3].rationale = `Champions in ${data.seasonCount} tracked season${data.seasonCount !== 1 ? 's' : ''} averaged ${data.champAvg.DEF != null ? data.champAvg.DEF.toFixed(1) : '?'} DEFs rostered — bye/matchup coverage, not chasing streams.`;
+    }
+  }
+  if (data.qbRound != null) {
+    for (let r = Math.max(1, data.qbRound - 1); r <= Math.min(15, data.qbRound + 1); r++) {
+      if (ROUND_PLAN[r]) {
+        ROUND_PLAN[r].primary = Array.from(new Set([...ROUND_PLAN[r].primary, 'QB']));
+      }
+    }
+    if (ROUND_PLAN[data.qbRound]) {
+      ROUND_PLAN[data.qbRound].rationale = `Real history: the room's first QB goes around round ${data.qbRound} on average across ${data.seasonCount} season${data.seasonCount !== 1 ? 's' : ''} (${data.seasonsLabel}) — under this league's 7-pt-TD scoring, that's still well ahead of where the market would price an elite QB.`;
+    }
+  }
+
+  state.roundPlanHistorySource = `history \u00b7 ${data.seasonCount} season${data.seasonCount !== 1 ? 's' : ''} (${data.seasonsLabel})`;
+  // Only take over the "source" label shown in the UI if a live sheet with
+  // real Strategy/Rationale content hasn't already claimed it — sheet still
+  // wins if it's ever populated (see loadRoundPlan's hasStrategy guard).
+  if (!state.roundPlanSource || state.roundPlanSource.startsWith('fallback')) {
+    state.roundPlanSource = state.roundPlanHistorySource;
+  }
+  return true;
+}
 const compositionAlertsFired = new Set(); // position keys already notified this session, so we alert once per crossing, not every re-render
 let notificationsEnabled = false;
 
@@ -3582,7 +3695,7 @@ function renderDraftTab() {
     <div style="font-size:12.5px; color:var(--fg-mute); line-height:1.6;">
       ${compDeviations.map(d => `<div><strong style="color:${d.status === 'over' ? 'var(--down)' : 'var(--warn)'};">${escapeHtml(d.pos)} ${d.have}</strong> — target ${d.target.min}${d.target.min !== d.target.max ? '-' + d.target.max : ''} (${d.status === 'over' ? 'over' : 'under, so far'})</div>`).join('')}
     </div>
-    <div style="font-size:11px; color:var(--fg-dim); margin-top:8px;">Target ranges come from the History tab's champion-average roster composition. This isn't a hard rule — just a flag that your build is drifting from what's actually won here.</div>
+    <div style="font-size:11px; color:var(--fg-dim); margin-top:8px;">${state.roundPlanHistorySource ? `Target ranges are real champion-average composition from ${escapeHtml(state.roundPlanHistorySource)}.` : `Target ranges are built-in defaults, not yet confirmed against real league history — see the History tab.`} This isn't a hard rule — just a flag that your build is drifting from what's actually won here.</div>
   </div>` : '';
 
   const planDivergence = recTopPos && !currentPlan.primary.includes(recTopPos)
@@ -4243,7 +4356,10 @@ function renderDebug() {
     <div class="kv"><span class="kv-k">source</span><span class="kv-v">${escapeHtml(state.roundPlanSource || 'unknown')}</span></div>
     <div class="kv"><span class="kv-k">sheet name</span><span class="kv-v">${escapeHtml(CONFIG.SHEETS.roundPlan)}</span></div>
     <div class="kv"><span class="kv-k">rounds loaded</span><span class="kv-v">${Object.keys(ROUND_PLAN).length}</span></div>
-    ${state.roundPlanSource && state.roundPlanSource.startsWith('fallback') ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Using built-in defaults — publish the "Round Plan" tab to the same Google Sheet as the Board to make it the live source.</div>` : ''}
+    ${state.roundPlanSource && state.roundPlanSource.startsWith('fallback') && !state.roundPlanHistorySource ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Using built-in guesses — neither the sheet nor league history has resolved yet.</div>` : ''}
+    ${state.roundPlanHistorySource ? `<div class="kv"><span class="kv-k">history data</span><span class="kv-v" style="color:var(--up);">${escapeHtml(state.roundPlanHistorySource)}</span></div>
+      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">DEF1/DEF2 round windows and ROSTER_TARGET ideals are now real averages computed from actual draft picks in this league's Sleeper history, not guesses. Recomputed automatically whenever the History chain reloads.</div>`
+      : `<div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">League history hasn't resolved yet (loads in the background at boot) — round windows are still the original hardcoded guesses. Check CONFIG.PRIOR_LEAGUE_IDS if this persists.</div>`}
   </div>`);
 
   if (state.board) {
@@ -4380,6 +4496,37 @@ async function boot() {
   }
   renderDebug();
   renderRosterTab();
+
+  // History runs in the background rather than blocking boot — it's several
+  // seasons of Sleeper API calls (standings, brackets, weekly scores,
+  // drafts) and the draft can't wait on it. Applying it the moment it
+  // resolves means the Round Plan and Composition Check upgrade from
+  // hardcoded guesses to real numbers mid-session, whether or not the
+  // person ever opens the History tab.
+  (async () => {
+    // Shares the same state.history.loading flag renderHistory() checks, so
+    // clicking into the History tab mid-fetch shows the loading state
+    // instead of kicking off a second, duplicate chain walk.
+    state.history.loading = true;
+    try {
+      const seasons = await loadHistoryChain();
+      state.history.seasons = seasons;
+      state.history.loading = false;
+      const applied = applyHistoricalPlan(seasons);
+      setPill('statusHistory', applied ? 'ok' : 'warn', applied ? `History \u00b7 ${seasons.length} szn` : 'History · no drafts found');
+      if (applied) { renderDebug(); if (state.board) renderRosterTab(); }
+      // If the person is already sitting on the History tab, refresh it —
+      // renderHistory() only self-triggers on tab click, so a background
+      // finish would otherwise leave a stale/loading view on screen.
+      if (document.getElementById('tab-history')?.classList.contains('active')) {
+        renderHistoryBody();
+      }
+    } catch (e) {
+      state.history.loading = false;
+      state.errors.push('History (background): ' + e.message);
+      setPill('statusHistory', 'err', 'History failed');
+    }
+  })();
 
   setPill('statusTargets', '', 'Targets…');
   try {
