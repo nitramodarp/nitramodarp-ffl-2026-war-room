@@ -1204,8 +1204,30 @@ function parseCSV(text) {
   return rows;
 }
 
+// Several workbook tabs (Round Plan, Sleeper Targets) open with a prose
+// description row before the real header row. Using row 0 blindly turned that
+// sentence into a column name and produced zero usable records. Score the
+// first few rows and take the one that actually looks like headers: several
+// short, non-empty, distinct cells.
+function findHeaderRow(rows) {
+  const limit = Math.min(5, rows.length);
+  let bestIdx = 0, bestScore = -1;
+  for (let i = 0; i < limit; i++) {
+    const cells = rows[i].map(c => String(c ?? '').trim());
+    const good = cells.filter(c => c !== '' && c.length <= 40);
+    const distinct = new Set(good.map(c => c.toLowerCase())).size;
+    // Long prose in any cell is a strong signal this is a description row.
+    const prose = cells.some(c => c.length > 60);
+    const score = (prose ? -5 : 0) + distinct;
+    if (score > bestScore) { bestScore = score; bestIdx = i; }
+  }
+  return bestScore >= 2 ? bestIdx : 0;
+}
+
 function csvToObjects(rows) {
   if (rows.length < 2) return [];
+  const hIdx = findHeaderRow(rows);
+  if (hIdx > 0) rows = rows.slice(hIdx);
   const headers = rows[0].map(h => h.trim());
   return rows.slice(1)
     .filter(r => r.some(v => v && v.trim() !== ''))
@@ -1859,22 +1881,26 @@ function histTransactionSummary(season) {
    derive it client-side so the UI stays whole.
    ============================================================ */
 const COL_ALIASES = {
-  ovr:    ['Ovr Rk', 'OVR (VORP)', 'OVR', 'Overall Rk', 'Overall Rank', 'Rank'],
+  // 'Ovr Rank' / 'Pos Rank' / 'FFC ADP' / 'Custom Pts' are the ACTUAL headers in
+  // FFL_2026_Custom_Draft_Board.xlsx as of the Aug 12 Ciely rebuild — verified
+  // against the live sheet, not guessed. Kept alongside the older spellings so
+  // an older export still loads.
+  ovr:    ['Ovr Rank', 'Ovr Rk', 'OVR (VORP)', 'OVR', 'Overall Rk', 'Overall Rank', 'Rank'],
   pos:    ['Pos', 'POS', 'Position'],
-  posrk:  ['Pos Rk', 'Position Rank', 'POS Rk'],
+  posrk:  ['Pos Rank', 'Pos Rk', 'Position Rank', 'POS Rk'],
   tier:   ['Tier'],
   name:   ['Player', 'Name', 'Player Name'],
   team:   ['Team', 'TM'],
   bye:    ['Bye', 'BYE', 'Bye Week'],
   // Widened aggressively: the workbook's FPS header has changed shape across
   // rebuilds and a miss here silently zeroes the Projected Season Points card.
-  fps:    ['FPS', 'FPS (League scoring)', 'Fantasy Points', 'Points', 'FPTS',
+  fps:    ['Custom Pts', 'FPS', 'FPS (League scoring)', 'Fantasy Points', 'Points', 'FPTS',
            'Proj Pts', 'Proj Points', 'Projected Points', 'Projected Pts',
            'Proj FPS', 'Season Pts', 'Season Points', 'Total Points', 'Total Pts',
            'Custom Pts', 'Custom Points', 'Custom Scoring', 'League Pts',
            'Fantasy Pts', 'Pts', 'FP', 'Proj', 'Projection'],
   vorp:   ['VORP', 'Value Over Replacement'],
-  adp:    ['ADP', 'ADP (FFC half-PPR)', 'ADP (Half PPR)'],
+  adp:    ['FFC ADP', 'ADP', 'ADP (FFC half-PPR)', 'ADP (Half PPR)'],
   adprk:  ['ADP Rk', 'ADP Rank', 'ADP Rank (non-K)', 'ADP Rk (non-K)'],
   fmtd:   ['Fmt Δ vs Std', 'Format Delta', 'Fmt Delta'],
 };
@@ -2632,6 +2658,18 @@ async function loadRoundPlan() {
   const rows = await fetchSheet(CONFIG.SHEETS.roundPlan);
   const parsed = normalizeRoundPlan(rows);
   if (!Object.keys(parsed).length) throw new Error('Round Plan sheet fetched but produced 0 usable rows.');
+  // The live "Round Plan" tab is a pick-number reference (Round | Pick |
+  // Overall # | Available near this range) — it has no Strategy/Primary
+  // Positions columns. Adopting it would replace the built-in strategy text
+  // with empty "Round N" placeholders and feed the recommendation engine a
+  // default RB/WR target for every round. Only take the sheet if it actually
+  // carries strategy content.
+  const hasStrategy = Object.values(parsed).some(v =>
+    (v.rationale && v.rationale.trim()) ||
+    (v.strategy && !/^Round \d+$/.test(v.strategy.trim())));
+  if (!hasStrategy) {
+    throw new Error(`Round Plan sheet has ${Object.keys(parsed).length} rows but no Strategy/Rationale columns — keeping built-in plan. Add "Strategy" and "Rationale" columns to make the sheet authoritative.`);
+  }
   Object.keys(ROUND_PLAN).forEach(k => delete ROUND_PLAN[k]);
   Object.assign(ROUND_PLAN, parsed);
   state.roundPlanSource = `sheet · ${Object.keys(parsed).length} rounds`;
@@ -2662,6 +2700,9 @@ function normalizeTargets(rows) {
 
 async function loadSleeperTargets() {
   const rows = await fetchSheet(CONFIG.SHEETS.targets);
+  if (servedWrongTab(CONFIG.SHEETS.targets)) {
+    throw new Error(`No tab named "${CONFIG.SHEETS.targets}" — Google served the Overall Board instead.`);
+  }
   const parsed = normalizeTargets(rows);
   state.targets = parsed;
   state.targetsSource = `sheet \u00b7 ${parsed.length} player${parsed.length !== 1 ? 's' : ''}`;
@@ -2674,8 +2715,24 @@ function targetBoardMatch(target) {
   return state.board.find(p => draftNormName(p.name) === norm) || null;
 }
 
+// Google's gviz endpoint does NOT error on an unknown sheet name — it quietly
+// serves the workbook's FIRST tab instead. That made a missing/renamed tab look
+// like a successful 479-row fetch that just happened to yield nothing usable.
+// Compare against the board's headers to catch it.
+function servedWrongTab(sheetName) {
+  const t = (state.fetchTraces || {})[sheetName];
+  const b = (state.fetchTraces || {})[CONFIG.SHEETS.board];
+  if (!t || !b || !t.headers || !b.headers) return false;
+  if (sheetName === CONFIG.SHEETS.board) return false;
+  return t.headers.length === b.headers.length &&
+         t.headers.every((h, i) => h === b.headers[i]);
+}
+
 async function loadDisagreements() {
   const rows = await fetchSheet(CONFIG.SHEETS.disagreements);
+  if (servedWrongTab(CONFIG.SHEETS.disagreements)) {
+    throw new Error(`No tab named "${CONFIG.SHEETS.disagreements}" — Google served the Overall Board instead. Rename the tab to match, or set CONFIG.SHEETS.disagreements to a tab that exists.`);
+  }
   const map = {};
   let count = 0;
   rows.forEach(r => {
@@ -4211,7 +4268,9 @@ function renderDebug() {
           <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-dim); word-break:break-word; padding-left:2px;">${hdrs}</div>
         </div>`;
       }).join('')}
-      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Every sheet keeps its own trace now, so these no longer overwrite each other.</div>
+      ${Object.keys(traces).filter(n => servedWrongTab(n)).map(n =>
+        `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">\u26A0 "${escapeHtml(n)}" returned the Overall Board's headers \u2014 that tab almost certainly does not exist. Google serves the first tab for unknown sheet names.</div>`).join('')}
+      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Every sheet keeps its own trace now, so these no longer overwrite each other. Workbook tabs: Overall Board, QB/RB/WR/TE/DEF Ranks, ADP Mispricings, Sleeper Targets, Bye Week Map, Round Plan, Draft Day Plan, Methodology &amp; Assumptions.</div>
     </div>`);
   }
 
@@ -4378,7 +4437,7 @@ async function boot() {
     // Non-fatal — advisory data. If the sheet isn't published, badges just
     // don't appear; nothing else is affected.
     state.errors.push('Source Disagreements: ' + e.message);
-    setPill('statusFlags', 'warn', 'Flags · not published yet');
+    setPill('statusFlags', 'warn', /No tab named/.test(e.message) ? 'Flags · no such tab' : 'Flags · not published yet');
   }
   renderDebug();
 }
