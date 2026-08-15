@@ -1155,10 +1155,12 @@ const CONFIG = {
     te:         'TE Ranks',
     def:        'DEF Ranks',
     mispricing: 'ADP Mispricings',
-    pickcurve:  'Pick Value Curve',
+    pickcurve:  null,   // no such tab, and nothing in the app reads it
     roundPlan:  'Round Plan',
     targets:    'Sleeper Targets',
-    disagreements: 'Source Disagreements',
+    // No such tab in FFL_2026_Custom_Draft_Board.xlsx (verified against the
+    // live workbook). Null = skip cleanly; set a real tab name to re-enable.
+    disagreements: null,
   },
 
   // Sleeper API base
@@ -1204,24 +1206,19 @@ function parseCSV(text) {
   return rows;
 }
 
-// Several workbook tabs (Round Plan, Sleeper Targets) open with a prose
-// description row before the real header row. Using row 0 blindly turned that
-// sentence into a column name and produced zero usable records. Score the
-// first few rows and take the one that actually looks like headers: several
-// short, non-empty, distinct cells.
+// Some workbook tabs put an explanatory note in cell A1 with the real headers
+// beside it in B1 onward; others put a standalone title row above the headers.
+// Take the FIRST row carrying at least 3 short, non-empty cells. A long note
+// sitting next to real headers is harmless (it becomes an unused column name),
+// so presence of headers is what matters — not absence of prose.
 function findHeaderRow(rows) {
-  const limit = Math.min(5, rows.length);
-  let bestIdx = 0, bestScore = -1;
+  const limit = Math.min(6, rows.length);
   for (let i = 0; i < limit; i++) {
     const cells = rows[i].map(c => String(c ?? '').trim());
-    const good = cells.filter(c => c !== '' && c.length <= 40);
-    const distinct = new Set(good.map(c => c.toLowerCase())).size;
-    // Long prose in any cell is a strong signal this is a description row.
-    const prose = cells.some(c => c.length > 60);
-    const score = (prose ? -5 : 0) + distinct;
-    if (score > bestScore) { bestScore = score; bestIdx = i; }
+    const shortCells = cells.filter(c => c !== '' && c.length <= 40);
+    if (new Set(shortCells.map(c => c.toLowerCase())).size >= 3) return i;
   }
-  return bestScore >= 2 ? bestIdx : 0;
+  return 0;
 }
 
 function csvToObjects(rows) {
@@ -1255,7 +1252,6 @@ const state = {
   fetchTrace: null,
   fetchTraces: {},
   unresolvedCols: [],
-  inferredCols: {},
 
   // League history (lazy-loaded on first History tab open)
   history: {
@@ -1298,10 +1294,9 @@ async function fetchSheet(sheetName) {
     objectCount: null,
   };
   state.fetchTrace = trace;
-  // Per-sheet traces. The single shared fetchTrace field was overwritten by
-  // each sequential fetch, so the Debug tab only ever showed the LAST sheet
-  // (Source Disagreements) — which is why the board's real column headers
-  // were never visible while the FPS column was silently failing to resolve.
+  // Per-sheet traces. The single shared fetchTrace was overwritten by each
+  // sequential fetch, so the Debug tab only ever showed the LAST sheet — which
+  // is why the board's real headers stayed invisible while FPS silently failed.
   state.fetchTraces = state.fetchTraces || {};
   state.fetchTraces[sheetName] = trace;
 
@@ -1881,10 +1876,9 @@ function histTransactionSummary(season) {
    derive it client-side so the UI stays whole.
    ============================================================ */
 const COL_ALIASES = {
-  // 'Ovr Rank' / 'Pos Rank' / 'FFC ADP' / 'Custom Pts' are the ACTUAL headers in
-  // FFL_2026_Custom_Draft_Board.xlsx as of the Aug 12 Ciely rebuild — verified
-  // against the live sheet, not guessed. Kept alongside the older spellings so
-  // an older export still loads.
+  // 'Ovr Rank' / 'Pos Rank' / 'Custom Pts' / 'FFC ADP' are the ACTUAL headers in
+  // FFL_2026_Custom_Draft_Board.xlsx after the Aug 12 Ciely rebuild — read off
+  // the live sheet, not guessed. Older spellings kept so a prior export loads.
   ovr:    ['Ovr Rank', 'Ovr Rk', 'OVR (VORP)', 'OVR', 'Overall Rk', 'Overall Rank', 'Rank'],
   pos:    ['Pos', 'POS', 'Position'],
   posrk:  ['Pos Rank', 'Pos Rk', 'Position Rank', 'POS Rk'],
@@ -1892,46 +1886,38 @@ const COL_ALIASES = {
   name:   ['Player', 'Name', 'Player Name'],
   team:   ['Team', 'TM'],
   bye:    ['Bye', 'BYE', 'Bye Week'],
-  // Widened aggressively: the workbook's FPS header has changed shape across
-  // rebuilds and a miss here silently zeroes the Projected Season Points card.
-  fps:    ['Custom Pts', 'FPS', 'FPS (League scoring)', 'Fantasy Points', 'Points', 'FPTS',
-           'Proj Pts', 'Proj Points', 'Projected Points', 'Projected Pts',
-           'Proj FPS', 'Season Pts', 'Season Points', 'Total Points', 'Total Pts',
-           'Custom Pts', 'Custom Points', 'Custom Scoring', 'League Pts',
-           'Fantasy Pts', 'Pts', 'FP', 'Proj', 'Projection'],
+  fps:    ['Custom Pts', 'FPS', 'FPS (League scoring)', 'Fantasy Points', 'Points',
+           'FPTS', 'Proj Pts', 'Projected Points', 'Season Pts', 'Total Points',
+           'Custom Points', 'Fantasy Pts', 'Pts'],
   vorp:   ['VORP', 'Value Over Replacement'],
   adp:    ['FFC ADP', 'ADP', 'ADP (FFC half-PPR)', 'ADP (Half PPR)'],
   adprk:  ['ADP Rk', 'ADP Rank', 'ADP Rank (non-K)', 'ADP Rk (non-K)'],
   fmtd:   ['Fmt Δ vs Std', 'Format Delta', 'Fmt Delta'],
 };
 
-// The Round Plan / Sleeper Targets / Source Disagreements loaders used to read
-// hardcoded exact header strings (r['Gap (Ciely - FP)'] etc.). One renamed
-// column in the workbook silently produced zero rows, which is exactly what
-// the "using fallback / 0 players / 0 flagged" status pills were reporting.
-// They now go through the same fuzzy pickCol() path as the board.
+// Round Plan / Sleeper Targets / Source Disagreements used to read hardcoded
+// exact headers (r['Gap (Ciely - FP)'] etc.). One renamed column produced zero
+// rows silently — which is what the "using fallback / 0 players / 0 flagged"
+// pills were reporting. They now use the same fuzzy pickCol() path as the board.
 const PLAN_ALIASES = {
   round:     ['Round', 'Rd', 'Rnd', 'Round #'],
-  primary:   ['Primary Positions', 'Primary', 'Positions', 'Target Positions', 'Targets'],
+  primary:   ['Primary Positions', 'Primary', 'Positions', 'Target Positions'],
   strategy:  ['Strategy', 'Plan', 'Theme', 'Headline', 'Title'],
-  rationale: ['Rationale', 'Notes', 'Note', 'Reasoning', 'Why', 'Detail', 'Details'],
+  rationale: ['Rationale', 'Notes', 'Note', 'Reasoning', 'Why', 'Detail'],
 };
 const TARGET_ALIASES = {
   name:     ['Player', 'Name', 'Player Name', 'Target'],
-  posHint:  ['Position', 'Pos', 'POS'],
+  posHint:  ['Pos', 'Position', 'POS'],
   note:     ['Note', 'Notes', 'Rationale', 'Why', 'Comment'],
-  priority: ['Priority', 'Tier', 'Rank', 'Level'],
+  priority: ['Priority', 'Tier', 'Level'],
 };
 const DISAGREE_ALIASES = {
   name: ['Player', 'Name', 'Player Name'],
   flag: ['Flag', 'Status', 'Severity'],
-  gap:  ['Gap (Ciely - FP)', 'Gap (Ciely-FP)', 'Gap', 'Delta', 'Diff',
-         'Ciely - FP', 'Rank Gap', 'Gap vs FP'],
+  gap:  ['Gap (Ciely - FP)', 'Gap (Ciely-FP)', 'Gap', 'Delta', 'Diff', 'Rank Gap'],
   lean: ['Lean', 'Direction', 'Side', 'Recommendation'],
 };
 
-// Convenience wrapper: fuzzy-resolve a field, returning '' when absent so
-// callers can keep using plain string logic.
 function fieldOf(row, aliases) {
   const hit = pickCol(row, aliases);
   return hit.value == null ? '' : String(hit.value);
@@ -1977,32 +1963,7 @@ function normalizeBoard(rows) {
   state.boardDropped = mapped.length - kept.length;
   state.resolvedAliases = resolvedAliases;
   state.unresolvedCols = Object.keys(COL_ALIASES).filter(k => !resolvedAliases[k]);
-  state.inferredCols = {};
   state.derived = [];
-
-  // Last-resort FPS recovery. If none of the aliases matched, look for an
-  // unclaimed numeric column that behaves like a season-points total (large
-  // magnitude, mostly populated) and adopt it — loudly, so the Debug tab and
-  // the board banner both say which header was guessed. Better than a silent
-  // zero, but it is a GUESS: verify it before trusting the points total.
-  if (!resolvedAliases.fps && rows.length) {
-    const claimed = new Set(Object.values(resolvedAliases).map(normalizeColName));
-    let best = null;
-    Object.keys(rows[0]).forEach(h => {
-      if (claimed.has(normalizeColName(h))) return;
-      const vals = rows.map(r => Number(r[h])).filter(v => !isNaN(v) && v !== 0);
-      if (vals.length < rows.length * 0.6) return;
-      const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
-      const max = Math.max(...vals);
-      if (mean < 60 || max < 150) return;             // too small to be season points
-      if (!best || mean > best.mean) best = { header: h, mean, max };
-    });
-    if (best) {
-      mapped.forEach((p, i) => { if (p.fps == null) p.fps = num(rows[i][best.header]); });
-      state.inferredCols.fps = best.header;
-      state.derived.push(`fps (GUESSED from unclaimed column "${best.header}" — verify)`);
-    }
-  }
 
   computeMissingFields(kept);
   return kept;
@@ -2027,6 +1988,18 @@ function computeMissingFields(rows) {
       list.forEach((p, i) => { if (p.posrk == null) p.posrk = i + 1; });
     });
     state.derived.push('posrk (from VORP desc within pos)');
+  }
+
+  // 2b. Client-side ADPRK. The workbook has an ADP *value* column (FFC ADP,
+  //     e.g. Houston at 110.7) but no ADP *rank* column, and none is planned.
+  //     adprk is not cosmetic: the board's DIFF column is (adprk - ovr), and
+  //     the Pick Values tab filters on `adprk != null` — so without this the
+  //     DIFF column renders blank and the Pick Values tab comes up empty.
+  //     Rank by ADP ascending across everyone who has an ADP.
+  if (rows.some(p => p.adprk == null) && rows.some(p => p.adp != null)) {
+    const ranked = rows.filter(p => p.adp != null).sort((a, b) => a.adp - b.adp);
+    ranked.forEach((p, i) => { if (p.adprk == null) p.adprk = i + 1; });
+    state.derived.push('adprk (from FFC ADP ascending)');
   }
 
   // 3. Client-side TIER: within each position, new tier when drop between
@@ -2659,16 +2632,15 @@ async function loadRoundPlan() {
   const parsed = normalizeRoundPlan(rows);
   if (!Object.keys(parsed).length) throw new Error('Round Plan sheet fetched but produced 0 usable rows.');
   // The live "Round Plan" tab is a pick-number reference (Round | Pick |
-  // Overall # | Available near this range) — it has no Strategy/Primary
-  // Positions columns. Adopting it would replace the built-in strategy text
-  // with empty "Round N" placeholders and feed the recommendation engine a
-  // default RB/WR target for every round. Only take the sheet if it actually
-  // carries strategy content.
+  // Overall # | Available near this range). It has no Strategy or Rationale
+  // columns, so adopting it would replace the built-in strategy text with
+  // empty "Round N" placeholders AND feed the engine a default RB/WR target
+  // every round — strictly worse than the fallback. Only adopt real content.
   const hasStrategy = Object.values(parsed).some(v =>
     (v.rationale && v.rationale.trim()) ||
     (v.strategy && !/^Round \d+$/.test(v.strategy.trim())));
   if (!hasStrategy) {
-    throw new Error(`Round Plan sheet has ${Object.keys(parsed).length} rows but no Strategy/Rationale columns — keeping built-in plan. Add "Strategy" and "Rationale" columns to make the sheet authoritative.`);
+    throw new Error(`Round Plan tab has ${Object.keys(parsed).length} rows but no Strategy/Rationale columns \u2014 keeping the built-in plan. Add "Strategy" and "Rationale" columns to make the sheet authoritative.`);
   }
   Object.keys(ROUND_PLAN).forEach(k => delete ROUND_PLAN[k]);
   Object.assign(ROUND_PLAN, parsed);
@@ -2701,7 +2673,7 @@ function normalizeTargets(rows) {
 async function loadSleeperTargets() {
   const rows = await fetchSheet(CONFIG.SHEETS.targets);
   if (servedWrongTab(CONFIG.SHEETS.targets)) {
-    throw new Error(`No tab named "${CONFIG.SHEETS.targets}" — Google served the Overall Board instead.`);
+    throw new Error(`No tab named "${CONFIG.SHEETS.targets}" \u2014 Google served the Overall Board instead.`);
   }
   const parsed = normalizeTargets(rows);
   state.targets = parsed;
@@ -2716,9 +2688,8 @@ function targetBoardMatch(target) {
 }
 
 // Google's gviz endpoint does NOT error on an unknown sheet name — it quietly
-// serves the workbook's FIRST tab instead. That made a missing/renamed tab look
-// like a successful 479-row fetch that just happened to yield nothing usable.
-// Compare against the board's headers to catch it.
+// serves the workbook's FIRST tab. That made a missing tab look like a healthy
+// 479-row fetch that just happened to yield nothing usable.
 function servedWrongTab(sheetName) {
   const t = (state.fetchTraces || {})[sheetName];
   const b = (state.fetchTraces || {})[CONFIG.SHEETS.board];
@@ -2731,7 +2702,7 @@ function servedWrongTab(sheetName) {
 async function loadDisagreements() {
   const rows = await fetchSheet(CONFIG.SHEETS.disagreements);
   if (servedWrongTab(CONFIG.SHEETS.disagreements)) {
-    throw new Error(`No tab named "${CONFIG.SHEETS.disagreements}" — Google served the Overall Board instead. Rename the tab to match, or set CONFIG.SHEETS.disagreements to a tab that exists.`);
+    throw new Error(`No tab named "${CONFIG.SHEETS.disagreements}" \u2014 Google served the Overall Board instead.`);
   }
   const map = {};
   let count = 0;
@@ -2891,7 +2862,7 @@ function computeProjectedLineup(mySlot) {
   const filledCount = lineup.filter(l => l.player).length;
   // A blank FPS column sums to a confident-looking 0. Next to "6/9 starter
   // slots filled" that reads as a real projection, which is worse than
-  // showing nothing. Detect it and let the card say so instead.
+  // showing nothing at all.
   const fpsMissing = filledCount > 0 && lineup.every(l => !l.player || l.player.fps == null);
 
   return { lineup, bench, total, filledCount, fpsMissing, totalSlots: lineup.length };
@@ -3587,10 +3558,10 @@ function renderDraftTab() {
     return `<div class="rec-card" style="background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--bg-elev)), var(--bg-elev)); border-color:var(--accent-dim);">
       <div class="rec-label" style="color:var(--accent);">Projected Season Points — Starting Lineup</div>
       <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
-        <span style="font-family:var(--font-display); font-weight:800; font-size:32px; ${pl.fpsMissing ? 'color:var(--down); font-size:24px;' : ''}">${pl.fpsMissing ? 'n/a' : pl.total.toFixed(0)}</span>
-        <span style="font-size:12px; color:var(--fg-mute);">${pl.fpsMissing ? 'FPS column is blank on the board sheet — see Debug › Column resolution' : `vs. ~${PLAYOFF_CUTLINE_FLOOR} target (History playoff cutline)`} · ${pl.filledCount}/${pl.totalSlots} starter slots filled</span>
+        <span style="font-family:var(--font-display); font-weight:800; font-size:${pl.fpsMissing ? '24' : '32'}px; ${pl.fpsMissing ? 'color:var(--down);' : ''}">${pl.fpsMissing ? 'n/a' : pl.total.toFixed(0)}</span>
+        <span style="font-size:12px; color:var(--fg-mute);">${pl.fpsMissing ? 'FPS column blank on the board sheet — see Debug › Column resolution' : `vs. ~${PLAYOFF_CUTLINE_FLOOR} target (History playoff cutline)`} · ${pl.filledCount}/${pl.totalSlots} starter slots filled</span>
       </div>
-      <div class="ladder-bar" style="height:7px; margin-bottom:10px; ${pl.fpsMissing ? 'opacity:0.25;' : ''}"><div class="ladder-bar-fill" style="width:${pct}%; background:${pl.total >= PLAYOFF_CUTLINE_FLOOR ? 'var(--up)' : 'var(--accent-dim)'};"></div></div>
+      <div class="ladder-bar" style="height:7px; margin-bottom:10px;"><div class="ladder-bar-fill" style="width:${pct}%; background:${pl.total >= PLAYOFF_CUTLINE_FLOOR ? 'var(--up)' : 'var(--accent-dim)'};"></div></div>
       <details>
         <summary style="cursor:pointer; font-family:var(--font-mono); font-size:11px; color:var(--accent);">Show lineup breakdown</summary>
         <div style="margin-top:8px;">${rows}</div>
@@ -4236,23 +4207,16 @@ function renderDebug() {
     ${state.history.seasons && state.history.seasons.length === 1 && !(CONFIG.PRIOR_LEAGUE_IDS || []).length ? `<div style="color:var(--warn); font-size:11px; margin-top:6px; font-family:var(--font-mono);">⚠ Only 1 season resolved and no manual IDs set — previous_league_id is likely null (new league created each year rather than renewed). Add prior IDs to CONFIG.PRIOR_LEAGUE_IDS.</div>` : ''}
   </div>`);
 
-  // Column resolution — the single most useful diagnostic when a sheet loads
-  // but a field comes through blank. Shows what each COL_ALIASES key actually
-  // bound to, what failed to bind, and the raw headers of every sheet fetched.
   const unres = state.unresolvedCols || [];
   cards.push(`<div class="debug-card">
-    <h4>Column resolution — Overall Board</h4>
+    <h4>Column resolution \u2014 Overall Board</h4>
     ${Object.keys(COL_ALIASES).map(k => {
       const hit = (state.resolvedAliases || {})[k];
-      const guessed = (state.inferredCols || {})[k];
-      const val = hit ? escapeHtml(hit)
-        : guessed ? `GUESSED \u2192 ${escapeHtml(guessed)}`
-        : 'NOT FOUND';
-      const col = hit ? 'var(--fg-mute)' : guessed ? 'var(--warn)' : 'var(--down)';
-      return `<div class="kv"><span class="kv-k">${k}</span><span class="kv-v" style="color:${col};">${val}</span></div>`;
+      const col = hit ? 'var(--fg-mute)' : 'var(--down)';
+      return `<div class="kv"><span class="kv-k">${k}</span><span class="kv-v" style="color:${col};">${hit ? escapeHtml(hit) : 'NOT FOUND'}</span></div>`;
     }).join('')}
-    ${unres.length ? `<div style="color:var(--down); font-size:11px; margin-top:8px; font-family:var(--font-mono);">\u26A0 Unresolved: ${escapeHtml(unres.join(', '))} \u2014 compare the raw headers below against COL_ALIASES and add the real header name.</div>` : ''}
-    ${(state.inferredCols||{}).fps ? `<div style="color:var(--warn); font-size:11px; margin-top:8px; font-family:var(--font-mono);">\u26A0 FPS was GUESSED from the column "${escapeHtml(state.inferredCols.fps)}". Projected Season Points depends on it \u2014 verify this is the right column, then add its exact name to COL_ALIASES.fps.</div>` : ''}
+    ${(state.derived && state.derived.length) ? `<div style="color:var(--fg-mute); font-size:11px; margin-top:8px; font-family:var(--font-mono);">Derived client-side: ${escapeHtml(state.derived.join(' \u00b7 '))}</div>` : ''}
+    ${unres.length ? `<div style="color:var(--warn); font-size:11px; margin-top:8px; font-family:var(--font-mono);">Unresolved: ${escapeHtml(unres.join(', '))}. Expected \u2014 this workbook has no ADP-rank or format-delta column. adprk is derived from FFC ADP; fmtd is unused.</div>` : ''}
   </div>`);
 
   const traces = state.fetchTraces || {};
@@ -4262,15 +4226,14 @@ function renderDebug() {
       ${Object.keys(traces).map(name => {
         const t = traces[name];
         const hdrs = t.headers && t.headers.length ? escapeHtml(t.headers.join(' | ')) : '(none parsed)';
-        const okCol = t.objectCount ? 'var(--fg-mute)' : 'var(--down)';
         return `<div style="margin-bottom:10px;">
-          <div class="kv"><span class="kv-k">${escapeHtml(name)}</span><span class="kv-v" style="color:${okCol};">HTTP ${t.status} \u00b7 ${t.objectCount == null ? '?' : t.objectCount} rows</span></div>
-          <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-dim); word-break:break-word; padding-left:2px;">${hdrs}</div>
+          <div class="kv"><span class="kv-k">${escapeHtml(name)}</span><span class="kv-v" style="color:${t.objectCount ? 'var(--fg-mute)' : 'var(--down)'};">HTTP ${t.status} \u00b7 ${t.objectCount == null ? '?' : t.objectCount} rows</span></div>
+          <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-dim); word-break:break-word;">${hdrs}</div>
         </div>`;
       }).join('')}
       ${Object.keys(traces).filter(n => servedWrongTab(n)).map(n =>
-        `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">\u26A0 "${escapeHtml(n)}" returned the Overall Board's headers \u2014 that tab almost certainly does not exist. Google serves the first tab for unknown sheet names.</div>`).join('')}
-      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Every sheet keeps its own trace now, so these no longer overwrite each other. Workbook tabs: Overall Board, QB/RB/WR/TE/DEF Ranks, ADP Mispricings, Sleeper Targets, Bye Week Map, Round Plan, Draft Day Plan, Methodology &amp; Assumptions.</div>
+        `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">\u26A0 "${escapeHtml(n)}" returned the Overall Board's headers \u2014 that tab does not exist.</div>`).join('')}
+      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Workbook tabs: Overall Board, QB/RB/WR/TE/DEF Ranks, ADP Mispricings, Sleeper Targets, Bye Week Map, Round Plan, Draft Day Plan, Methodology &amp; Assumptions.</div>
     </div>`);
   }
 
@@ -4431,13 +4394,20 @@ async function boot() {
 
   setPill('statusFlags', '', 'Flags…');
   try {
+    if (!CONFIG.SHEETS.disagreements) {
+      state.disagreementsSource = 'disabled (no such tab)';
+      setPill('statusFlags', '', 'Flags · off');
+      throw { __handled: true };
+    }
     await loadDisagreements();
     setPill('statusFlags', Object.keys(state.disagreements).length ? 'ok' : '', state.disagreementsSource);
   } catch (e) {
     // Non-fatal — advisory data. If the sheet isn't published, badges just
     // don't appear; nothing else is affected.
-    state.errors.push('Source Disagreements: ' + e.message);
-    setPill('statusFlags', 'warn', /No tab named/.test(e.message) ? 'Flags · no such tab' : 'Flags · not published yet');
+    if (!e || !e.__handled) {
+      state.errors.push('Source Disagreements: ' + e.message);
+      setPill('statusFlags', 'warn', /No tab named/.test(e.message) ? 'Flags · no such tab' : 'Flags · not published yet');
+    }
   }
   renderDebug();
 }
