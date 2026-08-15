@@ -979,7 +979,9 @@
 
 <nav class="tabs" id="tabs">
   <button class="tab active" data-tab="board">Board</button>
-  <button class="tab" data-tab="pickcurve">Pick Values</button>
+  <!-- Pick Values tab hidden — not trading picks this league, no need to
+       track pick-value curves. Underlying code (buildPickCurve, renderPickValues,
+       parsePickList) left in place but unreachable; nothing else depends on it. -->
   <button class="tab" data-tab="draft">Live Draft</button>
   <button class="tab" data-tab="roster">Roster Needs</button>
   <button class="tab" data-tab="history">History</button>
