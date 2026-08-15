@@ -1683,6 +1683,55 @@ function histFirstPositionRound(season, pos) {
   return Math.min(...picks.map(p => p.round));
 }
 
+// Real, pooled DEF-picking behavior across every completed season — the
+// data the needMultiplier discount curve and the tier-survival gate were
+// previously just asserting narratively ("defensive rankings swing more
+// than skill positions," "this tier has survived in every mock so far").
+// Two things measured directly from actual picks, not projected boards:
+//   1. cumulativeByRound — what fraction of a season's total DEF picks have
+//      happened by round R, pooled across seasons. This IS the room's real
+//      DEF-engagement curve; the discount multiplier should track it, not a
+//      guessed linear ramp.
+//   2. avgGapRounds — once a season's first DEF goes, how many rounds pass
+//      on average before the next one does. This is a real measure of "how
+//      fast does the position dry up once it starts," which is what the
+//      survival gate is actually trying to approximate with a guessed
+//      threshold of 3 remaining.
+// Sample size caveat: with 2 prior seasons this is ~24-30 pooled DEF picks —
+// thin. Treat the SHAPE as informative, not the exact numbers. state.derived
+// records this openly so it isn't presented as more certain than it is.
+function computeHistoricalDefBehavior(seasons) {
+  const completed = (seasons || []).filter(histIsSeasonComplete);
+  const perSeason = completed
+    .map(s => (s.draftPicks || [])
+      .filter(p => p.metadata && p.metadata.position === 'DEF')
+      .map(p => p.round)
+      .sort((a, b) => a - b))
+    .filter(rounds => rounds.length > 0);
+  if (!perSeason.length) return null;
+
+  const pooled = perSeason.flat();
+  const gaps = [];
+  perSeason.forEach(rounds => {
+    for (let i = 1; i < rounds.length; i++) gaps.push(rounds[i] - rounds[i - 1]);
+  });
+  const avgGapRounds = gaps.length ? gaps.reduce((a, b) => a + b, 0) / gaps.length : null;
+
+  const cumulativeByRound = {};
+  for (let r = 1; r <= 15; r++) {
+    cumulativeByRound[r] = pooled.filter(x => x <= r).length / pooled.length;
+  }
+
+  return {
+    seasonCount: perSeason.length,
+    pickCount: pooled.length,
+    avgGapRounds,
+    cumulativeByRound,
+    firstRound: Math.min(...pooled),
+    medianRound: pooled.slice().sort((a, b) => a - b)[Math.floor(pooled.length / 2)],
+  };
+}
+
 function histIsSeasonComplete(season) {
   // Sleeper marks a finished season 'complete'. Seasons still pre_draft/drafting/in_season
   // haven't accumulated real standings yet — including them in historical aggregates
@@ -2452,9 +2501,20 @@ function needMultiplier(pos, counts, round) {
     // and this league's 1-day rolling waivers make a comparable streamer
     // available almost every week. Missing an "elite" DEF early costs little;
     // wasting a mid-round pick chasing one costs a roster spot you can't get
-    // back. Discount heavily pre-draft, fade linearly to full weight by
-    // round 10 — by then a bench slot is nearly free anyway.
-    const t = Math.min(1, Math.max(0, (round - 1) / 9));
+    // back. Discount heavily pre-draft, fade to full weight as the position
+    // actually gets engaged.
+    //
+    // The FLOOR (0.65) and CEILING (1.4) are still judgment calls — how much
+    // to discount at the extremes is a real free parameter, not something
+    // 2 seasons of data can pin down. But the SHAPE between them — how fast
+    // the discount fades as rounds pass — now tracks this room's measured
+    // DEF-engagement curve (cumulativeByRound: what fraction of a season's
+    // total DEF picks have historically happened by round R) instead of a
+    // guessed linear ramp to round 10. Falls back to the original linear
+    // ramp when history hasn't resolved yet.
+    const t = HISTORICAL_DEF_BEHAVIOR
+      ? (HISTORICAL_DEF_BEHAVIOR.cumulativeByRound[Math.min(15, Math.max(1, round))] ?? 0)
+      : Math.min(1, Math.max(0, (round - 1) / 9));
     const mult = 0.65 + t * (1.4 - 0.65);
     // Categorical priority (see SLOT_PRIORITY below) puts 'must-fill' above
     // 'flex' unconditionally, before scores are ever compared — so without
@@ -2919,14 +2979,33 @@ function computeRecommendation(undrafted, round) {
       }
       let mult = need.mult;
       // Survival discount: even a genuinely open DEF starter slot (must-fill)
-      // shouldn't beat a skill-position starter need on value alone if the
-      // draft's own evidence shows waiting is safe — i.e., 2+ comparable
-      // alternatives remain in the same tier. This league's top DEF tier has
-      // survived untouched into the mid-rounds in every mock run so far;
-      // that's a real, observable pattern, not a hope. If it's down to the
-      // last one or two in the tier, that safety margin is gone and the
-      // slot gets its full must-fill weight back.
-      if (p.pos === 'DEF' && need.slotType === 'must-fill' && tier.remaining >= 3) {
+      // shouldn't beat a skill-position starter need on value alone if
+      // waiting is actually safe — i.e., enough comparable alternatives
+      // remain in the current tier that the room isn't about to run the
+      // position dry before you pick again.
+      //
+      // "tier.remaining" (this year's Ciely-based board tier) and
+      // HISTORICAL_DEF_BEHAVIOR.avgGapRounds (real rounds between successive
+      // league-wide DEF picks in past drafts) measure different things — one
+      // is this year's supply, the other is the room's real historical pace.
+      //
+      // Direction matters here: a SMALL measured gap means the position
+      // depletes FAST once the run starts (multiple teams grab one within
+      // the same round or two), which should make this gate MORE cautious —
+      // require MORE remaining before trusting "safe to wait" — not less.
+      // Convert the measured pace into "rounds of runway" the current
+      // remaining count buys: remaining x avgGapRounds ≈ rounds until this
+      // tier is exhausted at the historically observed rate. Require that to
+      // clear a buffer (DEF_SAFETY_BUFFER_ROUNDS) before trusting it — i.e.
+      // the equivalent remaining-count threshold is buffer / avgGapRounds,
+      // which correctly rises as the measured pace gets faster (smaller gap)
+      // and falls as it gets slower (larger gap). Sample size is thin
+      // (n=2 seasons) — flagged in the History tab and Debug, not hidden.
+      const DEF_SAFETY_BUFFER_ROUNDS = 1.5; // still a judgment call — how much runway counts as "safe"
+      const defSafeThreshold = (HISTORICAL_DEF_BEHAVIOR && HISTORICAL_DEF_BEHAVIOR.avgGapRounds != null)
+        ? Math.max(2, Math.round(DEF_SAFETY_BUFFER_ROUNDS / Math.max(0.25, HISTORICAL_DEF_BEHAVIOR.avgGapRounds)))
+        : 3; // unmeasured fallback — the original guessed constant
+      if (p.pos === 'DEF' && need.slotType === 'must-fill' && tier.remaining >= defSafeThreshold) {
         mult *= 0.7;
       }
       // Bye-week diversity: a modest nudge, not a real need. Only applied to
@@ -2966,6 +3045,10 @@ function computeRecommendation(undrafted, round) {
    during the draft so a build drifting off-target (e.g. RB-heavy at
    WR's expense) surfaces as it happens, not after the fact.
    ============================================================ */
+// Populated by applyHistoricalPlan() once real history resolves; null means
+// "no measured data yet, use the guessed constants." Never fabricated.
+let HISTORICAL_DEF_BEHAVIOR = null;
+
 const ROSTER_TARGET_FALLBACK = {
   QB: { min: 1, max: 2, ideal: 2.0 },
   RB: { min: 4, max: 5, ideal: 4.5 },
@@ -3021,6 +3104,7 @@ function computeHistoricalRoundData(seasons) {
 
 function applyHistoricalPlan(seasons) {
   const data = computeHistoricalRoundData(seasons);
+  HISTORICAL_DEF_BEHAVIOR = computeHistoricalDefBehavior(seasons); // may stay null; independent of `data`
   if (!data) return false;
 
   // Roster targets — only overwrite a position where we actually have a real
@@ -4360,6 +4444,11 @@ function renderDebug() {
     ${state.roundPlanHistorySource ? `<div class="kv"><span class="kv-k">history data</span><span class="kv-v" style="color:var(--up);">${escapeHtml(state.roundPlanHistorySource)}</span></div>
       <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">DEF1/DEF2 round windows and ROSTER_TARGET ideals are now real averages computed from actual draft picks in this league's Sleeper history, not guesses. Recomputed automatically whenever the History chain reloads.</div>`
       : `<div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">League history hasn't resolved yet (loads in the background at boot) — round windows are still the original hardcoded guesses. Check CONFIG.PRIOR_LEAGUE_IDS if this persists.</div>`}
+    ${HISTORICAL_DEF_BEHAVIOR ? `<div class="kv" style="margin-top:8px;"><span class="kv-k">DEF discount curve</span><span class="kv-v" style="color:var(--up);">measured, ${HISTORICAL_DEF_BEHAVIOR.pickCount} picks / ${HISTORICAL_DEF_BEHAVIOR.seasonCount} szn</span></div>
+      <div class="kv"><span class="kv-k">avg gap between DEF picks</span><span class="kv-v">${HISTORICAL_DEF_BEHAVIOR.avgGapRounds != null ? HISTORICAL_DEF_BEHAVIOR.avgGapRounds.toFixed(1) + ' rounds' : '\u2014'}</span></div>
+      <div class="kv"><span class="kv-k">survival-gate threshold</span><span class="kv-v">${HISTORICAL_DEF_BEHAVIOR.avgGapRounds != null ? Math.max(2, Math.round(1.5 / Math.max(0.25, HISTORICAL_DEF_BEHAVIOR.avgGapRounds))) : 3} (was hardcoded 3)</span></div>
+      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Small sample (${HISTORICAL_DEF_BEHAVIOR.pickCount} pooled DEF picks) \u2014 shape is informative, exact numbers are noisy.</div>`
+      : `<div style="font-size:10.5px; color:var(--fg-dim); margin-top:8px;">DEF discount curve and survival threshold: no measured data yet, using original hardcoded guesses.</div>`}
   </div>`);
 
   if (state.board) {
