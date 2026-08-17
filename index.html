@@ -2848,7 +2848,7 @@ function tierUrgencyBonus(player, undraftedByPos) {
    everything else is reference text shown alongside the
    recommendation.
    ============================================================ */
-const ROUND_PLAN = {
+const ROUND_PLAN_FALLBACK = {
   1:  { primary: ['RB','WR'], strategy: 'Best RB/WR available', rationale: 'Room prices Round 1 correctly — no market edge to chase. Take the highest true-VORP RB/WR on the board.' },
   2:  { primary: ['QB','RB','WR'], strategy: 'QB reach window opens', rationale: 'True value has a top-5 QB here — the room hasn’t taken QB1 before pick 23 in either real draft. If a top-tier QB is alive, this beats a WR2/RB2-tier player on VORP.' },
   3:  { primary: ['QB','RB','WR','TE'], strategy: 'QB reach window — last shot at elite tier', rationale: 'Both 2024 and 2025 saw the room’s first QB go in this range (picks 23-36). Last round you’re truly ahead of the market. Take the QB if the tier is thinning, else best RB/WR/TE1.' },
@@ -2865,6 +2865,22 @@ const ROUND_PLAN = {
   14: { primary: ['QB','RB','WR','TE','DEF'], strategy: 'QB2 (if not yet) or lottery ticket', rationale: 'Backfill remaining bench needs — handcuffs, rookie fliers, or your 2nd QB if still open.' },
   15: { primary: ['RB','WR','TE','QB','DEF'], strategy: 'Final bench slot — best remaining upside', rationale: 'Pure lottery ticket. Fill whatever gap the Bye Week Map or Roster Needs tab still shows.' },
 };
+
+// Mutable working copy applyHistoricalPlan() splices real numbers into. Kept
+// as a separate object from ROUND_PLAN_FALLBACK (rather than mutating the
+// fallback directly) so there's always a clean baseline to reset to — see
+// resetRoundPlanToFallback(). Object identity stays stable across resets
+// (keys are cleared and repopulated, not reassigned) so every existing
+// reference elsewhere keeps working without changes.
+const ROUND_PLAN = {};
+function resetRoundPlanToFallback() {
+  Object.keys(ROUND_PLAN).forEach(k => delete ROUND_PLAN[k]);
+  Object.keys(ROUND_PLAN_FALLBACK).forEach(k => {
+    const src = ROUND_PLAN_FALLBACK[k];
+    ROUND_PLAN[k] = { primary: [...src.primary], strategy: src.strategy, rationale: src.rationale };
+  });
+}
+resetRoundPlanToFallback();
 state.roundPlanSource = 'fallback (built-in default — sheet not loaded yet)';
 
 function normalizeRoundPlan(rows) {
@@ -3291,6 +3307,17 @@ function applyHistoricalPlan(seasons) {
   HISTORICAL_DEF_BEHAVIOR = computeHistoricalDefBehavior(seasons); // may stay null; independent of `data`
   if (!data) return false;
 
+  // Reset to the clean hardcoded baseline before splicing real numbers in.
+  // Without this, a DEF1 window computed at round 9 on one run and round 12
+  // on the next (e.g. after fixing the underlying statistic) would leave
+  // BOTH rounds claiming "DEF1 window opens" — the old one never gets
+  // cleared, since applyHistoricalPlan only ever ADDED overrides at the
+  // newly-computed round. This was a real bug, not hypothetical: it's
+  // exactly what happened when histFirstPositionRound moved from n=1 to
+  // n=3 and the round shifted from 9 to 12 — round 9 kept its original
+  // hardcoded text sitting right next to round 12's real one.
+  resetRoundPlanToFallback();
+
   // Roster targets — only overwrite a position where we actually have a real
   // champion-average number; keep the fallback ideal otherwise rather than
   // silently zeroing something out.
@@ -3321,9 +3348,36 @@ function applyHistoricalPlan(seasons) {
       ROUND_PLAN[d3].strategy = 'DEF2';
       ROUND_PLAN[d3].rationale = `Champions in ${data.seasonCount} tracked season${data.seasonCount !== 1 ? 's' : ''} averaged ${data.champAvg.DEF != null ? data.champAvg.DEF.toFixed(1) : '?'} DEFs rostered — bye/matchup coverage, not chasing streams.`;
     }
+
+    // The HARDCODED FALLBACK itself claims DEF at specific rounds (9, 10, 12
+    // in the original text) — resetRoundPlanToFallback() restores THAT
+    // baseline, which still contains those claims. If the real computed
+    // window lands somewhere else, those old fallback rounds need to be
+    // explicitly cleared, not just left as "the default." This was a real
+    // bug: round 9's hardcoded 'DEF1 window opens' text survived untouched
+    // right next to a real round 12 computed from actual history, because
+    // nothing had ever told round 9 to stand down. Derived dynamically from
+    // the fallback object rather than hardcoding round numbers here, so this
+    // stays correct even if the fallback text changes later.
+    const fallbackDefRounds = Object.keys(ROUND_PLAN_FALLBACK)
+      .map(Number)
+      .filter(r => ROUND_PLAN_FALLBACK[r].primary.includes('DEF'));
+    const realDefRounds = new Set([d1, d2, d3]);
+    fallbackDefRounds.forEach(r => {
+      if (realDefRounds.has(r) || !ROUND_PLAN[r]) return;
+      ROUND_PLAN[r].primary = ROUND_PLAN[r].primary.filter(p => p !== 'DEF');
+      // Only overwrite the strategy text if it's still the untouched fallback
+      // wording (it always will be here, since we just reset — this check
+      // just guards against future reordering of this logic).
+      if (ROUND_PLAN[r].strategy === ROUND_PLAN_FALLBACK[r].strategy) {
+        ROUND_PLAN[r].strategy = 'Best value available';
+        ROUND_PLAN[r].rationale = `The old guess had DEF1 opening here — real history moved that window to round ${d1} (see there instead). This round's DEF callout was never evidence-based and has been cleared.`;
+      }
+    });
   }
   if (data.qbRound != null) {
-    for (let r = Math.max(1, data.qbRound - 1); r <= Math.min(15, data.qbRound + 1); r++) {
+    const qbWindowLo = Math.max(1, data.qbRound - 1), qbWindowHi = Math.min(15, data.qbRound + 1);
+    for (let r = qbWindowLo; r <= qbWindowHi; r++) {
       if (ROUND_PLAN[r]) {
         ROUND_PLAN[r].primary = Array.from(new Set([...ROUND_PLAN[r].primary, 'QB']));
       }
@@ -3331,6 +3385,26 @@ function applyHistoricalPlan(seasons) {
     if (ROUND_PLAN[data.qbRound]) {
       ROUND_PLAN[data.qbRound].rationale = `Real history: the room's first QB goes around round ${data.qbRound} on average across ${data.seasonCount} season${data.seasonCount !== 1 ? 's' : ''} (${data.seasonsLabel}) — under this league's 7-pt-TD scoring, that's still well ahead of where the market would price an elite QB.`;
     }
+
+    // Same class of bug as DEF above: the fallback hardcodes a QB
+    // reach-window CLAIM at specific rounds (2 and 3 in the original text),
+    // separate from simply listing QB as a secondary primary option
+    // elsewhere. Only scrub rounds whose fallback STRATEGY text is
+    // specifically a reach-window claim — not every round that happens to
+    // list QB in primary (round 11's "QB2 flier" is a legitimate, different
+    // claim and shouldn't be touched).
+    const fallbackQbWindowRounds = Object.keys(ROUND_PLAN_FALLBACK)
+      .map(Number)
+      .filter(r => /QB reach window/i.test(ROUND_PLAN_FALLBACK[r].strategy || ''));
+    fallbackQbWindowRounds.forEach(r => {
+      if (r >= qbWindowLo && r <= qbWindowHi) return; // still legitimately inside the real window
+      if (!ROUND_PLAN[r]) return;
+      ROUND_PLAN[r].primary = ROUND_PLAN[r].primary.filter(p => p !== 'QB');
+      if (ROUND_PLAN[r].strategy === ROUND_PLAN_FALLBACK[r].strategy) {
+        ROUND_PLAN[r].strategy = 'Best value available';
+        ROUND_PLAN[r].rationale = `The old guess had the QB reach window here — real history moved it to round ${data.qbRound} (see there instead).`;
+      }
+    });
   }
 
   state.roundPlanHistorySource = `history \u00b7 ${data.seasonCount} season${data.seasonCount !== 1 ? 's' : ''} (${data.seasonsLabel})`;
