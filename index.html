@@ -2709,9 +2709,20 @@ function needMultiplier(pos, counts, round) {
     // actually opened. Before that it's scored, just not prioritized.
     const inWindow = getRoundPlan(round).primary.includes('DEF');
     const slotType = inWindow ? 'must-fill' : 'bench';
+    // Same bug pattern as the ROUND_PLAN scrub fix above, in a different
+    // spot: this used to interpolate the CURRENT round (${round}) into
+    // "window opens later," which is self-contradictory the moment you're
+    // actually AT round 10 and being told round 10 is "later." Find the
+    // real window's start round dynamically from ROUND_PLAN itself — single
+    // source of truth, stays correct whether it's history-derived or still
+    // on the hardcoded fallback.
+    const defWindowRounds = Object.keys(ROUND_PLAN).map(Number)
+      .filter(r => ROUND_PLAN[r].primary.includes('DEF'))
+      .sort((a, b) => a - b);
+    const defWindowStart = defWindowRounds.length ? defWindowRounds[0] : null;
     const reason = inWindow
       ? `DEF1 window open (Rd ${round} per the plan) — real replacement gap still uncontested`
-      : `DEF streamable via rolling waivers — discounted and not yet prioritized (plan's DEF window opens later; rd ${round})`;
+      : `DEF streamable via rolling waivers — discounted and not yet prioritized${defWindowStart != null ? ` (plan's DEF window opens at round ${defWindowStart})` : ''}`;
     return { mult, real: true, slotType, reason };
   }
 
