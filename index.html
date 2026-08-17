@@ -2211,6 +2211,38 @@ function injuryTagFor(name) {
   return state.injuryTags[name] || null;
 }
 
+// Notes live in localStorage, which is per-browser/per-device — laptop and
+// phone don't share it. Export/import is a manual, no-backend carry-over:
+// generate a JSON blob on one device, paste it into the other. Uses the
+// clipboard API when available (auto-copies) but ALWAYS also shows the blob
+// in a prompt() as a guaranteed fallback — don't want a clipboard permission
+// prompt gumming things up on draft day.
+function exportInjuryTags() {
+  const blob = JSON.stringify(state.injuryTags);
+  if (blob === '{}') { alert('No notes to export yet.'); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(blob).catch(() => {});
+  }
+  prompt('Copy this (already copied to clipboard if your browser allows it) — paste it into Import on the other device:', blob);
+}
+
+// Merges into existing tags rather than replacing them, so importing on a
+// device that already has its own notes doesn't wipe them out — a name
+// present in both wins with whichever import ran most recently.
+function importInjuryTagsPrompt() {
+  const input = prompt('Paste the exported notes blob here:');
+  if (input === null || !input.trim()) return;
+  let parsed;
+  try { parsed = JSON.parse(input.trim()); }
+  catch (e) { alert('Could not read that — make sure you pasted the full exported text.'); return; }
+  if (typeof parsed !== 'object' || parsed === null) { alert('That doesn\'t look like an exported notes blob.'); return; }
+  Object.assign(state.injuryTags, parsed);
+  saveInjuryTags(state.injuryTags);
+  renderBoard();
+  renderDebug();
+  alert(`Imported ${Object.keys(parsed).length} note(s).`);
+}
+
 // Native prompt() is deliberate here over a custom modal — one dialog, no
 // build-out, reliably works on mobile Chrome under draft-day time pressure.
 // Empty input removes the tag.
@@ -4520,13 +4552,16 @@ function renderDebug() {
   const cards = [];
 
   const tagNames = Object.keys(state.injuryTags);
-  if (tagNames.length) {
-    cards.push(`<div class="debug-card">
-      <h4>Active notes (${tagNames.length})</h4>
-      ${tagNames.map(name => `<div class="kv"><span class="kv-k" style="cursor:pointer;" onclick="promptInjuryTag('${name.replace(/'/g, "\\'")}')">${escapeHtml(name)}</span><span class="kv-v" style="color:var(--down);">${escapeHtml(state.injuryTags[name].tag)}</span></div>`).join('')}
-      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Click a name to edit or clear. These are manual reminders only — they show on the Board and Recommendation card but don't change any scoring.</div>
-    </div>`);
-  }
+  cards.push(`<div class="debug-card">
+    <h4>Notes (${tagNames.length})</h4>
+    ${tagNames.length ? tagNames.map(name => `<div class="kv"><span class="kv-k" style="cursor:pointer;" onclick="promptInjuryTag('${name.replace(/'/g, "\\'")}')">${escapeHtml(name)}</span><span class="kv-v" style="color:var(--down);">${escapeHtml(state.injuryTags[name].tag)}</span></div>`).join('')
+      : `<div style="font-size:11px; color:var(--fg-dim);">None yet — tap the \u2691 next to a player on the Board tab to add one.</div>`}
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button onclick="exportInjuryTags()" style="font-size:11px; padding:4px 10px;">Export</button>
+      <button onclick="importInjuryTagsPrompt()" style="font-size:11px; padding:4px 10px;">Import</button>
+    </div>
+    <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Stored per-browser (localStorage) — laptop and phone don't share this automatically. Export on one device, Import on the other to carry notes over. Manual reminders only — they don't change any scoring.</div>
+  </div>`);
 
   cards.push(`<div class="debug-card">
     <h4>Config</h4>
