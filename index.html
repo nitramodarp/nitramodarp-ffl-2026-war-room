@@ -335,6 +335,21 @@
   }
 
   .col-pos { width: 50px; }
+  .board-row-drafted { opacity: 0.4; }
+  .board-row-drafted .player-name { text-decoration: line-through; text-decoration-color: var(--fg-dim); }
+  .board-drafted-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--fg-dim) 18%, transparent);
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 500;
+    text-decoration: none; /* tag itself stays readable even though the name above is struck through */
+    color: var(--fg-mute);
+    vertical-align: middle;
+  }
   .pos-tag {
     display: inline-block;
     padding: 2px 6px;
@@ -2151,6 +2166,21 @@ function formatSigned(n) {
   return (n > 0 ? '+' : '') + n;
 }
 
+// Shared with renderDraftTab's own draftedIds Set (kept separate there since
+// it also needs `undrafted`/`unmatchedCount` derived from it) — this version
+// returns a name -> pick lookup so the Board tab can show WHO took a player
+// and WHEN, not just that they're gone.
+function draftedLookup() {
+  const map = new Map();
+  draftState.matchedPicks.forEach(pk => {
+    if (!pk.boardMatch) return;
+    const teams = (draftState.meta && draftState.meta.settings && draftState.meta.settings.teams) || 12;
+    const { round, slot } = draftOverallToSlot(pk.pick_no, teams);
+    map.set(pk.boardMatch.name, { round, slot, owner: ownerNameForSlot(slot), isMe: resolveMySlot() === slot });
+  });
+  return map;
+}
+
 function renderBoard() {
   const host = document.getElementById('boardHost');
 
@@ -2228,18 +2258,25 @@ function renderBoard() {
     return `<th class="${cls}" ${sortAttr} ${dataAttr}>${h.label}</th>`;
   }).join('')}</tr></thead>`;
 
+  const drafted = draftedLookup();
+
   const tbody = '<tbody>' + rows.map(p => {
     const diff = (p.adprk != null && p.ovr != null) ? (p.adprk - p.ovr) : null;
     const diffCls = diff == null ? 'diff-none' : diff > 5 ? 'diff-up' : diff < -5 ? 'diff-down' : 'diff-none';
     const vorpPct = p.vorp != null ? Math.max(0, (p.vorp - vr.min) / vrSpan) : 0;
     const vorpColor = p.vorp != null && p.vorp > 0 ? 'var(--up)' : p.vorp != null && p.vorp < 0 ? 'var(--fg-dim)' : 'var(--fg-mute)';
     const vorpBg = `linear-gradient(90deg, color-mix(in srgb, var(--accent) 15%, transparent) ${vorpPct*100}%, transparent ${vorpPct*100}%)`;
-    return `<tr>
+    const pick = drafted.get(p.name);
+    const rowCls = pick ? ' class="board-row-drafted"' : '';
+    const pickTag = pick
+      ? `<span class="board-drafted-tag">${pick.round}.${String(pick.slot).padStart(2,'0')}${pick.isMe ? ' \u2605 you' : ' \u00b7 ' + escapeHtml(pick.owner)}</span>`
+      : '';
+    return `<tr${rowCls}>
       <td class="col-rk rk-num">${p.ovr ?? ''}</td>
       <td class="col-tier"><span class="tier-bar tier-${p.tier || 8}"></span></td>
       <td class="col-pos"><span class="pos-tag pos-${p.pos}">${p.pos}</span><span class="pos-rk">${p.posrk ?? ''}</span></td>
       <td class="col-player">
-        <div class="player-name">${escapeHtml(p.name)}</div>
+        <div class="player-name">${escapeHtml(p.name)}${pickTag}</div>
         <div class="player-meta">${escapeHtml(p.team || '')}${p.bye != null ? ' · BYE ' + p.bye : ''}</div>
       </td>
       <td class="col-num">${p.fps != null ? p.fps.toFixed(1) : ''}</td>
@@ -3447,6 +3484,12 @@ async function pollDraft() {
     document.getElementById('draftPollStatus').textContent = `Poll error: ${e.message}`;
   }
   renderDraftTab();
+  // Keep the Board tab's strikethrough state live too, if that's what's on
+  // screen — otherwise a pick made elsewhere in the room wouldn't show as
+  // drafted on the Board until the person switched tabs and back.
+  if (state.board && document.getElementById('tab-board')?.classList.contains('active')) {
+    renderBoard();
+  }
 }
 
 /* ============================================================
