@@ -4178,7 +4178,7 @@ async function renderHistory() {
       h.lightweight = false;
       h.loading = false;
       h.activeTab = 'overview';
-      setPill('statusHistory', 'ok', `History · ${h.seasons.length} szn`);
+      setPill('statusHistory', 'ok', `History · ${h.seasons.filter(histIsSeasonComplete).length}/${h.seasons.length} szn complete`);
     } catch (e) {
       h.loading = false;
       h.error = e.message;
@@ -4898,7 +4898,17 @@ async function boot() {
       state.history.lightweight = true;
       state.history.loading = false;
       const applied = applyHistoricalPlan(seasons);
-      setPill('statusHistory', applied ? 'ok' : 'warn', applied ? `History \u00b7 ${seasons.length} szn` : 'History · no drafts found');
+      setPill('statusHistory', applied ? 'ok' : 'warn', applied ? `History \u00b7 ${seasons.filter(histIsSeasonComplete).length}/${seasons.length} szn complete` : 'History · no drafts found');
+      // The "Plan" pill was set once, synchronously, right after the Round
+      // Plan sheet load failed (it always will — no Strategy/Rationale
+      // columns, by design) — 'Plan · using fallback', a hardcoded string,
+      // never revisited. If history successfully claims the round-plan
+      // source afterward (this background load finishing later than the
+      // sheet's fast failure), the pill needs to be told, or it sits there
+      // permanently contradicting the actual Round Plan card underneath it.
+      if (applied && state.roundPlanSource === state.roundPlanHistorySource) {
+        setPill('statusPlan', 'ok', state.roundPlanSource);
+      }
       if (applied) { renderDebug(); if (state.board) renderRosterTab(); }
       // If the person is already sitting on the History tab, route back
       // through renderHistory() rather than rendering directly — that's the
