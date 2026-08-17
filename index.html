@@ -2228,10 +2228,32 @@ function saveInjuryTags(tags) {
   try { localStorage.setItem(INJURY_TAG_KEY, JSON.stringify(tags)); } catch (e) { /* storage unavailable — tag still works for this session */ }
 }
 
-state.injuryTags = loadInjuryTags(); // { playerName: { tag: string, at: ISOstring } }
+// Keyed by draftNormName(name) — same normalization used to match live draft
+// picks to the board (strips punctuation/case/Jr./Sr./II/III). A raw-string
+// key was too fragile for a real name list: "De'Zhaun Stribling" vs
+// "DeZhaun Stribling", or any apostrophe/suffix variant, would silently fail
+// to show up on the matching board row. { tag, at, name } — `name` keeps the
+// original display spelling for the UI even though the key is normalized.
+state.injuryTags = loadInjuryTags();
+// One-time migration: tags saved before this normalization change used the
+// raw name as the key. Re-key them so existing notes don't just vanish.
+(function migrateInjuryTagKeys() {
+  let changed = false;
+  Object.keys(state.injuryTags).forEach(k => {
+    const entry = state.injuryTags[k];
+    const normKey = draftNormName(k);
+    if (normKey && normKey !== k) {
+      if (!entry.name) entry.name = k;
+      state.injuryTags[normKey] = entry;
+      delete state.injuryTags[k];
+      changed = true;
+    }
+  });
+  if (changed) saveInjuryTags(state.injuryTags);
+})();
 
 function injuryTagFor(name) {
-  return state.injuryTags[name] || null;
+  return state.injuryTags[draftNormName(name)] || null;
 }
 
 // Notes live in localStorage, which is per-browser/per-device — laptop and
@@ -2259,25 +2281,34 @@ function importInjuryTagsPrompt() {
   try { parsed = JSON.parse(input.trim()); }
   catch (e) { alert('Could not read that — make sure you pasted the full exported text.'); return; }
   if (typeof parsed !== 'object' || parsed === null) { alert('That doesn\'t look like an exported notes blob.'); return; }
-  Object.assign(state.injuryTags, parsed);
+  // Re-key on import too, in case the pasted blob predates normalized keys
+  // (e.g. it was exported from an older deploy).
+  const reKeyed = {};
+  Object.keys(parsed).forEach(k => {
+    const entry = parsed[k];
+    if (!entry.name) entry.name = k;
+    reKeyed[draftNormName(k)] = entry;
+  });
+  Object.assign(state.injuryTags, reKeyed);
   saveInjuryTags(state.injuryTags);
   renderBoard();
   renderDebug();
-  alert(`Imported ${Object.keys(parsed).length} note(s).`);
+  alert(`Imported ${Object.keys(reKeyed).length} note(s).`);
 }
 
 // Native prompt() is deliberate here over a custom modal — one dialog, no
 // build-out, reliably works on mobile Chrome under draft-day time pressure.
 // Empty input removes the tag.
 function promptInjuryTag(name) {
-  const existing = injuryTagFor(name);
+  const key = draftNormName(name);
+  const existing = state.injuryTags[key];
   const input = prompt(`Tag for ${name} (e.g. "PUP", "questionable", "backup now starting"). Leave blank to clear.`, existing ? existing.tag : '');
   if (input === null) return; // cancelled
   const trimmed = input.trim();
   if (trimmed) {
-    state.injuryTags[name] = { tag: trimmed, at: new Date().toISOString() };
+    state.injuryTags[key] = { tag: trimmed, at: new Date().toISOString(), name };
   } else {
-    delete state.injuryTags[name];
+    delete state.injuryTags[key];
   }
   saveInjuryTags(state.injuryTags);
   renderBoard();
@@ -4660,10 +4691,14 @@ function renderDebug() {
   const host = document.getElementById('debugGrid');
   const cards = [];
 
-  const tagNames = Object.keys(state.injuryTags);
+  const tagKeys = Object.keys(state.injuryTags);
   cards.push(`<div class="debug-card">
-    <h4>Notes (${tagNames.length})</h4>
-    ${tagNames.length ? tagNames.map(name => `<div class="kv"><span class="kv-k" style="cursor:pointer;" onclick="promptInjuryTag('${name.replace(/'/g, "\\'")}')">${escapeHtml(name)}</span><span class="kv-v" style="color:var(--down);">${escapeHtml(state.injuryTags[name].tag)}</span></div>`).join('')
+    <h4>Notes (${tagKeys.length})</h4>
+    ${tagKeys.length ? tagKeys.map(k => {
+      const entry = state.injuryTags[k];
+      const displayName = entry.name || k; // keys are normalized (draftNormName); `name` keeps original spelling
+      return `<div class="kv"><span class="kv-k" style="cursor:pointer;" onclick="promptInjuryTag('${displayName.replace(/'/g, "\\'")}')">${escapeHtml(displayName)}</span><span class="kv-v" style="color:var(--down);">${escapeHtml(entry.tag)}</span></div>`;
+    }).join('')
       : `<div style="font-size:11px; color:var(--fg-dim);">None yet — tap the \u2691 next to a player on the Board tab to add one.</div>`}
     <div style="margin-top:8px; display:flex; gap:8px;">
       <button onclick="exportInjuryTags()" style="font-size:11px; padding:4px 10px;">Export</button>
