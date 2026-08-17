@@ -1729,11 +1729,34 @@ function histChampionQbRound(season) {
 // This is the number ROUND_PLAN's DEF1/QB-reach windows are supposed to be
 // based on. A draft that hasn't happened yet (this season) has no picks and
 // correctly returns null rather than a false zero.
-function histFirstPositionRound(season, pos) {
+// League-WIDE Nth pick of a position — e.g. "what round did the room's
+// THIRD DEF actually go," across every team, not just the champion. n=1
+// (default) gives the literal first pick; n=3 gives the round by which
+// roughly a tier-1-sized group is gone.
+//
+// n matters a lot for DEF specifically: the position isn't actually at risk
+// the moment ANY team takes a defense — it's at risk once a real tier's
+// worth (this board runs ~3 in DEF tier 1) is gone. Using literal-first as
+// the trigger is systematically too early, AND with only 2 seasons pooled,
+// a single outlier team panic-drafting a DEF early can single-handedly drag
+// the whole average down with no protection. n=3 is both more true to what
+// "at risk" actually means and more robust to a lone early outlier, since it
+// takes 3 aggressive teams moving early to shift it instead of 1.
+//
+// QB keeps n=1 — the market-timing exploit there is specifically about
+// jumping ahead of the room's very first QB (see project brief), not tier
+// depth, so literal-first is the right statistic for that position.
+//
+// A draft that hasn't happened yet (this season) has no picks and correctly
+// returns null rather than a false zero.
+function histFirstPositionRound(season, pos, n = 1) {
   if (!season.draftPicks || !season.draftPicks.length) return null;
-  const picks = season.draftPicks.filter(p => p.metadata && p.metadata.position === pos);
-  if (!picks.length) return null;
-  return Math.min(...picks.map(p => p.round));
+  const picks = season.draftPicks
+    .filter(p => p.metadata && p.metadata.position === pos)
+    .map(p => p.round)
+    .sort((a, b) => a - b);
+  if (picks.length < n) return null; // fewer than n taken all season — no signal for this order statistic
+  return picks[n - 1];
 }
 
 // Real, pooled DEF-picking behavior across every completed season — the
@@ -3242,12 +3265,13 @@ function computeHistoricalRoundData(seasons) {
   const withDraft = completed.filter(s => s.draftPicks && s.draftPicks.length);
   if (withDraft.length < 1) return null; // nothing real to compute from yet
 
-  const round = (pos) => {
-    const vals = withDraft.map(s => histFirstPositionRound(s, pos)).filter(v => v != null);
+  const round = (pos, n = 1) => {
+    const vals = withDraft.map(s => histFirstPositionRound(s, pos, n)).filter(v => v != null);
     return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
   };
-  const defRound = round('DEF');
-  const qbRound = round('QB');
+  const DEF_TIER1_SIZE = 3; // matches this board's actual DEF tier-1 cluster (Houston/Seattle/Denver)
+  const defRound = round('DEF', DEF_TIER1_SIZE);
+  const qbRound = round('QB'); // n=1 — literal first, see note on histFirstPositionRound above
 
   const compByseason = withDraft.map(s => histRosterComposition(s));
   const posKeys = ['QB', 'RB', 'WR', 'TE', 'DEF'];
@@ -3286,7 +3310,7 @@ function applyHistoricalPlan(seasons) {
     if (ROUND_PLAN[d1]) {
       ROUND_PLAN[d1].primary = Array.from(new Set([...ROUND_PLAN[d1].primary, 'DEF']));
       ROUND_PLAN[d1].strategy = 'DEF1 window opens';
-      ROUND_PLAN[d1].rationale = `Real history: the room's first DEF goes around round ${d1} on average across ${data.seasonCount} season${data.seasonCount !== 1 ? 's' : ''} (${data.seasonsLabel}) — a real DEF1-vs-replacement gap still exists uncontested this early.`;
+      ROUND_PLAN[d1].rationale = `Real history: this league's 3rd DEF (roughly tier-1 depth) has gone around round ${d1} on average across ${data.seasonCount} season${data.seasonCount !== 1 ? 's' : ''} (${data.seasonsLabel}) — before that, the position isn't actually at risk yet.`;
     }
     if (ROUND_PLAN[d2] && d2 !== d1) {
       ROUND_PLAN[d2].primary = Array.from(new Set([...ROUND_PLAN[d2].primary, 'DEF']));
