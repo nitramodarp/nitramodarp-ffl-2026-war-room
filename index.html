@@ -337,6 +337,29 @@
   .col-pos { width: 50px; }
   .board-row-drafted { opacity: 0.4; }
   .board-row-drafted .player-name { text-decoration: line-through; text-decoration-color: var(--fg-dim); }
+  .board-inj-flag-icon {
+    display: inline-block;
+    margin-left: 6px;
+    opacity: 0.35;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .board-inj-flag-icon:hover { opacity: 0.9; }
+  .board-inj-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--down) 22%, transparent);
+    border: 1px solid color-mix(in srgb, var(--down) 45%, transparent);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--down);
+    cursor: pointer;
+    vertical-align: middle;
+  }
   .board-drafted-tag {
     display: inline-block;
     margin-left: 6px;
@@ -2158,6 +2181,55 @@ function updateDraftCountdown() {
 }
 
 /* ============================================================
+   Injury / news scratchpad
+   ------------------------------------------------------------
+   A live draft breaks news the board can't see (PUP status, a
+   surprise starter, a suspension). This is a manual, in-memory tag
+   any player can carry — shown on both the Board tab and the
+   Recommendation card, since that's exactly where a bad pick would
+   actually happen. Persisted to localStorage (this is a real
+   deployed page across a multi-hour draft, not a sandboxed artifact,
+   so browser storage is the right call here) so a flag survives a
+   phone lock, reload, or tab close.
+   ============================================================ */
+const INJURY_TAG_KEY = 'ffl2026_injuryTags';
+
+function loadInjuryTags() {
+  try {
+    const raw = localStorage.getItem(INJURY_TAG_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) { return {}; }
+}
+
+function saveInjuryTags(tags) {
+  try { localStorage.setItem(INJURY_TAG_KEY, JSON.stringify(tags)); } catch (e) { /* storage unavailable — tag still works for this session */ }
+}
+
+state.injuryTags = loadInjuryTags(); // { playerName: { tag: string, at: ISOstring } }
+
+function injuryTagFor(name) {
+  return state.injuryTags[name] || null;
+}
+
+// Native prompt() is deliberate here over a custom modal — one dialog, no
+// build-out, reliably works on mobile Chrome under draft-day time pressure.
+// Empty input removes the tag.
+function promptInjuryTag(name) {
+  const existing = injuryTagFor(name);
+  const input = prompt(`Tag for ${name} (e.g. "PUP", "questionable", "backup now starting"). Leave blank to clear.`, existing ? existing.tag : '');
+  if (input === null) return; // cancelled
+  const trimmed = input.trim();
+  if (trimmed) {
+    state.injuryTags[name] = { tag: trimmed, at: new Date().toISOString() };
+  } else {
+    delete state.injuryTags[name];
+  }
+  saveInjuryTags(state.injuryTags);
+  renderBoard();
+  if (document.getElementById('tab-draft')?.classList.contains('active')) renderDraftTab();
+}
+
+/* ============================================================
    Rendering — board
    ============================================================ */
 function formatSigned(n) {
@@ -2271,12 +2343,16 @@ function renderBoard() {
     const pickTag = pick
       ? `<span class="board-drafted-tag">${pick.round}.${String(pick.slot).padStart(2,'0')}${pick.isMe ? ' \u2605 you' : ' \u00b7 ' + escapeHtml(pick.owner)}</span>`
       : '';
+    const injTag = injuryTagFor(p.name);
+    const injBadge = injTag
+      ? `<span class="board-inj-tag" onclick="promptInjuryTag('${p.name.replace(/'/g, "\\'")}')" title="Click to edit or clear">\u26A0 ${escapeHtml(injTag.tag)}</span>`
+      : `<span class="board-inj-flag-icon" onclick="promptInjuryTag('${p.name.replace(/'/g, "\\'")}')" title="Add a manual note (injury, depth chart, news)">\u2691</span>`;
     return `<tr${rowCls}>
       <td class="col-rk rk-num">${p.ovr ?? ''}</td>
       <td class="col-tier"><span class="tier-bar tier-${p.tier || 8}"></span></td>
       <td class="col-pos"><span class="pos-tag pos-${p.pos}">${p.pos}</span><span class="pos-rk">${p.posrk ?? ''}</span></td>
       <td class="col-player">
-        <div class="player-name">${escapeHtml(p.name)}${pickTag}</div>
+        <div class="player-name">${escapeHtml(p.name)}${pickTag}${injBadge}</div>
         <div class="player-meta">${escapeHtml(p.team || '')}${p.bye != null ? ' · BYE ' + p.bye : ''}</div>
       </td>
       <td class="col-num">${p.fps != null ? p.fps.toFixed(1) : ''}</td>
@@ -3719,6 +3795,10 @@ function renderDraftTab() {
         : `Your board rates this player ${mag} pts higher than FantasyPros — you'd be the high source. Make sure you're comfortable being out on a limb.`;
       recFlagCallout = `<div style="margin:8px 0; padding:8px 10px; border-radius:6px; background:color-mix(in srgb, var(--warn) 15%, transparent); border-left:3px solid var(--warn); font-size:12px; color:var(--fg);">⚠ <strong>Source disagreement:</strong> ${msg}</div>`;
     }
+    const injTag = injuryTagFor(player.name);
+    const injCallout = injTag
+      ? `<div style="margin:8px 0; padding:8px 10px; border-radius:6px; background:color-mix(in srgb, var(--down) 15%, transparent); border-left:3px solid var(--down); font-size:12px; color:var(--fg);">\u26A0 <strong>Your note:</strong> ${escapeHtml(injTag.tag)} <span style="color:var(--fg-dim); font-size:10.5px;">(added ${new Date(injTag.at).toLocaleDateString()} — this doesn't affect the recommendation math, it's a manual reminder)</span></div>`
+      : '';
     recHtml = `<div class="rec-card">
       <div class="rec-label">Recommended Pick — Pick ${round}.${String(slot).padStart(2,'0')}</div>
       <div class="rec-main">
@@ -3726,6 +3806,7 @@ function renderDraftTab() {
         <span class="rec-name">${escapeHtml(player.name)}${disagreementBadge(player.name)}</span>
         <span class="rec-vorp">VORP ${player.vorp.toFixed(1)}</span>
       </div>
+      ${injCallout}
       ${recFlagCallout}
       <div class="rec-reason">${need.reason} · ${tierText}${bye.label ? ' · ' + bye.label : ''}${plan.label ? ' · ' + plan.label : ''}${comp.label ? ' · ' + comp.label : ''}</div>
       <div class="need-meter">${needPills}</div>
@@ -4437,6 +4518,15 @@ function renderHistoryTransactionsHtml(season) {
 function renderDebug() {
   const host = document.getElementById('debugGrid');
   const cards = [];
+
+  const tagNames = Object.keys(state.injuryTags);
+  if (tagNames.length) {
+    cards.push(`<div class="debug-card">
+      <h4>Active notes (${tagNames.length})</h4>
+      ${tagNames.map(name => `<div class="kv"><span class="kv-k" style="cursor:pointer;" onclick="promptInjuryTag('${name.replace(/'/g, "\\'")}')">${escapeHtml(name)}</span><span class="kv-v" style="color:var(--down);">${escapeHtml(state.injuryTags[name].tag)}</span></div>`).join('')}
+      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Click a name to edit or clear. These are manual reminders only — they show on the Board and Recommendation card but don't change any scoring.</div>
+    </div>`);
+  }
 
   cards.push(`<div class="debug-card">
     <h4>Config</h4>
