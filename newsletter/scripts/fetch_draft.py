@@ -2,17 +2,26 @@
 Draft recap, step 1: pull the completed draft from Sleeper and build
 structured, fully self-referential "value" signals — no external ADP or
 proprietary board involved anywhere, per the same rule as the weekly
-pipeline. Everything here is derived from THIS draft's own pick order:
-- position_rank_at_pick: this was the Nth player at that position taken
-- positional runs: 3+ of the same position taken in a tight run of picks
-- "first at position" / "last at position": purely descriptive of this room
+pipeline.
+
+Two design principles enforced here, both added after real bugs:
+1. Never make the model compute round/pick arithmetic itself — a wrong
+   round citation (e.g. misattributing which round a TE went in) is a
+   model math error, not a data error. Every pick gets an exact
+   "pick_label" (e.g. "3.02") computed in Python; the model is instructed
+   to quote it verbatim rather than reconstruct it.
+2. Never let owner_username (a real Sleeper account handle) reach the
+   model at all. It's used internally, right here, to compute deterministic
+   tendency matches (e.g. a KC-homer pick) — but stripped from every
+   record before it's written to the file the model actually reads.
 """
 
 import json
 import os
+import statistics
 import time
 import requests
-from config import LEAGUE_ID, OWNER_MAP, PATHS
+from config import LEAGUE_ID, OWNER_MAP, PATHS, OWNER_NOTES, COMMISSIONER_OWNER_USERNAME
 
 BASE = "https://api.sleeper.app/v1"
 PLAYERS_CACHE_PATH = "newsletter/state/players_cache.json"
@@ -51,13 +60,23 @@ def get_players_cached():
     return players
 
 
-def roster_id_to_owner_name(rosters, users):
-    user_display = {u["user_id"]: u.get("display_name", "Unknown") for u in users}
+def roster_id_to_team_info(rosters, users):
+    """team_name is always the real fantasy team name. owner_username is
+    internal-only — computed here so THIS FILE can match tendency notes,
+    but it never leaves this file in any record written out to disk."""
+    user_by_id = {u["user_id"]: u for u in users}
     out = {}
     for r in rosters:
         owner_id = r.get("owner_id")
-        name = OWNER_MAP.get(owner_id) or user_display.get(owner_id, "Unknown")
-        out[r["roster_id"]] = name
+        user = user_by_id.get(owner_id, {})
+        owner_username = OWNER_MAP.get(owner_id) or user.get("display_name", "Unknown")
+        team_name = (user.get("metadata") or {}).get("team_name") or owner_username
+        out[r["roster_id"]] = {
+            "owner_id": owner_id,
+            "owner_username": owner_username,
+            "team_name": team_name,
+            "is_commissioner": owner_username == COMMISSIONER_OWNER_USERNAME,
+        }
     return out
 
 
@@ -75,7 +94,13 @@ def get_picks(draft_id):
     return picks
 
 
-def enrich_picks(picks, players_db, roster_names):
+def enrich_picks(picks, players_db, roster_names, team_count):
+    """team_count picks per round lets us derive pick-within-round purely
+    from pick_no and round — both given directly by Sleeper — rather than
+    trusting the semantics of Sleeper's own 'draft_slot' field, which does
+    NOT reliably equal on-screen pick position in snake rounds. This always
+    matches what the actual draft board displays (verified against the
+    1.1 / 2.12 / 3.1 / 4.12 pattern visible on Sleeper's UI)."""
     enriched = []
     position_seen_count = {}
     for p in picks:
@@ -83,25 +108,43 @@ def enrich_picks(picks, players_db, roster_names):
         player = players_db.get(pid, {})
         position = player.get("position", p.get("metadata", {}).get("position", "UNK"))
         position_seen_count[position] = position_seen_count.get(position, 0) + 1
+        team_info = roster_names.get(p.get("roster_id"), {})
+        nfl_team = player.get("team") or p.get("metadata", {}).get("team")
+        owner_username = team_info.get("owner_username")  # used below, stripped before output
+        note = OWNER_NOTES.get(owner_username)
+
+        pick_no = p["pick_no"]
+        round_no = p["round"]
+        pick_within_round = pick_no - (round_no - 1) * team_count
+        pick_label = f"{round_no}.{pick_within_round:02d}"
+
         enriched.append({
-            "pick_no": p["pick_no"],
-            "round": p["round"],
-            "draft_slot": p.get("draft_slot"),
+            "pick_no": pick_no,
+            "round": round_no,
+            "pick_within_round": pick_within_round,
+            "pick_label": pick_label,  # ALWAYS quote this verbatim, never recompute
             "roster_id": p.get("roster_id"),
-            "team_name": roster_names.get(p.get("roster_id"), "Unknown"),
-            "player_name": player.get("full_name") or p.get("metadata", {}).get("first_name", "") + " " + p.get("metadata", {}).get("last_name", ""),
+            "team_name": team_info.get("team_name", "Unknown"),
+            "is_commissioner": team_info.get("is_commissioner", False),
+            "player_name": player.get("full_name") or (p.get("metadata", {}).get("first_name", "") + " " + p.get("metadata", {}).get("last_name", "")),
             "position": position,
-            "nfl_team": player.get("team") or p.get("metadata", {}).get("team"),
+            "nfl_team": nfl_team,
             "position_rank_at_pick": position_seen_count[position],  # e.g. "3rd RB taken"
+            "confirmed_homer_pick": bool(note and note.get("homer_team") == nfl_team),
+            "_owner_username": owner_username,  # leading underscore = stripped before write, see strip_internal_fields()
         })
     return enriched
 
 
+def strip_internal_fields(pick):
+    """Remove every key that shouldn't reach the model. Called right
+    before anything is written to draft_raw_data.json."""
+    return {k: v for k, v in pick.items() if not k.startswith("_")}
+
+
 def detect_positional_runs(enriched_picks):
     """A 'run' = RUN_MIN_COUNT or more picks at the same position within a
-    sliding window of RUN_WINDOW consecutive picks, regardless of team —
-    this is what a draft-day 'the room panicked on TEs' storyline looks
-    like structurally, derived purely from pick order."""
+    sliding window of RUN_WINDOW consecutive picks, regardless of team."""
     runs = []
     i = 0
     n = len(enriched_picks)
@@ -113,12 +156,12 @@ def detect_positional_runs(enriched_picks):
             if count >= RUN_MIN_COUNT:
                 runs.append({
                     "position": pos,
-                    "start_pick": window[0]["pick_no"],
-                    "end_pick": window[-1]["pick_no"],
+                    "start_pick_label": window[0]["pick_label"],
+                    "end_pick_label": window[-1]["pick_label"],
                     "players": [p["player_name"] for p in window if p["position"] == pos],
                     "teams": [p["team_name"] for p in window if p["position"] == pos],
                 })
-                i += RUN_WINDOW - 1  # skip past this window, avoid overlapping dupes
+                i += RUN_WINDOW - 1
                 break
         i += 1
     return runs
@@ -136,8 +179,69 @@ def position_first_and_last(enriched_picks):
     return summary
 
 
+def compute_position_gaps(enriched_picks):
+    """For every pick, how many overall picks separated it from the
+    PREVIOUS pick at the same position, and from the NEXT one. This is
+    what actually lets the model correctly judge 'early' or 'late' without
+    external ADP: a QB taken with a 21-pick gap before the next QB was a
+    real outlier in THIS room, independent of any outside ranking."""
+    by_position = {}
+    for idx, p in enumerate(enriched_picks):
+        by_position.setdefault(p["position"], []).append(idx)
+
+    gap_before = {}
+    gap_after = {}
+    for pos, indices in by_position.items():
+        for i, idx in enumerate(indices):
+            pick_no = enriched_picks[idx]["pick_no"]
+            if i > 0:
+                prev_pick_no = enriched_picks[indices[i - 1]]["pick_no"]
+                gap_before[idx] = pick_no - prev_pick_no
+            if i < len(indices) - 1:
+                next_pick_no = enriched_picks[indices[i + 1]]["pick_no"]
+                gap_after[idx] = next_pick_no - pick_no
+
+    for idx, p in enumerate(enriched_picks):
+        p["picks_since_previous_same_position"] = gap_before.get(idx)  # None = first ever at this position
+        p["picks_until_next_same_position"] = gap_after.get(idx)       # None = last ever at this position
+    return enriched_picks
+
+
+def team_first_pick_by_position(enriched_picks):
+    """For every team, the first (presumably starter) pick at each
+    position, plus the league-wide median round for that 'first pick at
+    position' across all 12 teams. This is the real basis for a legitimate
+    value claim like 'got their QB in round 9, five rounds after the
+    league's median team already had theirs' — computed, not inferred."""
+    first_by_team_position = {}
+    for p in enriched_picks:
+        key = (p["team_name"], p["position"])
+        if key not in first_by_team_position or p["pick_no"] < first_by_team_position[key]["pick_no"]:
+            first_by_team_position[key] = p
+
+    by_position = {}
+    for (team, pos), p in first_by_team_position.items():
+        by_position.setdefault(pos, []).append({
+            "team_name": team,
+            "pick_label": p["pick_label"],
+            "round": p["round"],
+            "pick_no": p["pick_no"],
+            "player_name": p["player_name"],
+        })
+
+    summary = {}
+    for pos, entries in by_position.items():
+        entries.sort(key=lambda e: e["pick_no"])
+        median_round = statistics.median(e["round"] for e in entries)
+        summary[pos] = {
+            "median_round_of_first_pick_across_league": median_round,
+            "per_team_first_pick": entries,
+        }
+    return summary
+
+
 def team_position_breakdown(enriched_picks, roster_names):
-    breakdown = {name: {} for name in roster_names.values()}
+    breakdown = {info["team_name"]: {} for info in roster_names.values()}
     for p in enriched_picks:
         team = p["team_name"]
         breakdown.setdefault(team, {})
@@ -145,36 +249,58 @@ def team_position_breakdown(enriched_picks, roster_names):
     return breakdown
 
 
+def get_confirmed_tendency_hits(enriched_picks):
+    """Deterministic, not left to the model to notice."""
+    return [p for p in enriched_picks if p["confirmed_homer_pick"]]
+
+
 def main():
     nfl_state = get_nfl_state()
     rosters = get_rosters()
     users = get_users()
-    roster_names = roster_id_to_owner_name(rosters, users)
+    roster_names = roster_id_to_team_info(rosters, users)
     players_db = get_players_cached()
+    team_count = len(rosters)
 
     draft = get_most_recent_draft()
     picks = get_picks(draft["draft_id"])
-    enriched = enrich_picks(picks, players_db, roster_names)
+    enriched = enrich_picks(picks, players_db, roster_names, team_count)
+    enriched = compute_position_gaps(enriched)
+    tendency_hits = get_confirmed_tendency_hits(enriched)
+    position_first_last = position_first_and_last(enriched)
+    acquisition_summary = team_first_pick_by_position(enriched)
+    breakdown = team_position_breakdown(enriched, roster_names)
+    runs = detect_positional_runs(enriched)
+
+    # Strip internal-only fields (owner_username) from EVERYTHING before
+    # it's written to the file the model reads.
+    clean_picks = [strip_internal_fields(p) for p in enriched]
+    clean_tendency_hits = [strip_internal_fields(p) for p in tendency_hits]
+    clean_position_first_last = {
+        pos: {"first": strip_internal_fields(v["first"]), "last": strip_internal_fields(v["last"])}
+        for pos, v in position_first_last.items()
+    }
 
     data = {
         "season": nfl_state["season"],
         "draft_id": draft["draft_id"],
         "draft_status": draft.get("status"),
-        "total_picks": len(enriched),
-        "picks_in_order": enriched,
-        "positional_runs": detect_positional_runs(enriched),
-        "position_first_last": {
-            pos: {"first": v["first"], "last": v["last"]}
-            for pos, v in position_first_and_last(enriched).items()
-        },
-        "team_position_breakdown": team_position_breakdown(enriched, roster_names),
+        "team_count": team_count,
+        "total_picks": len(clean_picks),
+        "picks_in_order": clean_picks,
+        "positional_runs": runs,
+        "position_first_last": clean_position_first_last,
+        "position_acquisition_summary": acquisition_summary,
+        "team_position_breakdown": breakdown,
+        "confirmed_tendency_hits": clean_tendency_hits,
     }
 
     with open(PATHS["draft_raw"], "w") as f:
         json.dump(data, f, indent=2)
 
-    print(f"Fetched {len(enriched)} picks from draft {draft['draft_id']}. "
-          f"{len(data['positional_runs'])} positional runs detected.")
+    print(f"Fetched {len(clean_picks)} picks from draft {draft['draft_id']}. "
+          f"{len(runs)} positional runs detected. "
+          f"{len(clean_tendency_hits)} confirmed owner-tendency hits.")
 
 
 if __name__ == "__main__":

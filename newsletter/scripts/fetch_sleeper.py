@@ -13,7 +13,7 @@ import json
 import os
 import time
 import requests
-from config import LEAGUE_ID, OWNER_MAP, PATHS
+from config import LEAGUE_ID, OWNER_MAP, PATHS, COMMISSIONER_OWNER_USERNAME, OWNER_NOTES
 
 BASE = "https://api.sleeper.app/v1"
 PLAYERS_CACHE_PATH = "newsletter/state/players_cache.json"
@@ -66,13 +66,27 @@ def get_players_cached():
     return players
 
 
-def roster_id_to_owner_name(rosters, users):
-    user_display = {u["user_id"]: u.get("display_name", "Unknown") for u in users}
+def roster_id_to_team_info(rosters, users):
+    """Map roster_id -> {team_name, owner_username, is_commissioner}.
+
+    team_name is the REAL fantasy team name — Sleeper stores it on each
+    user's league-specific metadata.team_name — and should ALWAYS be what
+    shows up in newsletter copy. owner_username (OWNER_MAP, falling back to
+    Sleeper's display_name) is kept only as an internal key for matching
+    OWNER_NOTES tendencies; it should never be printed in the output."""
+    user_by_id = {u["user_id"]: u for u in users}
     out = {}
     for r in rosters:
         owner_id = r.get("owner_id")
-        name = OWNER_MAP.get(owner_id) or user_display.get(owner_id, "Unknown")
-        out[r["roster_id"]] = {"owner_id": owner_id, "name": name}
+        user = user_by_id.get(owner_id, {})
+        owner_username = OWNER_MAP.get(owner_id) or user.get("display_name", "Unknown")
+        team_name = (user.get("metadata") or {}).get("team_name") or owner_username
+        out[r["roster_id"]] = {
+            "owner_id": owner_id,
+            "owner_username": owner_username,
+            "team_name": team_name,
+            "is_commissioner": owner_username == COMMISSIONER_OWNER_USERNAME,
+        }
     return out
 
 
@@ -82,7 +96,8 @@ def build_standings(rosters, roster_names):
         s = r.get("settings", {})
         standings.append({
             "roster_id": r["roster_id"],
-            "name": roster_names[r["roster_id"]]["name"],
+            "team_name": roster_names[r["roster_id"]]["team_name"],
+            "is_commissioner": roster_names[r["roster_id"]]["is_commissioner"],
             "wins": s.get("wins", 0),
             "losses": s.get("losses", 0),
             "ties": s.get("ties", 0),
@@ -136,9 +151,11 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
             counts_before = roster_position_counts(roster, players_db)
             dropped_pid = next((dpid for dpid, drid in drops.items() if drid == roster_id), None)
             dropped_player = players_db.get(str(dropped_pid), {}) if dropped_pid else None
+            owner_username = roster_names.get(roster_id, {}).get("owner_username")  # internal only, not written out below
+            note = OWNER_NOTES.get(owner_username)
             enriched.append({
                 "type": t["type"],
-                "team_name": roster_names.get(roster_id, {}).get("name", "Unknown"),
+                "team_name": roster_names.get(roster_id, {}).get("team_name", "Unknown"),
                 "roster_id": roster_id,
                 "player_added": player.get("full_name", f"Player {pid}"),
                 "player_added_id": pid,
@@ -146,6 +163,7 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
                 "player_dropped": dropped_player.get("full_name") if dropped_player else None,
                 "used_waiver_priority": used_priority,
                 "waiver_priority_before_move": prev_priority.get(str(roster_id)),
+                "confirmed_homer_transaction": bool(note and note.get("homer_team") == player.get("team")),
             })
     return enriched
 
@@ -207,7 +225,7 @@ def main():
     rosters = get_rosters()
     rosters_by_id = {r["roster_id"]: r for r in rosters}
     users = get_users()
-    roster_names = roster_id_to_owner_name(rosters, users)
+    roster_names = roster_id_to_team_info(rosters, users)
     players_db = get_players_cached()
 
     matchups_recap = get_matchups(week_to_recap)
@@ -228,7 +246,7 @@ def main():
 
     def annotate(matchups):
         for m in matchups:
-            m["team_name"] = roster_names.get(m["roster_id"], {}).get("name", "Unknown")
+            m["team_name"] = roster_names.get(m["roster_id"], {}).get("team_name", "Unknown")
         return matchups
 
     data = {
@@ -240,7 +258,6 @@ def main():
         "matchups_preview": annotate(matchups_preview),
         "transactions_this_week": enriched_tx,
         "transaction_tracking_all_active": tracked_results,
-        "roster_names": roster_names,
     }
 
     with open(PATHS["raw_data"], "w") as f:
