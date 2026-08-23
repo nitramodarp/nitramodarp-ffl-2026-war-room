@@ -4263,6 +4263,68 @@
       "TE": 3
     }
   },
+  "team_roster_lean": {
+    "Chuba Bucky Doo": {
+      "rb_count": 7,
+      "wr_count": 4,
+      "roster_lean": "RB-heavy"
+    },
+    "Joe Mama Angie Daddy": {
+      "rb_count": 3,
+      "wr_count": 6,
+      "roster_lean": "WR-heavy"
+    },
+    "Broke Dak Mountain": {
+      "rb_count": 4,
+      "wr_count": 6,
+      "roster_lean": "WR-heavy"
+    },
+    "Waffle House": {
+      "rb_count": 4,
+      "wr_count": 6,
+      "roster_lean": "WR-heavy"
+    },
+    "Silverbacks": {
+      "rb_count": 5,
+      "wr_count": 6,
+      "roster_lean": "balanced between RB and WR"
+    },
+    "Geoff Collins Suvivor": {
+      "rb_count": 4,
+      "wr_count": 6,
+      "roster_lean": "WR-heavy"
+    },
+    "Meredith\u2019s Fan Club": {
+      "rb_count": 6,
+      "wr_count": 4,
+      "roster_lean": "RB-heavy"
+    },
+    "Dak's Stack ": {
+      "rb_count": 5,
+      "wr_count": 6,
+      "roster_lean": "balanced between RB and WR"
+    },
+    "plz lose nesmith": {
+      "rb_count": 4,
+      "wr_count": 8,
+      "roster_lean": "WR-heavy"
+    },
+    "Pukachu Chews You": {
+      "rb_count": 5,
+      "wr_count": 5,
+      "roster_lean": "balanced between RB and WR"
+    },
+    "demon44": {
+      "rb_count": 6,
+      "wr_count": 5,
+      "roster_lean": "balanced between RB and WR"
+    },
+    "Screaming Eagles": {
+      "rb_count": 5,
+      "wr_count": 4,
+      "roster_lean": "balanced between RB and WR"
+    }
+  },
   "confirmed_tendency_hits": [
     {
       "pick_no": 56,
