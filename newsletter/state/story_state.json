@@ -1,1 +1,14 @@
-
+{
+  "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after — this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
+  "last_week_updated": 0,
+  "running_jokes": [],
+  "streaks": {},
+  "notable_quotes": [],
+  "season_awards_tracker": {
+    "biggest_blowout": null,
+    "closest_game": null,
+    "worst_bench_decision": null,
+    "best_waiver_add": null,
+    "worst_transaction": null
+  }
+}
