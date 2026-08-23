@@ -95,7 +95,8 @@ def call_claude(user_content):
         },
         json={
             "model": CLAUDE_MODEL,
-            "max_tokens": 4000,
+            "max_tokens": 8000,
+            "thinking": {"type": "disabled"},
             "system": SYSTEM_PROMPT,
             "messages": [{"role": "user", "content": user_content}],
         },
