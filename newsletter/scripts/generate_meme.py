@@ -65,7 +65,8 @@ def pick_template_and_captions(meme_brief, templates):
         },
         json={
             "model": CLAUDE_MODEL,
-            "max_tokens": 300,
+            "max_tokens": 1000,
+            "thinking": {"type": "disabled"},
             "system": "You pick the best-fit meme template for a fantasy "
                       "football story and write the caption text. Return ONLY "
                       "valid JSON: {\"template_name\": \"...\", \"top_text\": "
