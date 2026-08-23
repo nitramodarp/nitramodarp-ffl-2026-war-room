@@ -1,0 +1,56 @@
+name: FFL Weekly Newsletter
+
+on:
+  schedule:
+    # 12:00 UTC = 8am EDT / 7am EST. Cron is always UTC — GitHub has no
+    # native DST awareness, so this drifts an hour during EST months
+    # (early Nov through early Mar). Not a big deal for a Tuesday-morning
+    # job; adjust manually if it starts landing at an annoying hour.
+    - cron: '0 12 * * 2'
+  workflow_dispatch: {}  # lets you trigger it manually from the Actions tab for testing
+
+permissions:
+  contents: write  # needed to commit the generated page + state file back to the repo
+
+jobs:
+  build-newsletter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch Sleeper data
+        run: python newsletter/scripts/fetch_sleeper.py
+        env:
+          SLEEPER_LEAGUE_ID: '1359038733340389376'
+
+      - name: Generate newsletter content
+        run: python newsletter/scripts/generate_newsletter.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Generate meme
+        run: python newsletter/scripts/generate_meme.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          IMGFLIP_USERNAME: ${{ secrets.IMGFLIP_USERNAME }}
+          IMGFLIP_PASSWORD: ${{ secrets.IMGFLIP_PASSWORD }}
+
+      - name: Render final page
+        run: python newsletter/scripts/render.py
+
+      - name: Commit output + updated state
+        run: |
+          git config user.name "ffl-newsletter-bot"
+          git config user.email "actions@github.com"
+          git add newsletter/output newsletter/state
+          git diff --staged --quiet && echo "No changes to commit" || git commit -m "Newsletter: $(date +'%Y-%m-%d')"
+          git push
