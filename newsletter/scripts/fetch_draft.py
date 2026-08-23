@@ -20,14 +20,63 @@ import json
 import os
 import statistics
 import time
+import re
 import requests
 from config import LEAGUE_ID, OWNER_MAP, PATHS, OWNER_NOTES, COMMISSIONER_OWNER_USERNAME
 
 BASE = "https://api.sleeper.app/v1"
+FFC_ADP_URL = "https://fantasyfootballcalculator.com/api/v1/adp/half-ppr"
 PLAYERS_CACHE_PATH = "newsletter/state/players_cache.json"
 PLAYERS_CACHE_MAX_AGE_DAYS = 7
 RUN_WINDOW = 4       # picks within this window counted toward a "run"
 RUN_MIN_COUNT = 3    # this many same-position picks within the window = a run
+
+
+def normalize_name(name):
+    """Loose match key for joining Sleeper player names against Fantasy
+    Football Calculator's ADP names — different sources format suffixes
+    and punctuation differently (e.g. 'Kenneth Walker III' vs 'Kenneth
+    Walker'), so strip all of that down to a bare comparable string."""
+    if not name:
+        return ""
+    name = name.lower()
+    name = re.sub(r"[.\']", "", name)
+    name = re.sub(r"\b(jr|sr|ii|iii|iv)\b", "", name)
+    name = re.sub(r"\s+", " ", name).strip()
+    return name
+
+
+def get_market_adp(team_count=12, year=2026):
+    """Public consensus ADP from Fantasy Football Calculator — NOT the
+    proprietary Ciely/VORP board, which never appears anywhere in this
+    repo. This is exactly the same public ADP source already referenced in
+    the project's own methodology docs. Wrapped defensively: this script's
+    exact response shape hasn't been verified against a live call (it's
+    outside the dev sandbox's reachable domains), so a schema surprise
+    should degrade to 'no ADP data' rather than break the whole pipeline —
+    check the run log's printed sample if this returns an empty dict."""
+    try:
+        resp = requests.get(
+            FFC_ADP_URL,
+            params={"teams": team_count, "year": year, "position": "all"},
+            timeout=20,
+        )
+        resp.raise_for_status()
+        payload = resp.json()
+        players = payload.get("players", [])
+        adp_by_name = {}
+        for pl in players:
+            key = normalize_name(pl.get("name"))
+            if key:
+                adp_by_name[key] = pl.get("adp")
+        print(f"Fetched market ADP for {len(adp_by_name)} players from Fantasy Football Calculator.")
+        if players[:1]:
+            print(f"Sample ADP record (for verifying the response shape): {players[0]}")
+        return adp_by_name
+    except Exception as e:
+        print(f"WARNING: could not fetch/parse market ADP ({e}) — proceeding without ADP comparison. "
+              f"adp_delta_vs_market will be null on every pick.")
+        return {}
 
 
 def get(url):
@@ -94,7 +143,7 @@ def get_picks(draft_id):
     return picks
 
 
-def enrich_picks(picks, players_db, roster_names, team_count):
+def enrich_picks(picks, players_db, roster_names, team_count, adp_by_name):
     """team_count picks per round lets us derive pick-within-round purely
     from pick_no and round — both given directly by Sleeper — rather than
     trusting the semantics of Sleeper's own 'draft_slot' field, which does
@@ -118,6 +167,13 @@ def enrich_picks(picks, players_db, roster_names, team_count):
         pick_within_round = pick_no - (round_no - 1) * team_count
         pick_label = f"{round_no}.{pick_within_round:02d}"
 
+        player_name = player.get("full_name") or (p.get("metadata", {}).get("first_name", "") + " " + p.get("metadata", {}).get("last_name", ""))
+        market_adp = adp_by_name.get(normalize_name(player_name))
+        # Positive = fell PAST market ADP (this room valued him less than
+        # consensus = value pick). Negative = taken BEFORE market ADP
+        # (this room valued him more than consensus = reach).
+        adp_delta_vs_market = (market_adp - pick_no) if market_adp is not None else None
+
         enriched.append({
             "pick_no": pick_no,
             "round": round_no,
@@ -126,10 +182,12 @@ def enrich_picks(picks, players_db, roster_names, team_count):
             "roster_id": p.get("roster_id"),
             "team_name": team_info.get("team_name", "Unknown"),
             "is_commissioner": team_info.get("is_commissioner", False),
-            "player_name": player.get("full_name") or (p.get("metadata", {}).get("first_name", "") + " " + p.get("metadata", {}).get("last_name", "")),
+            "player_name": player_name,
             "position": position,
             "nfl_team": nfl_team,
             "position_rank_at_pick": position_seen_count[position],  # e.g. "3rd RB taken"
+            "market_adp": market_adp,  # public Fantasy Football Calculator consensus, or null if unmatched
+            "adp_delta_vs_market": adp_delta_vs_market,
             "confirmed_homer_pick": bool(note and note.get("homer_team") == nfl_team),
             "_owner_username": owner_username,  # leading underscore = stripped before write, see strip_internal_fields()
         })
@@ -264,7 +322,8 @@ def main():
 
     draft = get_most_recent_draft()
     picks = get_picks(draft["draft_id"])
-    enriched = enrich_picks(picks, players_db, roster_names, team_count)
+    adp_by_name = get_market_adp(team_count=team_count, year=int(nfl_state["season"]))
+    enriched = enrich_picks(picks, players_db, roster_names, team_count, adp_by_name)
     enriched = compute_position_gaps(enriched)
     tendency_hits = get_confirmed_tendency_hits(enriched)
     position_first_last = position_first_and_last(enriched)
@@ -298,9 +357,11 @@ def main():
     with open(PATHS["draft_raw"], "w") as f:
         json.dump(data, f, indent=2)
 
+    matched_adp_count = sum(1 for p in enriched if p["market_adp"] is not None)
     print(f"Fetched {len(clean_picks)} picks from draft {draft['draft_id']}. "
           f"{len(runs)} positional runs detected. "
-          f"{len(clean_tendency_hits)} confirmed owner-tendency hits.")
+          f"{len(clean_tendency_hits)} confirmed owner-tendency hits. "
+          f"{matched_adp_count}/{len(enriched)} picks matched to market ADP.")
 
 
 if __name__ == "__main__":

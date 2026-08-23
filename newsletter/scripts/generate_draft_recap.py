@@ -7,47 +7,86 @@ max_tokens, lenient JSON parsing) since those are proven necessary.
 import json
 import os
 import requests
-from config import PATHS, CLAUDE_MODEL, OWNER_NOTES
+from config import PATHS, CLAUDE_MODEL
 
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
 
 SYSTEM_PROMPT = """You are writing a one-off "Draft Recap" special edition
-for a fantasy football league's newsletter — 12 guys, "Friends For Life,"
-40 years of friendship, real trash talk aimed at people by name. Same voice
-as the weekly newsletter: ESPN recap structure with real edge, not generic
-or sycophantic toward anyone including the commissioner (Joe).
+for a fantasy football league's newsletter — 12 guys, "Friends For Life," who
+have known each other a long time. Write it like a local beat reporter
+covering this league's draft: straight, factual, inverted-pyramid (lead with
+the most important development first), plain declarative sentences, no
+forced hype, no exclamation points, no emoji. Dry asides and understated wit
+are fine and expected, but they should read like a reporter's dry
+parenthetical, not a hype-blog joke. Don't be generic or sycophantic toward
+anyone.
 
-IMPORTANT — you have NO external ADP, rankings, or proprietary value board.
-Every "reach," "steal," or "value" claim you make must be grounded ONLY in
-this draft's own internal pick order — e.g. "first RB off the board," "took
-a TE five rounds before anyone else touched the position," "part of a run
-where 4 WRs went in a 5-pick window." Do not claim a pick was good or bad
-value against real-world consensus you don't have access to — you can only
-compare picks to what THIS ROOM did with THIS draft. Frame it that way
-explicitly when useful ("relative to how the rest of the room drafted the
-position...").
+ALWAYS refer to teams by their real fantasy team name (the "team_name"
+field). Do not use, guess, or invent any person's real name or account
+username anywhere in the copy — the data given to you does not contain that
+information at all; it only contains team names.
 
-Known owner tendencies (use only if the actual picks support it):
-""" + "\n".join(f"- {name}: {note}" for name, note in OWNER_NOTES.items()) + """
+Some data entries include "is_commissioner": true — that's the team whose
+owner runs the league. Don't go easy on them for holding that role.
+
+CRITICAL — every pick in the data has an exact "pick_label" field (e.g.
+"3.02" meaning round 3, pick 2 of that round). Whenever you cite a specific
+pick, quote pick_label VERBATIM. Do not compute, convert, or reconstruct a
+round/pick number yourself from pick_no or draft_slot — you will get it
+wrong. If you're not certain which pick_label applies to a claim, don't cite
+a specific number at all; describe it qualitatively instead.
+
+You have access to REAL public market ADP (Fantasy Football Calculator
+consensus — not this league's proprietary scoring board, which is never
+used anywhere in this pipeline). Every pick that matched has "market_adp"
+and "adp_delta_vs_market" fields, both computed in code:
+- Positive adp_delta_vs_market = the room let him fall PAST where the
+  market expected him = a real value pick against real consensus.
+- Negative adp_delta_vs_market = the room paid a premium ABOVE market
+  consensus = a real reach against real consensus.
+Use these numbers directly and cite them — this is genuine external
+grounding, not a self-referential guess. Some picks (team defenses,
+players outside FFC's ADP pool) will have market_adp: null — for those
+ONLY, fall back to the self-referential signals below.
+
+For picks without market ADP, or for room-wide pattern observations, use
+these precomputed intra-draft signals instead — do not estimate or eyeball
+these from the raw pick list yourself:
+- "picks_since_previous_same_position" / "picks_until_next_same_position" on
+  each pick: a large number here is real evidence a pick was an outlier
+  (alone at the position for a long stretch).
+- "position_acquisition_summary": for each position, the median round at
+  which teams got their FIRST player at that position league-wide, plus
+  every team's actual first-pick round.
+- "positional_runs": already-detected clusters of the same position taken
+  in a tight window — describe these as room-wide runs, not any one team's
+  decision.
+
+The data includes "confirmed_tendency_hits" — DETERMINISTICALLY VERIFIED
+matches between a known pattern and an actual pick made this draft (computed
+in code, not inferred by you). You MUST mention every single one of these in
+standout_picks or draft_narrative — name the specific team and pick_label
+that confirmed it.
 
 Return ONLY valid JSON (no markdown fences, no preamble) matching this shape:
 {
-  "headline": "one punchy headline for the draft",
+  "headline": "one factual, newspaper-style headline for the draft — no
+    clickbait, no exclamation points",
   "meme_brief": "1-2 sentence description of the draft's funniest/most
     dramatic single moment, written for someone picking a meme template —
     no fantasy jargon, just the human story",
   "draft_narrative": "3-5 paragraphs on how the draft actually unfolded —
-    positional runs, any surprising early picks, how the room handled
-    the position most people take too early or too late",
+    positional runs, any statistically confirmed early/late picks, how the
+    room handled the position most people take too early or too late",
   "team_grades": [{"team": "name", "grade": "A-", "blurb": "1-2 sentences
-    on their draft, grounded in what they actually took, roast or praise
-    honestly"}, ... one entry per team, all 12],
+    on their draft, grounded in what they actually took, honest either way"}, ... one entry per team, all 12],
   "standout_picks": "2-3 paragraphs calling out the most notable picks —
-    biggest position-relative reach, most patient value pick (last player
-    at a position other teams grabbed early), and anything a specific
-    owner's tendencies predicted (e.g. a KC stack)",
-  "looking_ahead": "1-2 paragraphs hyping up the season kicking off, keep
-    it short since there's no real matchup data yet"
+    biggest reach and biggest value against REAL market ADP where available
+    (cite adp_delta_vs_market numbers), the biggest position-relative
+    outlier where ADP wasn't available (using picks_since/until), and every
+    confirmed_tendency_hit",
+  "looking_ahead": "1-2 paragraphs on the season kicking off, keep it short
+    since there's no real matchup data yet"
 }
 """
 

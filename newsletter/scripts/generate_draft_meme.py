@@ -59,14 +59,18 @@ def pick_template_and_captions(meme_brief, templates):
             "max_tokens": 1000,
             "thinking": {"type": "disabled"},
             "system": "You pick the best-fit meme template for a fantasy "
-                      "football draft story and write the caption text. Return "
-                      "ONLY valid JSON: {\"template_name\": \"...\", \"top_text\": "
-                      "\"...\", \"bottom_text\": \"...\"}. Keep captions short "
-                      "and punchy — this is for 40-year friends who talk trash, "
-                      "not corporate-safe humor.",
+                      "football draft story and write the caption text. Each "
+                      "template has a box_count — you MUST return exactly that "
+                      "many captions, in order top-to-bottom/left-to-right, or "
+                      "the image will render with blank boxes. Return ONLY "
+                      "valid JSON: {\"template_name\": \"...\", \"captions\": "
+                      "[\"...\", \"...\"]} where captions has EXACTLY box_count "
+                      "entries for the template you chose. Keep captions short "
+                      "and punchy — longtime friends who talk real trash, not "
+                      "corporate-safe humor.",
             "messages": [{
                 "role": "user",
-                "content": f"Story: {meme_brief}\n\nAvailable templates: {json.dumps(template_options)}"
+                "content": f"Story: {meme_brief}\n\nAvailable templates (with required box_count): {json.dumps(template_options)}"
             }],
         },
         timeout=60,
@@ -82,18 +86,16 @@ def pick_template_and_captions(meme_brief, templates):
     return json.loads(extract_json(text), strict=False)
 
 
-def render_meme(template_id, top_text, bottom_text):
-    resp = requests.post(
-        "https://api.imgflip.com/caption_image",
-        data={
-            "template_id": template_id,
-            "username": IMGFLIP_USERNAME,
-            "password": IMGFLIP_PASSWORD,
-            "text0": top_text,
-            "text1": bottom_text,
-        },
-        timeout=30,
-    )
+def render_meme(template_id, captions):
+    data = {
+        "template_id": template_id,
+        "username": IMGFLIP_USERNAME,
+        "password": IMGFLIP_PASSWORD,
+    }
+    for i, caption in enumerate(captions):
+        data[f"text{i}"] = caption
+
+    resp = requests.post("https://api.imgflip.com/caption_image", data=data, timeout=30)
     resp.raise_for_status()
     result = resp.json()
     if not result.get("success"):
@@ -110,10 +112,17 @@ def main():
     choice = pick_template_and_captions(meme_brief, templates)
 
     template = next(t for t in templates if t["name"] == choice["template_name"])
-    image_url = render_meme(template["id"], choice.get("top_text", ""), choice.get("bottom_text", ""))
+    captions = choice.get("captions", [])
+    if len(captions) != template["box_count"]:
+        print(f"WARNING: model returned {len(captions)} captions but "
+              f"{choice['template_name']} needs {template['box_count']} — "
+              f"padding/truncating to fit rather than failing the run.")
+        captions = (captions + [""] * template["box_count"])[:template["box_count"]]
+
+    image_url = render_meme(template["id"], captions)
 
     with open(PATHS["draft_meme"], "w") as f:
-        json.dump({"image_url": image_url, **choice}, f, indent=2)
+        json.dump({"image_url": image_url, "template_name": choice["template_name"], "captions": captions}, f, indent=2)
 
     print(f"Draft recap meme rendered: {image_url}")
 
