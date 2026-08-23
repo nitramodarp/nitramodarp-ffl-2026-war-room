@@ -99,7 +99,14 @@ def pick_template_and_captions(meme_brief, templates):
             "max_tokens": 1000,
             "thinking": {"type": "disabled"},
             "system": "You pick the best-fit meme template for a fantasy "
-                      "football story and write the caption text. Each template "
+                      "football story and write the caption text. "
+                      "CRITICAL: base your captions ONLY on facts literally "
+                      "stated in the Story text below — do not substitute, "
+                      "invent, or 'correct' any team name, player name, or "
+                      "specific detail. If Story says a team, a player, or a "
+                      "number, quote it exactly; do not swap in a different "
+                      "one from your own general knowledge, even if it feels "
+                      "like a more familiar or common reference. Each template "
                       "in the list has a box_count — you MUST return exactly "
                       "that many captions, in order top-to-bottom/left-to-right, "
                       "or the image will render with blank boxes. Return ONLY "
