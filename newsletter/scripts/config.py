@@ -38,6 +38,11 @@ PATHS = {
     "meme": "newsletter/state/meme.json",
     "template": "newsletter/templates/newsletter_template.html",
     "output_dir": "newsletter/output",
+    # Draft recap special edition — separate state, doesn't touch the weekly files
+    "draft_raw": "newsletter/state/draft_raw_data.json",
+    "draft_recap_draft": "newsletter/state/draft_recap_draft.json",
+    "draft_meme": "newsletter/state/draft_meme.json",
+    "draft_template": "newsletter/templates/draft_recap_template.html",
 }
 
 # Claude model used for both newsletter copy and meme selection.
