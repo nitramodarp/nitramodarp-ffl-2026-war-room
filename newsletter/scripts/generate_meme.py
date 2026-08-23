@@ -46,6 +46,14 @@ def get_templates():
     return [by_name[name] for name in CANDIDATE_TEMPLATES if name in by_name]
 
 
+def extract_json(text):
+    start = text.find("{")
+    end = text.rfind("}")
+    if start == -1 or end == -1 or end < start:
+        raise ValueError(f"No JSON object found in model response. Raw text was:\n{text}")
+    return text[start:end + 1]
+
+
 def pick_template_and_captions(meme_brief, templates):
     template_options = [{"name": t["name"], "box_count": t["box_count"]} for t in templates]
     resp = requests.post(
@@ -74,8 +82,12 @@ def pick_template_and_captions(meme_brief, templates):
     resp.raise_for_status()
     data = resp.json()
     text = "".join(b["text"] for b in data["content"] if b["type"] == "text")
-    cleaned = re.sub(r"^```json|```$", "", text.strip(), flags=re.MULTILINE).strip()
-    return json.loads(cleaned)
+    print("---- RAW MEME MODEL RESPONSE ----")
+    print(text)
+    print("---- END ----")
+    if not text.strip():
+        raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
+    return json.loads(extract_json(text))
 
 
 def render_meme(template_id, top_text, bottom_text):
