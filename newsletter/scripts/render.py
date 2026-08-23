@@ -5,6 +5,7 @@ published to GitHub Pages and is the link you drop in Sleeper chat / email.
 """
 
 import json
+import os
 from config import PATHS
 
 def main():
@@ -35,6 +36,7 @@ def main():
     )
 
     out_path = f"{PATHS['output_dir']}/{raw['season']}-wk{raw['week_recapped']:02d}.html"
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w") as f:
         f.write(html)
 
