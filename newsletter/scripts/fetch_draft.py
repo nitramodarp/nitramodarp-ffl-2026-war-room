@@ -328,6 +328,25 @@ def team_position_breakdown(enriched_picks, roster_names):
     return breakdown
 
 
+def build_team_roster_summary(enriched_picks, roster_names):
+    """Exact, explicit manifest of every player each team actually drafted.
+    Added after the model correctly recalled two true facts (a Josh Allen
+    reach at a specific pick, and which team is the commissioner) and
+    cross-wired them onto the wrong team while writing many grades in one
+    pass. Every other grounding fix in this pipeline prevents a wrong
+    number or a wrong label; this prevents a wrong ATTRIBUTION — give the
+    model a per-team checklist to verify against rather than trusting it
+    to keep 12 rosters straight from a flat list of 180 picks."""
+    summary = {info["team_name"]: [] for info in roster_names.values()}
+    for p in sorted(enriched_picks, key=lambda x: x["pick_no"]):
+        summary.setdefault(p["team_name"], []).append({
+            "pick_label": p["pick_label"],
+            "player_name": p["player_name"],
+            "position": p["position"],
+        })
+    return summary
+
+
 def compute_roster_lean(breakdown):
     """Precomputed RB-vs-WR roster-construction lean per team. Added after
     the model looked at a 3 RB / 6 WR roster and called it 'RB-heavy' —
@@ -374,6 +393,7 @@ def main():
     acquisition_summary = team_first_pick_by_position(enriched)
     breakdown = team_position_breakdown(enriched, roster_names)
     roster_lean = compute_roster_lean(breakdown)
+    roster_summary = build_team_roster_summary(enriched, roster_names)
     runs = detect_positional_runs(enriched)
 
     # Strip internal-only fields (owner_username) from EVERYTHING before
@@ -397,6 +417,7 @@ def main():
         "position_acquisition_summary": acquisition_summary,
         "team_position_breakdown": breakdown,
         "team_roster_lean": roster_lean,
+        "team_roster_summary": roster_summary,
         "confirmed_tendency_hits": clean_tendency_hits,
     }
 

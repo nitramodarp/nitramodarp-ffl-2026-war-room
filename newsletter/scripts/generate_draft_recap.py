@@ -114,6 +114,17 @@ print the field names themselves ("team_position_breakdown" and
    You do not have that information here and guessing at it produces
    confident-sounding errors (e.g. calling a veteran player a "rookie").
    Stick to position, team, pick_label, and the computed signals provided.
+4. team_roster_summary gives the EXACT, complete list of players each team
+   actually drafted. Before you name ANY player as belonging to a specific
+   team — anywhere in draft_narrative, team_grades, or standout_picks —
+   verify that player appears in THAT team's own team_roster_summary list.
+   This was gotten wrong once already: a real reach on one team's roster
+   got described as belonging to a completely different team (the
+   commissioner's), even though both facts individually were true — the
+   model just wired them together onto the wrong team while writing many
+   grades in sequence. Writing 12 team grades back-to-back is exactly
+   where this kind of cross-attribution slip happens; check the roster
+   list every time, especially in team_grades.
 
 Do NOT include any preliminary attempt, self-correction, or "wait, let me
 redo this" commentary in your output — if you need to reconsider partway
