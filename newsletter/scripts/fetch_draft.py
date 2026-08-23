@@ -75,7 +75,7 @@ def get_market_adp(team_count=12, year=2026):
         return adp_by_name
     except Exception as e:
         print(f"WARNING: could not fetch/parse market ADP ({e}) — proceeding without ADP comparison. "
-              f"adp_delta_vs_market will be null on every pick.")
+              f"market_verdict will be null on every pick.")
         return {}
 
 
@@ -169,10 +169,30 @@ def enrich_picks(picks, players_db, roster_names, team_count, adp_by_name):
 
         player_name = player.get("full_name") or (p.get("metadata", {}).get("first_name", "") + " " + p.get("metadata", {}).get("last_name", ""))
         market_adp = adp_by_name.get(normalize_name(player_name))
-        # Positive = fell PAST market ADP (this room valued him less than
-        # consensus = value pick). Negative = taken BEFORE market ADP
-        # (this room valued him more than consensus = reach).
-        adp_delta_vs_market = (market_adp - pick_no) if market_adp is not None else None
+
+        # market_verdict / market_summary are precomputed here so the model
+        # never has to reason about a delta's sign — a documented sign
+        # convention was found to be backwards (verified against Josh Allen:
+        # ADP ~33, drafted at pick 18 — a clear reach — but the old formula
+        # labeled that scenario "positive = value," exactly inverted). Same
+        # fix pattern as team_roster_lean: compute the finished conclusion,
+        # don't ask the model to derive one from a number's sign.
+        MARKET_THRESHOLD = 3  # picks within this window of ADP = "at market," not a reach/value
+        if market_adp is not None:
+            picks_later_than_adp = pick_no - market_adp  # positive = drafted LATER than ADP = value
+            if picks_later_than_adp > MARKET_THRESHOLD:
+                market_verdict = "value"
+                market_summary = f"fell {picks_later_than_adp:.1f} picks past his market ADP of {market_adp:.1f}"
+            elif picks_later_than_adp < -MARKET_THRESHOLD:
+                market_verdict = "reach"
+                market_summary = f"went {abs(picks_later_than_adp):.1f} picks ahead of his market ADP of {market_adp:.1f}"
+            else:
+                market_verdict = "at market"
+                market_summary = f"went right around his market ADP of {market_adp:.1f}"
+        else:
+            picks_later_than_adp = None
+            market_verdict = None
+            market_summary = None
 
         enriched.append({
             "pick_no": pick_no,
@@ -187,7 +207,8 @@ def enrich_picks(picks, players_db, roster_names, team_count, adp_by_name):
             "nfl_team": nfl_team,
             "position_rank_at_pick": position_seen_count[position],  # e.g. "3rd RB taken"
             "market_adp": market_adp,  # public Fantasy Football Calculator consensus, or null if unmatched
-            "adp_delta_vs_market": adp_delta_vs_market,
+            "market_verdict": market_verdict,  # "value" / "reach" / "at market" / null — use this label directly
+            "market_summary": market_summary,  # ready-made phrase, quote or lightly rephrase, don't recompute
             "confirmed_homer_pick": bool(note and note.get("homer_team") == nfl_team),
             "_owner_username": owner_username,  # leading underscore = stripped before write, see strip_internal_fields()
         })

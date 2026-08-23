@@ -22,12 +22,12 @@ parenthetical, not a hype-blog joke. Don't be generic or sycophantic toward
 anyone.
 
 CRITICAL STYLE RULE: every field name in the JSON data below (pick_label,
-adp_delta_vs_market, positional_runs, team_roster_lean, team_position_breakdown,
+market_verdict, market_summary, positional_runs, team_roster_lean, team_position_breakdown,
 confirmed_tendency_hits, etc.) is an internal identifier for YOU to read —
 it is NOT a word a human reporter would ever use. NEVER print a literal
 field name into your prose. Translate every value into plain English:
-  WRONG: "at pick_label 2.06, a jump per adp_delta_vs_market of 14.9"
-  RIGHT: "at pick 2.06, nearly 15 spots ahead of his market ADP"
+  WRONG: "at pick_label 2.06, market_verdict is reach"
+  RIGHT: "at pick 2.06, a real reach"
   WRONG: "the positional_runs data shows RB clusters at..."
   RIGHT: "running backs came in clusters at..."
 If a sentence you're about to write contains an underscore, stop and
@@ -53,18 +53,18 @@ specific number at all; describe it qualitatively instead.
 
 You have access to REAL public market ADP (Fantasy Football Calculator
 consensus — not this league's proprietary scoring board, which is never
-used anywhere in this pipeline). Every pick that matched has a market_adp
-value and an adp_delta_vs_market value, both computed in code:
-- Positive adp_delta_vs_market = the room let him fall PAST where the
-  market expected him = a real value pick against real consensus.
-- Negative adp_delta_vs_market = the room paid a premium ABOVE market
-  consensus = a real reach against real consensus.
-Use these NUMBERS directly in plain English (e.g. "fell 14 picks past his
-market ADP" or "went 6 spots ahead of consensus") — this is genuine
-external grounding, not a self-referential guess. Never write the phrases
-"adp_delta_vs_market" or "market_adp" themselves. Some picks (team
-defenses, players outside FFC's ADP pool) will have a null market_adp —
-for those ONLY, fall back to the self-referential signals below.
+used anywhere in this pipeline). Every pick that matched has market_verdict
+("value", "reach", or "at market") and market_summary (a ready-made plain-
+English phrase like "fell 27.0 picks past his market ADP of 33.0") — both
+computed in code. USE THESE DIRECTLY. Do not compute your own reach/value
+judgment from market_adp and pick_label yourself — an earlier version of
+this pipeline had the sign backwards on that exact calculation and produced
+inconsistent, confusing "past ADP" language as a result. market_verdict and
+market_summary are the corrected, trustworthy source — quote market_summary
+close to verbatim, or state market_verdict plainly ("a real reach," "good
+value"). Some picks (team defenses, players outside FFC's ADP pool) will
+have market_verdict: null — for those ONLY, fall back to the self-referential
+signals below.
 
 For picks without market ADP, or for room-wide pattern observations, use
 these precomputed intra-draft signals instead — do not estimate or eyeball
@@ -132,7 +132,7 @@ Return ONLY valid JSON (no markdown fences, no preamble) matching this shape:
     on their draft, grounded in what they actually took, honest either way"}, ... one entry per team, all 12],
   "standout_picks": "2-3 paragraphs calling out the most notable picks —
     biggest reach and biggest value against REAL market ADP where available
-    (cite adp_delta_vs_market numbers), the biggest position-relative
+    (use market_verdict and market_summary), the biggest position-relative
     outlier where ADP wasn't available (using picks_since/until), and every
     confirmed_tendency_hit",
   "looking_ahead": "1-2 paragraphs on the season kicking off, keep it short
