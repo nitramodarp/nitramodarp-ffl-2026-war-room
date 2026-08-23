@@ -1,8 +1,14 @@
 {
-  "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after — this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
-  "last_week_updated": 0,
-  "running_jokes": [],
-  "streaks": {},
+  "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
+  "last_week_updated": 1,
+  "running_jokes": [
+    "The Great Week 1 Zero \u2014 every single matchup finished 0.0 to 0.0, a perfectly balanced and utterly meaningless slate.",
+    "wazimo's KC homerism is already loaded into his Week 1 roster, waiting to fire."
+  ],
+  "streaks": {
+    "Saturn75": "1-game 'winning' streak (0.0-0.0)",
+    "Joe": "1-game 'losing' streak (0.0-0.0), already living up to last-place commissioner curse jokes"
+  },
   "notable_quotes": [],
   "season_awards_tracker": {
     "biggest_blowout": null,
@@ -10,5 +16,51 @@
     "worst_bench_decision": null,
     "best_waiver_add": null,
     "worst_transaction": null
+  },
+  "transaction_tracking": [
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Player DET",
+      "player_added_id": "DET",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 3,
+      "team_name": "BrianHixon",
+      "player_added": "Najee Harris",
+      "player_added_id": "7528",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 3,
+      "team_name": "BrianHixon",
+      "player_added": "Xavier Hutchinson",
+      "player_added_id": "10218",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    }
+  ],
+  "last_known_waiver_priority": {
+    "1": 7,
+    "2": 12,
+    "3": 6,
+    "4": 1,
+    "5": 10,
+    "6": 3,
+    "7": 5,
+    "8": 2,
+    "9": 4,
+    "10": 11,
+    "11": 9,
+    "12": 8
   }
 }
