@@ -88,7 +88,7 @@ def pick_template_and_captions(meme_brief, templates):
     print("---- END ----")
     if not text.strip():
         raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
-    return json.loads(extract_json(text))
+    return json.loads(extract_json(text), strict=False)
 
 
 def render_meme(template_id, top_text, bottom_text):
