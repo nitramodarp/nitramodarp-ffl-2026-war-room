@@ -34,7 +34,9 @@ def get_templates():
     resp.raise_for_status()
     all_templates = resp.json()["data"]["memes"]
     by_name = {t["name"]: t for t in all_templates}
-    return [by_name[name] for name in CANDIDATE_TEMPLATES if name in by_name]
+    candidates = [by_name[name] for name in CANDIDATE_TEMPLATES if name in by_name]
+    filtered = [t for t in candidates if t.get("box_count", 99) <= 2]
+    return filtered if filtered else candidates[:1]
 
 
 def extract_json(text):

@@ -68,6 +68,20 @@ in code, not inferred by you). You MUST mention every single one of these in
 standout_picks or draft_narrative — name the specific team and pick_label
 that confirmed it.
 
+CRITICAL — two more grounding rules, both added after real errors:
+1. "team_position_breakdown" gives the EXACT count of picks per position
+   for every team (e.g. {"DEF": 2, "QB": 2, ...}). When describing a team's
+   roster construction, quote these counts EXACTLY. Do not estimate, round,
+   or recall a count from memory — a wrong count (e.g. saying "three
+   defenses" when the data says two) is a factual error the reader can and
+   will catch immediately.
+2. Do not state any fact about a player that isn't present in the data
+   given to you — no claims about rookie status, draft class, age,
+   experience level, injury history, or any other biographical detail.
+   You do not have that information here and guessing at it produces
+   confident-sounding errors (e.g. calling a veteran player a "rookie").
+   Stick to position, team, pick_label, and the computed signals provided.
+
 Return ONLY valid JSON (no markdown fences, no preamble) matching this shape:
 {
   "headline": "one factual, newspaper-style headline for the draft — no

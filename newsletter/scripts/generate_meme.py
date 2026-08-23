@@ -43,7 +43,15 @@ def get_templates():
     resp.raise_for_status()
     all_templates = resp.json()["data"]["memes"]
     by_name = {t["name"]: t for t in all_templates}
-    return [by_name[name] for name in CANDIDATE_TEMPLATES if name in by_name]
+    candidates = [by_name[name] for name in CANDIDATE_TEMPLATES if name in by_name]
+    # Filter to box_count <= 2 at runtime rather than trusting prompt
+    # compliance for higher box counts — a 4-box template like Expanding
+    # Brain kept rendering with blank panels because the model reliably
+    # under-delivers captions on complex templates even when told the
+    # exact count required. Determined from Imgflip's own live metadata,
+    # not a hardcoded guess about which named templates have how many boxes.
+    filtered = [t for t in candidates if t.get("box_count", 99) <= 2]
+    return filtered if filtered else candidates[:1]  # never return an empty list
 
 
 def extract_json(text):
