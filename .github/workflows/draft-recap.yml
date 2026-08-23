@@ -1,0 +1,48 @@
+name: FFL Draft Recap (Special Edition)
+
+on:
+  workflow_dispatch: {}  # manual only — this is a one-off, not a recurring job
+
+permissions:
+  contents: write
+
+jobs:
+  build-draft-recap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch draft data
+        run: python newsletter/scripts/fetch_draft.py
+
+      - name: Generate draft recap content
+        run: python newsletter/scripts/generate_draft_recap.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Generate draft recap meme
+        run: python newsletter/scripts/generate_draft_meme.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          IMGFLIP_USERNAME: ${{ secrets.IMGFLIP_USERNAME }}
+          IMGFLIP_PASSWORD: ${{ secrets.IMGFLIP_PASSWORD }}
+
+      - name: Render final page
+        run: python newsletter/scripts/render_draft_recap.py
+
+      - name: Commit output
+        run: |
+          git config user.name "ffl-newsletter-bot"
+          git config user.email "actions@github.com"
+          git add newsletter/output newsletter/state
+          git diff --staged --quiet && echo "No changes to commit" || git commit -m "Draft recap special edition"
+          git push
