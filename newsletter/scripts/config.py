@@ -24,11 +24,22 @@ OWNER_MAP = {
 
 MY_OWNER_ID = "634248191616888832"
 
+# Sleeper league display username of the commissioner. Flagged into the
+# fetched data as is_commissioner: true rather than hardcoded into any
+# prompt text — get this wrong once, fix it here, never again in three
+# different prompt strings.
+COMMISSIONER_OWNER_USERNAME = "Saturn75"
+
 # Confirmed owner-psychology notes to feed the newsletter's voice.
-# Keep this list honest and update it as real 2026 behavior confirms/refutes
-# these — don't let it calcify into a joke that stops being true.
+# "homer_team" (optional) is an NFL team abbreviation — if set, any pick
+# fetch_draft.py finds on that team for this owner gets deterministically
+# flagged as a confirmed tendency hit, instead of relying on the model to
+# notice it buried in 180 picks of data.
 OWNER_NOTES = {
-    "wazimo": "Real, repeatable KC homer — reaches on Chiefs players in any format.",
+    "wazimo": {
+        "note": "Real, repeatable KC homer — reaches on Chiefs players in any format.",
+        "homer_team": "KC",
+    },
 }
 
 PATHS = {
