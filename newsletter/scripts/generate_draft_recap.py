@@ -82,6 +82,10 @@ CRITICAL — two more grounding rules, both added after real errors:
    confident-sounding errors (e.g. calling a veteran player a "rookie").
    Stick to position, team, pick_label, and the computed signals provided.
 
+Do NOT include any preliminary attempt, self-correction, or "wait, let me
+redo this" commentary in your output — if you need to reconsider partway
+through, do it silently and output only the single final JSON object.
+
 Return ONLY valid JSON (no markdown fences, no preamble) matching this shape:
 {
   "headline": "one factual, newspaper-style headline for the draft — no
@@ -104,13 +108,48 @@ Return ONLY valid JSON (no markdown fences, no preamble) matching this shape:
 }
 """
 
+REQUIRED_KEYS = ["headline", "meme_brief", "draft_narrative", "team_grades", "standout_picks", "looking_ahead"]
 
-def extract_json(text):
-    start = text.find("{")
-    end = text.rfind("}")
-    if start == -1 or end == -1 or end < start:
+
+def parse_best_json(text, required_keys):
+    """Try decoding a JSON object starting at every '{' in the text, using
+    json.JSONDecoder.raw_decode — which parses exactly one JSON value from
+    a given position and simply fails on that attempt if it hits malformed
+    input, without corrupting parsing of anything else in the text. This
+    matters because the model's broken first attempt isn't just extra
+    text around a valid object — it can be genuinely malformed itself
+    (e.g. a string cut off mid-word with no closing quote), which breaks
+    naive brace-counting approaches for the ENTIRE rest of the text, not
+    just the broken section (confirmed by testing the earlier version of
+    this function against the actual failing production text — it broke
+    exactly this way). Independent per-position attempts sidestep that
+    entirely. Prefer the LAST object found that has every required key —
+    the model's self-corrected final answer, not an abandoned draft."""
+    decoder = json.JSONDecoder(strict=False)
+    results = []
+    for i, ch in enumerate(text):
+        if ch != "{":
+            continue
+        try:
+            obj, _ = decoder.raw_decode(text, i)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(obj, dict):
+            results.append(obj)
+
+    if not results:
         raise ValueError(f"No JSON object found in model response. Raw text was:\n{text}")
-    return text[start:end + 1]
+
+    for obj in reversed(results):
+        missing = [k for k in required_keys if k not in obj]
+        if not missing:
+            return obj
+
+    missing_summary = [[k for k in required_keys if k not in o] for o in results]
+    raise ValueError(
+        f"Found {len(results)} JSON object(s) in the response but none had all "
+        f"required keys ({required_keys}). Missing per object: {missing_summary}\nRaw text was:\n{text}"
+    )
 
 
 def call_claude(user_content):
@@ -144,7 +183,7 @@ def call_claude(user_content):
     if not text.strip():
         raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
 
-    return json.loads(extract_json(text), strict=False)
+    return parse_best_json(text, REQUIRED_KEYS)
 
 
 def main():

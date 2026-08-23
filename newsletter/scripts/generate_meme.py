@@ -54,12 +54,35 @@ def get_templates():
     return filtered if filtered else candidates[:1]  # never return an empty list
 
 
-def extract_json(text):
-    start = text.find("{")
-    end = text.rfind("}")
-    if start == -1 or end == -1 or end < start:
+def parse_best_json(text, required_keys):
+    """See generate_draft_recap.py for the full rationale — raw_decode from
+    every '{' handles a genuinely malformed first attempt without letting
+    it corrupt parsing of a valid object elsewhere in the text."""
+    decoder = json.JSONDecoder(strict=False)
+    results = []
+    for i, ch in enumerate(text):
+        if ch != "{":
+            continue
+        try:
+            obj, _ = decoder.raw_decode(text, i)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(obj, dict):
+            results.append(obj)
+
+    if not results:
         raise ValueError(f"No JSON object found in model response. Raw text was:\n{text}")
-    return text[start:end + 1]
+
+    for obj in reversed(results):
+        missing = [k for k in required_keys if k not in obj]
+        if not missing:
+            return obj
+
+    missing_summary = [[k for k in required_keys if k not in o] for o in results]
+    raise ValueError(
+        f"Found {len(results)} JSON object(s) in the response but none had all "
+        f"required keys ({required_keys}). Missing per object: {missing_summary}\nRaw text was:\n{text}"
+    )
 
 
 def pick_template_and_captions(meme_brief, templates):
@@ -100,7 +123,7 @@ def pick_template_and_captions(meme_brief, templates):
     print("---- END ----")
     if not text.strip():
         raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
-    return json.loads(extract_json(text), strict=False)
+    return parse_best_json(text, ["template_name", "captions"])
 
 
 def render_meme(template_id, captions):
