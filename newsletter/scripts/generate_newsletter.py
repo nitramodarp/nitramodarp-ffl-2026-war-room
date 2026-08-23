@@ -71,6 +71,20 @@ Return ONLY valid JSON (no markdown fences, no preamble) matching this shape:
 """
 
 
+def extract_json(text):
+    """Pull the JSON object out of a model response regardless of how it's
+    wrapped — code fence, stray preamble sentence, trailing commentary,
+    whatever. Slicing between the first '{' and last '}' is more robust
+    than trying to regex-match a specific fence format, and is what
+    actually failed last time (a fence-stripping regex reduced valid
+    output to an empty string)."""
+    start = text.find("{")
+    end = text.rfind("}")
+    if start == -1 or end == -1 or end < start:
+        raise ValueError(f"No JSON object found in model response. Raw text was:\n{text}")
+    return text[start:end + 1]
+
+
 def call_claude(user_content):
     resp = requests.post(
         "https://api.anthropic.com/v1/messages",
@@ -89,9 +103,19 @@ def call_claude(user_content):
     )
     resp.raise_for_status()
     data = resp.json()
+
+    if data.get("stop_reason") == "max_tokens":
+        print("WARNING: response was cut off at max_tokens — output may be truncated/incomplete.")
+
     text = "".join(b["text"] for b in data["content"] if b["type"] == "text")
-    cleaned = re.sub(r"^```json|```$", "", text.strip(), flags=re.MULTILINE).strip()
-    return json.loads(cleaned)
+    print("---- RAW MODEL RESPONSE (for debugging) ----")
+    print(text)
+    print("---- END RAW MODEL RESPONSE ----")
+
+    if not text.strip():
+        raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
+
+    return json.loads(extract_json(text))
 
 
 def main():
