@@ -1,69 +1,69 @@
 {
-  "headline": "Running Backs Rule Round One, Meredith's Fan Club Drafts an Entire Chiefs Fan Section",
-  "meme_brief": "A guy loves one NFL team so much that by the end of the draft he has basically rostered their whole depth chart, including the defense, while everyone else quietly watches it happen without saying a word.",
-  "draft_narrative": "The headline story of this draft is not a reach or a slide, it's a fan letting his heart pick his roster in real time. Meredith's Fan Club took Patrick Mahomes at pick_label 5.08, a full 47.7 points of ADP above where the market says he goes, then circled back for Xavier Worthy at 10.05, running back Emmett Johnson at 13.08, and the Kansas City Chiefs defense itself at 14.05. Four confirmed hits on the same tendency, four different positions, one team. That is not a strategy, that is a personality trait showing up on a draft board.\n\nOtherwise the room played it fairly straight early. Running backs went 1.01 through 1.04 as Jahmyr Gibbs, Bijan Robinson and Jonathan Taylor came off the board before receivers got a word in, and the position group most fantasy rooms overvalue in the first round instead got treated with something close to market discipline \u2014 the median first RB pick leaguewide landed in round one anyway, so nobody was fighting consensus so much as riding it. Wide receiver runs followed the familiar shape, with a cluster at 1.08 through 1.11 (Puka Nacua, Amon-Ra St. Brown, CeeDee Lamb) and further bursts in rounds 2 through 4 as teams doubled and tripled up.\n\nQuarterback was the position most people take too early or too late, and this room mostly took the 'too late' path. Josh Allen was the first quarterback off the board at 2.06, a full 14.9 points above his market ADP, but after that the position sat largely untouched for a long stretch \u2014 the median first-QB pick leaguewide came in round five, and Pukachu Chews You didn't get around to a quarterback until 11.02 with Bo Nix. Tight end followed a similar pattern, with Brock Bowers going off the board early at 3.02 (17.0 points above market) and then the position drying up until a scattered run of QB2/streaming options in the double-digit rounds.\n\nDefense, predictably, was an afterthought until the back third of the draft, with Screaming Eagles taking the first one at 8.08 and five different teams still hunting for a starter as late as round 13 or 14. By the final rounds the board had turned into pure dart-throwing \u2014 backup running backs, camp-arm quarterbacks and one more defense for whoever forgot to grab one.",
+  "headline": "RBs Fly Early, Chiefs Homer Emerges, and QBs Wait Until Round Two at the Earliest in Friends For Life Draft",
+  "meme_brief": "One guy spends four separate picks \u2014 including a quarterback, a wide receiver, a running back, and the actual defense \u2014 stacking nothing but Kansas City Chiefs, the fantasy equivalent of ordering the same entree four times because you already know you like it.",
+  "draft_narrative": "The first round played out almost exactly like the market expected, running back after running back, with Jahmyr Gibbs, Bijan Robinson, Jonathan Taylor and eventually seven backs gone before the round closed. The positional run data confirms the room's early bias: the median first running back pick league-wide came in round one, while receivers didn't get going as a team-wide priority until round two. Only three teams broke from the RB-first script early \u2014 Silverbacks with Ja'Marr Chase at 1.03, Chuba Bucky Doo with Jaxon Smith-Njigba at 1.06, and Meredith's Fan Club with Puka Nacua at 1.08 \u2014 enough to touch off a small receiver run of its own between 1.08 and 1.11.\n\nQuarterback, as usual, was the position everyone claimed to be patient about and then wasn't uniformly patient about. Broke Dak Mountain broke first, taking Josh Allen at 2.06, a full 19 picks before the next passer came off the board \u2014 an enormous gap that stamps it as the outlier pick at the position. From there, the position sat mostly dormant through the third round before a jog of five quarterbacks (Drake Maye, Jayden Daniels, Patrick Mahomes, and others) went off between 5.05 and 5.08. The league-wide median first-QB pick came in round five, meaning at least half the room was still comfortable letting arms sit while running backs and receivers piled up on their benches. Four teams didn't take their first quarterback until round eight or later, with Pukachu Chews You waiting all the way to 11.02 for Bo Nix.\n\nTight end followed the predictable two-tier shape: Brock Bowers went off the board at 3.02, a full 17 points of value below his market ADP of 43.0, kicking off a run that pulled Trey McBride in behind him. After that, the position went cold for stretches \u2014 the median first tight end pick across the league didn't land until round seven, and three teams (Screaming Eagles, Joe Mama Angie Daddy, Dak's Stack) didn't get one until round eight or later.\n\nDefense, sensibly, was ignored until the back third of the draft. Screaming Eagles technically pulled the trigger first, grabbing the Denver defense at 8.08, while Pukachu Chews You waited until the final round for the Steelers. Nobody was fooled into reaching for a defense early, which is about the only unanimous good decision in a 180-pick draft.",
   "team_grades": [
     {
       "team": "Joe Mama Angie Daddy",
       "grade": "B+",
-      "blurb": "Opened with Jahmyr Gibbs at fair value and built out six receivers including a Tee Higgins pick 12.5 below market, but three quarterbacks worth of roster spots (two QBs plus assorted TE depth) is a lot of bench clutter for a team with a real WR corps."
+      "blurb": "Opened with Jahmyr Gibbs a half-slot ahead of ADP and later found real value late with Travis Kelce and Brock Purdy both landing more than 25 spots past market cost \u2014 a value-driven, if unspectacular, build."
     },
     {
       "team": "Pukachu Chews You",
       "grade": "B",
-      "blurb": "Bijan Robinson at 1.02 was textbook, and Brock Bowers 17.0 points above market at 3.02 gave them a real tight end advantage, but they waited until 11.02 to take their first quarterback, dead last in the room."
+      "blurb": "Bijan Robinson at 1.02 was chalk, but Drake London at 2.11 (10.6 picks below ADP) and Brock Bowers igniting the tight end run at 3.02 (17.0 below ADP) were the two real coups of their draft."
     },
     {
       "team": "Silverbacks",
       "grade": "B-",
-      "blurb": "Ja'Marr Chase at 1.03 was as safe a floor as this draft offered, but they didn't touch a quarterback until 8.10 (Justin Herbert) and closed with a heavy dose of late-round dart throws."
+      "blurb": "Ja'Marr Chase at 1.03 anchors things fine, but reaching for Derrick Henry (5.1 below ADP) and Zay Flowers (a stunning 25.7 below market) softens an otherwise sturdy six-WR, five-RB build."
     },
     {
       "team": "demon44",
       "grade": "B+",
-      "blurb": "Jonathan Taylor at 1.04 came in two full points ahead of market ADP, and they layered in A.J. Brown and Malik Nabers near value before waiting until 10.09 for a quarterback, which worked out fine given how the QB market collapsed anyway."
+      "blurb": "Jonathan Taylor at 1.04 came 2.0 picks above market, but the rest of the draft was patient and often rewarded, including A.J. Brown falling to them at 2.09 a tick below ADP."
     },
     {
       "team": "Screaming Eagles",
-      "grade": "B",
-      "blurb": "James Cook at 1.05 landed 4.2 points past market, a solid value grab, and they rounded out three tight ends by the end, which is either organized depth or a sign nobody trusted their TE1."
+      "grade": "C+",
+      "blurb": "James Cook at 1.05 was a real reach at 4.2 picks above market, and Courtland Sutton at 9.05 cost them 41.3 points of value versus ADP \u2014 a draft that paid retail more than once."
     },
     {
       "team": "Chuba Bucky Doo",
-      "grade": "B-",
-      "blurb": "The commissioner reached for Jaxon Smith-Njigba half a point ahead of market at 1.06, then built a run-heavy, seven-RB roster, closing with fliers like Chris Rodriguez and Kaelon Black that will win him nothing but bench spots."
+      "grade": "B",
+      "blurb": "The commissioner grabbed Jaxon Smith-Njigba slightly above market at 1.06, then quietly built one of the deepest running back rooms in the league (seven backs) while still landing Justin Jefferson 4.9 picks under ADP at 2.07."
     },
     {
       "team": "Broke Dak Mountain",
-      "grade": "A-",
-      "blurb": "Christian McCaffrey basically at market at 1.07 anchored a roster that also got Josh Allen as the first quarterback off the board and George Kittle 27.6 points past ADP at 8.06 \u2014 good value stacked on good value."
+      "grade": "B",
+      "blurb": "Christian McCaffrey at 1.07 came in barely under market, and jumping the room on Josh Allen at 2.06 \u2014 a confirmed 19-pick gap to the next quarterback \u2014 was the loudest early move of the draft."
     },
     {
       "team": "Meredith's Fan Club",
       "grade": "C+",
-      "blurb": "Puka Nacua at 1.08 was a legitimate reach 4.9 points above market, and from there the Chiefs fandom took over the draft board \u2014 Mahomes, Worthy, Emmett Johnson and the Chiefs defense all confirmed as tendency-driven picks, four separate times."
-    },
-    {
-      "team": "plz lose nesmith",
-      "grade": "B",
-      "blurb": "Chase Brown fell to them 6.1 points past market at 1.09, a nice value grab, but rostering eight wide receivers while carrying only one quarterback is an aggressive bet on volume over balance."
-    },
-    {
-      "team": "Geoff Collins Suvivor",
-      "grade": "A-",
-      "blurb": "Amon-Ra St. Brown at 1.10 came in 2.1 points ahead of market, and Rashee Rice at 3.10 was the single biggest receiver value of the entire draft at 18.1 points past ADP \u2014 this team simply let players fall into its lap all night."
+      "blurb": "Puka Nacua at 1.08 was a legitimate value fall of 4.9 picks, but this team's real story is the confirmed Chiefs obsession \u2014 Patrick Mahomes, Xavier Worthy, Emmett Johnson, and the Kansas City defense all landed here."
     },
     {
       "team": "Dak's Stack ",
       "grade": "B+",
-      "blurb": "CeeDee Lamb at 1.11 and De'Von Achane a round later gave them a strong core, and they balanced it with six wideouts and five backs, though the position group total shows real thin depth at tight end with only one rostered all draft."
+      "blurb": "CeeDee Lamb at 1.11 and De'Von Achane at 2.02 (2.5 below ADP) formed a strong start, and they kept finding receiver value late with Jameson Williams dropping 18.6 picks past market."
     },
     {
       "team": "Waffle House",
       "grade": "B-",
-      "blurb": "Saquon Barkley falling to 1.12 at 5.3 points past market was a gift, and doubling up with Ashton Jeanty next pick built a strong backfield, but Lamar Jackson at 4.01 came in nearly 20 points above his market ADP."
+      "blurb": "Saquon Barkley falling to 1.12 (5.3 below ADP) and Ashton Jeanty following one pick later gave this team a two-back head start, though the QB reach on Lamar Jackson at 4.01 (19.7 above market) stands out as pricey."
+    },
+    {
+      "team": "plz lose nesmith",
+      "grade": "B",
+      "blurb": "Chase Brown at 1.09 cost 6.1 picks above market early, but this team leaned into receiver volume with eight total WRs and found Rome Odunze 16.7 picks under ADP at 6.04."
+    },
+    {
+      "team": "Geoff Collins Suvivor",
+      "grade": "A-",
+      "blurb": "Amon-Ra St. Brown falling to 1.10 (2.1 below ADP) was nice, but Rashee Rice sliding all the way to 3.10 for an 18.1-pick discount against market is one of the best values of the entire draft."
     }
   ],
-  "standout_picks": "The clearest value pick against real market consensus belongs to Geoff Collins Suvivor, who got Rashee Rice at 3.10 a stunning 18.1 points past his market ADP \u2014 a receiver1-caliber talent landing in the third round while the room was looking elsewhere. Right behind it, Pukachu Chews You's Drake London at 2.11 (10.6 points past market) and Waffle House's Saquon Barkley at 1.12 (5.3 points past market) were quality value grabs in the marquee rounds. On the other end, Broke Dak Mountain's decision to take Josh Allen at 2.06, 14.9 points ahead of his market ADP, stands as one of the bigger reaches of the early draft, and Waffle House's Lamar Jackson at 4.01 (19.7 points above market) compounded that early-QB premium a round later.\n\nThe most extreme outlier without a market comparison came via intra-draft signal rather than ADP: Broke Dak Mountain's Josh Allen at 2.06 sat alone at the position for 19 picks before another quarterback came off the board, a real statistical island. Demon44's Jonathon Brooks at 6.09 similarly waited 12 picks since the prior running back was taken, another lonely positional pick that the room let sit.\n\nEvery confirmed tendency hit in this draft belongs to one team. Meredith's Fan Club locked in Patrick Mahomes at 5.08 (47.7 points above market ADP), Xavier Worthy at 10.05, Emmett Johnson at 13.08, and the Kansas City Chiefs defense at 14.05 \u2014 four separate, deterministically confirmed instances of the same rooting-interest pattern showing up on the same roster. No other team in the league produced a single one.",
-  "looking_ahead": "Twelve rosters are now set, running back depth looks thin past the first six or seven teams, and the back half of every roster is stocked with late-round dice rolls that will sort themselves out fast once games start counting. Meredith's Fan Club will be the roster to watch purely on entertainment value \u2014 either the Chiefs stack pays off spectacularly or it becomes the running joke of the newsletter all season."
+  "standout_picks": "The single best value against real market consensus belongs to Geoff Collins Suvivor, who landed Rashee Rice at 3.10 a full 18.1 picks below his market ADP of 15.9 \u2014 a receiver who should have gone in round two sitting there in round three. Not far behind, Pukachu Chews You got Terry McLaurin at 6.11 for a 26.0-pick discount, and the same team's Brock Bowers pick at 3.02 beat market ADP by 17.0 picks while also igniting the tight end run.\n\nOn the reach side, Broke Dak Mountain's Josh Allen at 2.06 stands as the clearest room-wide outlier \u2014 not just 14.9 picks above his market ADP, but a confirmed 19 picks before the next quarterback came off any board, per the positional signal data. Screaming Eagles also paid up more than once, taking James Cook 4.2 picks above market at 1.05 and later reaching 12.0 picks past ADP for Marvin Harrison at 7.05.\n\nEvery confirmed tendency hit in this draft belongs to one team: Meredith's Fan Club. Patrick Mahomes at 5.08 (47.7 picks above market ADP), Xavier Worthy at 10.05, Emmett Johnson at 13.08, and the Kansas City Chiefs defense at 14.05 were all flagged as confirmed homer picks \u2014 an entire fantasy roster built around one NFL team's offense, verified four separate times over.",
+  "looking_ahead": "With the board set, the league now finds out whether the running-back-heavy openers from Chuba Bucky Doo and Joe Mama Angie Daddy hold up against the receiver-leaning builds from plz lose nesmith and Dak's Stack. Meredith's Fan Club, for better or worse, has tied its season to the Chiefs offense in four different ways, which will either look like genius or become a running joke by Thanksgiving. The waiver wire will decide plenty from here, but the draft has laid its cards on the table."
 }
