@@ -6,6 +6,7 @@ max_tokens, lenient JSON parsing) since those are proven necessary.
 
 import json
 import os
+import time
 import requests
 from config import PATHS, CLAUDE_MODEL
 
@@ -184,38 +185,58 @@ def parse_best_json(text, required_keys):
     )
 
 
+MAX_ATTEMPTS = 3
+
+
 def call_claude(user_content):
-    resp = requests.post(
-        "https://api.anthropic.com/v1/messages",
-        headers={
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        },
-        json={
-            "model": CLAUDE_MODEL,
-            "max_tokens": 8000,
-            "thinking": {"type": "disabled"},
-            "system": SYSTEM_PROMPT,
-            "messages": [{"role": "user", "content": user_content}],
-        },
-        timeout=120,
-    )
-    resp.raise_for_status()
-    data = resp.json()
+    """Retries on a malformed/incomplete response — this is a genuine
+    occasional generation glitch (an unterminated string with no
+    self-correction, unlike the earlier double-JSON bug), not something
+    prompt wording can reliably prevent. Better to spend an extra API call
+    than crash the whole pipeline on one bad roll."""
+    last_error = None
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            resp = requests.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": ANTHROPIC_API_KEY,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={
+                    "model": CLAUDE_MODEL,
+                    "max_tokens": 8000,
+                    "thinking": {"type": "disabled"},
+                    "system": SYSTEM_PROMPT,
+                    "messages": [{"role": "user", "content": user_content}],
+                },
+                timeout=120,
+            )
+            resp.raise_for_status()
+            data = resp.json()
 
-    if data.get("stop_reason") == "max_tokens":
-        print("WARNING: response was cut off at max_tokens — output may be truncated/incomplete.")
+            if data.get("stop_reason") == "max_tokens":
+                print(f"WARNING (attempt {attempt}/{MAX_ATTEMPTS}): response was cut off at max_tokens.")
 
-    text = "".join(b["text"] for b in data["content"] if b["type"] == "text")
-    print("---- RAW MODEL RESPONSE (for debugging) ----")
-    print(text)
-    print("---- END RAW MODEL RESPONSE ----")
+            text = "".join(b["text"] for b in data["content"] if b["type"] == "text")
+            print(f"---- RAW MODEL RESPONSE (attempt {attempt}/{MAX_ATTEMPTS}) ----")
+            print(text)
+            print("---- END RAW MODEL RESPONSE ----")
 
-    if not text.strip():
-        raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
+            if not text.strip():
+                raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
 
-    return parse_best_json(text, REQUIRED_KEYS)
+            return parse_best_json(text, REQUIRED_KEYS)
+
+        except (ValueError, RuntimeError, requests.exceptions.RequestException) as e:
+            last_error = e
+            print(f"Attempt {attempt}/{MAX_ATTEMPTS} failed: {e}")
+            if attempt < MAX_ATTEMPTS:
+                print("Retrying...")
+                time.sleep(3)
+
+    raise RuntimeError(f"All {MAX_ATTEMPTS} attempts failed to produce valid output. Last error: {last_error}")
 
 
 def main():

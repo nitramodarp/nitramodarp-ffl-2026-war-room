@@ -6,6 +6,7 @@ so it doesn't collide with the weekly pipeline.
 
 import json
 import os
+import time
 import requests
 from config import PATHS, CLAUDE_MODEL
 
@@ -70,20 +71,12 @@ def parse_best_json(text, required_keys):
     )
 
 
+MAX_ATTEMPTS = 3
+
+
 def pick_template_and_captions(meme_brief, templates):
     template_options = [{"name": t["name"], "box_count": t["box_count"]} for t in templates]
-    resp = requests.post(
-        "https://api.anthropic.com/v1/messages",
-        headers={
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        },
-        json={
-            "model": CLAUDE_MODEL,
-            "max_tokens": 1000,
-            "thinking": {"type": "disabled"},
-            "system": "You pick the best-fit meme template for a fantasy "
+    system_prompt = ("You pick the best-fit meme template for a fantasy "
                       "football draft story and write the caption text. "
                       "CRITICAL: base your captions ONLY on facts literally "
                       "stated in the Story text below — do not substitute, "
@@ -99,23 +92,45 @@ def pick_template_and_captions(meme_brief, templates):
                       "[\"...\", \"...\"]} where captions has EXACTLY box_count "
                       "entries for the template you chose. Keep captions short "
                       "and punchy — longtime friends who talk real trash, not "
-                      "corporate-safe humor.",
-            "messages": [{
-                "role": "user",
-                "content": f"Story: {meme_brief}\n\nAvailable templates (with required box_count): {json.dumps(template_options)}"
-            }],
-        },
-        timeout=60,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    text = "".join(b["text"] for b in data["content"] if b["type"] == "text")
-    print("---- RAW MEME MODEL RESPONSE ----")
-    print(text)
-    print("---- END ----")
-    if not text.strip():
-        raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
-    return parse_best_json(text, ["template_name", "captions"])
+                      "corporate-safe humor.")
+    last_error = None
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            resp = requests.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": ANTHROPIC_API_KEY,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={
+                    "model": CLAUDE_MODEL,
+                    "max_tokens": 1000,
+                    "thinking": {"type": "disabled"},
+                    "system": system_prompt,
+                    "messages": [{
+                        "role": "user",
+                        "content": f"Story: {meme_brief}\n\nAvailable templates (with required box_count): {json.dumps(template_options)}"
+                    }],
+                },
+                timeout=60,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            text = "".join(b["text"] for b in data["content"] if b["type"] == "text")
+            print(f"---- RAW MEME MODEL RESPONSE (attempt {attempt}/{MAX_ATTEMPTS}) ----")
+            print(text)
+            print("---- END ----")
+            if not text.strip():
+                raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
+            return parse_best_json(text, ["template_name", "captions"])
+        except (ValueError, RuntimeError, requests.exceptions.RequestException) as e:
+            last_error = e
+            print(f"Attempt {attempt}/{MAX_ATTEMPTS} failed: {e}")
+            if attempt < MAX_ATTEMPTS:
+                print("Retrying...")
+                time.sleep(3)
+    raise RuntimeError(f"All {MAX_ATTEMPTS} attempts failed to produce valid output. Last error: {last_error}")
 
 
 def render_meme(template_id, captions):
