@@ -116,7 +116,7 @@ def call_claude(user_content):
     if not text.strip():
         raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
 
-    return json.loads(extract_json(text))
+    return json.loads(extract_json(text), strict=False)
 
 
 def main():
