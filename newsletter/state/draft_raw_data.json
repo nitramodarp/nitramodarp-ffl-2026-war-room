@@ -17,6 +17,8 @@
       "position": "RB",
       "nfl_team": "DET",
       "position_rank_at_pick": 1,
+      "market_adp": 1.5,
+      "adp_delta_vs_market": 0.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": null,
       "picks_until_next_same_position": 1
@@ -33,6 +35,8 @@
       "position": "RB",
       "nfl_team": "ATL",
       "position_rank_at_pick": 2,
+      "market_adp": 2.3,
+      "adp_delta_vs_market": 0.2999999999999998,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 2
@@ -49,6 +53,8 @@
       "position": "WR",
       "nfl_team": "CIN",
       "position_rank_at_pick": 1,
+      "market_adp": 3.9,
+      "adp_delta_vs_market": 0.8999999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": null,
       "picks_until_next_same_position": 3
@@ -65,6 +71,8 @@
       "position": "RB",
       "nfl_team": "IND",
       "position_rank_at_pick": 3,
+      "market_adp": 6.0,
+      "adp_delta_vs_market": 2.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 1
@@ -81,6 +89,8 @@
       "position": "RB",
       "nfl_team": "BUF",
       "position_rank_at_pick": 4,
+      "market_adp": 9.2,
+      "adp_delta_vs_market": 4.199999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 2
@@ -97,6 +107,8 @@
       "position": "WR",
       "nfl_team": "SEA",
       "position_rank_at_pick": 2,
+      "market_adp": 5.4,
+      "adp_delta_vs_market": -0.5999999999999996,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 2
@@ -113,6 +125,8 @@
       "position": "RB",
       "nfl_team": "SF",
       "position_rank_at_pick": 5,
+      "market_adp": 6.8,
+      "adp_delta_vs_market": -0.20000000000000018,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 2
@@ -129,6 +143,8 @@
       "position": "WR",
       "nfl_team": "LAR",
       "position_rank_at_pick": 3,
+      "market_adp": 3.1,
+      "adp_delta_vs_market": -4.9,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 2
@@ -145,6 +161,8 @@
       "position": "RB",
       "nfl_team": "CIN",
       "position_rank_at_pick": 6,
+      "market_adp": 15.1,
+      "adp_delta_vs_market": 6.1,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 3
@@ -161,6 +179,8 @@
       "position": "WR",
       "nfl_team": "DET",
       "position_rank_at_pick": 4,
+      "market_adp": 7.9,
+      "adp_delta_vs_market": -2.0999999999999996,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 1
@@ -177,6 +197,8 @@
       "position": "WR",
       "nfl_team": "DAL",
       "position_rank_at_pick": 5,
+      "market_adp": 12.5,
+      "adp_delta_vs_market": 1.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 8
@@ -193,6 +215,8 @@
       "position": "RB",
       "nfl_team": "PHI",
       "position_rank_at_pick": 7,
+      "market_adp": 17.3,
+      "adp_delta_vs_market": 5.300000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 1
@@ -209,6 +233,8 @@
       "position": "RB",
       "nfl_team": "LV",
       "position_rank_at_pick": 8,
+      "market_adp": 15.1,
+      "adp_delta_vs_market": 2.0999999999999996,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -225,6 +251,8 @@
       "position": "RB",
       "nfl_team": "MIA",
       "position_rank_at_pick": 9,
+      "market_adp": 11.5,
+      "adp_delta_vs_market": -2.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -241,6 +269,8 @@
       "position": "RB",
       "nfl_team": "BAL",
       "position_rank_at_pick": 10,
+      "market_adp": 9.9,
+      "adp_delta_vs_market": -5.1,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -257,6 +287,8 @@
       "position": "RB",
       "nfl_team": "KC",
       "position_rank_at_pick": 11,
+      "market_adp": 21.6,
+      "adp_delta_vs_market": 5.600000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -273,6 +305,8 @@
       "position": "RB",
       "nfl_team": "LAC",
       "position_rank_at_pick": 12,
+      "market_adp": 23.6,
+      "adp_delta_vs_market": 6.600000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 3
@@ -289,6 +323,8 @@
       "position": "QB",
       "nfl_team": "BUF",
       "position_rank_at_pick": 1,
+      "market_adp": 32.9,
+      "adp_delta_vs_market": 14.899999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": null,
       "picks_until_next_same_position": 19
@@ -305,6 +341,8 @@
       "position": "WR",
       "nfl_team": "MIN",
       "position_rank_at_pick": 6,
+      "market_adp": 14.1,
+      "adp_delta_vs_market": -4.9,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 8,
       "picks_until_next_same_position": 2
@@ -321,6 +359,8 @@
       "position": "RB",
       "nfl_team": "LAR",
       "position_rank_at_pick": 13,
+      "market_adp": 27.0,
+      "adp_delta_vs_market": 7.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 5
@@ -337,6 +377,8 @@
       "position": "WR",
       "nfl_team": "NE",
       "position_rank_at_pick": 7,
+      "market_adp": 19.6,
+      "adp_delta_vs_market": -1.3999999999999986,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 1
@@ -353,6 +395,8 @@
       "position": "WR",
       "nfl_team": "HOU",
       "position_rank_at_pick": 8,
+      "market_adp": 21.5,
+      "adp_delta_vs_market": -0.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -369,6 +413,8 @@
       "position": "WR",
       "nfl_team": "ATL",
       "position_rank_at_pick": 9,
+      "market_adp": 12.4,
+      "adp_delta_vs_market": -10.6,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -385,6 +431,8 @@
       "position": "WR",
       "nfl_team": "DAL",
       "position_rank_at_pick": 10,
+      "market_adp": 19.6,
+      "adp_delta_vs_market": -4.399999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 4
@@ -401,6 +449,8 @@
       "position": "RB",
       "nfl_team": "DAL",
       "position_rank_at_pick": 14,
+      "market_adp": 33.6,
+      "adp_delta_vs_market": 8.600000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 2
@@ -417,6 +467,8 @@
       "position": "TE",
       "nfl_team": "LV",
       "position_rank_at_pick": 1,
+      "market_adp": 43.0,
+      "adp_delta_vs_market": 17.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": null,
       "picks_until_next_same_position": 4
@@ -433,6 +485,8 @@
       "position": "RB",
       "nfl_team": "NO",
       "position_rank_at_pick": 15,
+      "market_adp": 40.1,
+      "adp_delta_vs_market": 13.100000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 2
@@ -449,6 +503,8 @@
       "position": "WR",
       "nfl_team": "NYG",
       "position_rank_at_pick": 11,
+      "market_adp": 28.2,
+      "adp_delta_vs_market": 0.1999999999999993,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 5
@@ -465,6 +521,8 @@
       "position": "RB",
       "nfl_team": "GB",
       "position_rank_at_pick": 16,
+      "market_adp": 24.9,
+      "adp_delta_vs_market": -4.100000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 2
@@ -481,6 +539,8 @@
       "position": "TE",
       "nfl_team": "ARI",
       "position_rank_at_pick": 2,
+      "market_adp": 38.2,
+      "adp_delta_vs_market": 8.200000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 11
@@ -497,6 +557,8 @@
       "position": "RB",
       "nfl_team": "ARI",
       "position_rank_at_pick": 17,
+      "market_adp": 30.0,
+      "adp_delta_vs_market": -1.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 1
@@ -513,6 +575,8 @@
       "position": "RB",
       "nfl_team": "NYJ",
       "position_rank_at_pick": 18,
+      "market_adp": 34.9,
+      "adp_delta_vs_market": 2.8999999999999986,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 6
@@ -529,6 +593,8 @@
       "position": "WR",
       "nfl_team": "NO",
       "position_rank_at_pick": 12,
+      "market_adp": 23.9,
+      "adp_delta_vs_market": -9.100000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 1
@@ -545,6 +611,8 @@
       "position": "WR",
       "nfl_team": "KC",
       "position_rank_at_pick": 13,
+      "market_adp": 15.9,
+      "adp_delta_vs_market": -18.1,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -561,6 +629,8 @@
       "position": "WR",
       "nfl_team": "NYJ",
       "position_rank_at_pick": 14,
+      "market_adp": 31.4,
+      "adp_delta_vs_market": -3.6000000000000014,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -577,6 +647,8 @@
       "position": "WR",
       "nfl_team": "PHI",
       "position_rank_at_pick": 15,
+      "market_adp": 32.0,
+      "adp_delta_vs_market": -4.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 6
@@ -593,6 +665,8 @@
       "position": "QB",
       "nfl_team": "BAL",
       "position_rank_at_pick": 2,
+      "market_adp": 56.7,
+      "adp_delta_vs_market": 19.700000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 19,
       "picks_until_next_same_position": 3
@@ -609,6 +683,8 @@
       "position": "RB",
       "nfl_team": "CHI",
       "position_rank_at_pick": 19,
+      "market_adp": 43.3,
+      "adp_delta_vs_market": 5.299999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 6,
       "picks_until_next_same_position": 1
@@ -625,6 +701,8 @@
       "position": "RB",
       "nfl_team": "NYG",
       "position_rank_at_pick": 20,
+      "market_adp": 34.3,
+      "adp_delta_vs_market": -4.700000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 4
@@ -641,6 +719,8 @@
       "position": "QB",
       "nfl_team": "CHI",
       "position_rank_at_pick": 3,
+      "market_adp": 91.0,
+      "adp_delta_vs_market": 51.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 8
@@ -657,6 +737,8 @@
       "position": "TE",
       "nfl_team": "CHI",
       "position_rank_at_pick": 3,
+      "market_adp": 61.3,
+      "adp_delta_vs_market": 20.299999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 11,
       "picks_until_next_same_position": 17
@@ -673,6 +755,8 @@
       "position": "WR",
       "nfl_team": "TB",
       "position_rank_at_pick": 16,
+      "market_adp": 34.9,
+      "adp_delta_vs_market": -7.100000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 6,
       "picks_until_next_same_position": 2
@@ -689,6 +773,8 @@
       "position": "RB",
       "nfl_team": "TB",
       "position_rank_at_pick": 21,
+      "market_adp": 45.5,
+      "adp_delta_vs_market": 2.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 2
@@ -705,6 +791,8 @@
       "position": "WR",
       "nfl_team": "CAR",
       "position_rank_at_pick": 17,
+      "market_adp": 32.2,
+      "adp_delta_vs_market": -11.799999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 5
@@ -721,6 +809,8 @@
       "position": "RB",
       "nfl_team": "JAX",
       "position_rank_at_pick": 22,
+      "market_adp": 53.4,
+      "adp_delta_vs_market": 8.399999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 1
@@ -737,6 +827,8 @@
       "position": "RB",
       "nfl_team": "HOU",
       "position_rank_at_pick": 23,
+      "market_adp": 55.0,
+      "adp_delta_vs_market": 9.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -753,6 +845,8 @@
       "position": "RB",
       "nfl_team": "CLE",
       "position_rank_at_pick": 24,
+      "market_adp": 51.4,
+      "adp_delta_vs_market": 4.399999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 5
@@ -769,6 +863,8 @@
       "position": "QB",
       "nfl_team": "CIN",
       "position_rank_at_pick": 4,
+      "market_adp": 56.4,
+      "adp_delta_vs_market": 8.399999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 8,
       "picks_until_next_same_position": 5
@@ -785,6 +881,8 @@
       "position": "WR",
       "nfl_team": "CIN",
       "position_rank_at_pick": 18,
+      "market_adp": 36.5,
+      "adp_delta_vs_market": -12.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 1
@@ -801,6 +899,8 @@
       "position": "WR",
       "nfl_team": "LAC",
       "position_rank_at_pick": 19,
+      "market_adp": 41.2,
+      "adp_delta_vs_market": -8.799999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -817,6 +917,8 @@
       "position": "WR",
       "nfl_team": "BAL",
       "position_rank_at_pick": 20,
+      "market_adp": 25.3,
+      "adp_delta_vs_market": -25.7,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 4
@@ -833,6 +935,8 @@
       "position": "RB",
       "nfl_team": "NE",
       "position_rank_at_pick": 25,
+      "market_adp": 60.2,
+      "adp_delta_vs_market": 8.200000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 5
@@ -849,6 +953,8 @@
       "position": "QB",
       "nfl_team": "NE",
       "position_rank_at_pick": 5,
+      "market_adp": 51.9,
+      "adp_delta_vs_market": -1.1000000000000014,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 1
@@ -865,6 +971,8 @@
       "position": "QB",
       "nfl_team": "WAS",
       "position_rank_at_pick": 6,
+      "market_adp": 71.0,
+      "adp_delta_vs_market": 17.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 2
@@ -881,6 +989,8 @@
       "position": "WR",
       "nfl_team": "DEN",
       "position_rank_at_pick": 21,
+      "market_adp": 47.7,
+      "adp_delta_vs_market": -7.299999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 4
@@ -897,6 +1007,8 @@
       "position": "QB",
       "nfl_team": "KC",
       "position_rank_at_pick": 7,
+      "market_adp": 103.7,
+      "adp_delta_vs_market": 47.7,
       "confirmed_homer_pick": true,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 6
@@ -913,6 +1025,8 @@
       "position": "RB",
       "nfl_team": "SEA",
       "position_rank_at_pick": 26,
+      "market_adp": 75.3,
+      "adp_delta_vs_market": 18.299999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 12
@@ -929,6 +1043,8 @@
       "position": "TE",
       "nfl_team": "IND",
       "position_rank_at_pick": 4,
+      "market_adp": 70.4,
+      "adp_delta_vs_market": 12.400000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 17,
       "picks_until_next_same_position": 7
@@ -945,6 +1061,8 @@
       "position": "WR",
       "nfl_team": "DET",
       "position_rank_at_pick": 22,
+      "market_adp": 40.4,
+      "adp_delta_vs_market": -18.6,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 1
@@ -961,6 +1079,8 @@
       "position": "WR",
       "nfl_team": "BUF",
       "position_rank_at_pick": 23,
+      "market_adp": 50.6,
+      "adp_delta_vs_market": -9.399999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -977,6 +1097,8 @@
       "position": "WR",
       "nfl_team": "LAR",
       "position_rank_at_pick": 24,
+      "market_adp": 38.4,
+      "adp_delta_vs_market": -22.6,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 2
@@ -993,6 +1115,8 @@
       "position": "QB",
       "nfl_team": "DAL",
       "position_rank_at_pick": 8,
+      "market_adp": 65.5,
+      "adp_delta_vs_market": 3.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 6,
       "picks_until_next_same_position": 32
@@ -1009,6 +1133,8 @@
       "position": "WR",
       "nfl_team": "CHI",
       "position_rank_at_pick": 25,
+      "market_adp": 61.7,
+      "adp_delta_vs_market": -1.2999999999999972,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 1
@@ -1025,6 +1151,8 @@
       "position": "WR",
       "nfl_team": "CHI",
       "position_rank_at_pick": 26,
+      "market_adp": 47.3,
+      "adp_delta_vs_market": -16.700000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 3
@@ -1041,6 +1169,8 @@
       "position": "TE",
       "nfl_team": "DET",
       "position_rank_at_pick": 5,
+      "market_adp": 94.2,
+      "adp_delta_vs_market": 29.200000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 7,
       "picks_until_next_same_position": 1
@@ -1057,6 +1187,8 @@
       "position": "TE",
       "nfl_team": "GB",
       "position_rank_at_pick": 6,
+      "market_adp": 100.5,
+      "adp_delta_vs_market": 34.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 9
@@ -1073,6 +1205,8 @@
       "position": "WR",
       "nfl_team": "SF",
       "position_rank_at_pick": 27,
+      "market_adp": 53.8,
+      "adp_delta_vs_market": -13.200000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 1
@@ -1089,6 +1223,8 @@
       "position": "WR",
       "nfl_team": "GB",
       "position_rank_at_pick": 28,
+      "market_adp": 56.3,
+      "adp_delta_vs_market": -11.700000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 3
@@ -1105,6 +1241,8 @@
       "position": "RB",
       "nfl_team": "CAR",
       "position_rank_at_pick": 27,
+      "market_adp": 101.0,
+      "adp_delta_vs_market": 32.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 12,
       "picks_until_next_same_position": 1
@@ -1121,6 +1259,8 @@
       "position": "RB",
       "nfl_team": "PIT",
       "position_rank_at_pick": 28,
+      "market_adp": 63.1,
+      "adp_delta_vs_market": -6.899999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 3
@@ -1137,6 +1277,8 @@
       "position": "WR",
       "nfl_team": "WAS",
       "position_rank_at_pick": 29,
+      "market_adp": 45.0,
+      "adp_delta_vs_market": -26.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 1
@@ -1153,6 +1295,8 @@
       "position": "WR",
       "nfl_team": "JAX",
       "position_rank_at_pick": 30,
+      "market_adp": 64.7,
+      "adp_delta_vs_market": -7.299999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 2
@@ -1169,6 +1313,8 @@
       "position": "RB",
       "nfl_team": "NE",
       "position_rank_at_pick": 29,
+      "market_adp": 68.5,
+      "adp_delta_vs_market": -4.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 5
@@ -1185,6 +1331,8 @@
       "position": "WR",
       "nfl_team": "JAX",
       "position_rank_at_pick": 31,
+      "market_adp": 69.5,
+      "adp_delta_vs_market": -4.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 3
@@ -1201,6 +1349,8 @@
       "position": "TE",
       "nfl_team": "CLE",
       "position_rank_at_pick": 7,
+      "market_adp": 83.8,
+      "adp_delta_vs_market": 8.799999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 9,
       "picks_until_next_same_position": 1
@@ -1217,6 +1367,8 @@
       "position": "TE",
       "nfl_team": "ATL",
       "position_rank_at_pick": 8,
+      "market_adp": 85.2,
+      "adp_delta_vs_market": 9.200000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 5
@@ -1233,6 +1385,8 @@
       "position": "WR",
       "nfl_team": "ARI",
       "position_rank_at_pick": 32,
+      "market_adp": 65.0,
+      "adp_delta_vs_market": -12.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 3
@@ -1249,6 +1403,8 @@
       "position": "RB",
       "nfl_team": "CAR",
       "position_rank_at_pick": 30,
+      "market_adp": 77.6,
+      "adp_delta_vs_market": -0.4000000000000057,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 1
@@ -1265,6 +1421,8 @@
       "position": "RB",
       "nfl_team": "TEN",
       "position_rank_at_pick": 31,
+      "market_adp": 66.1,
+      "adp_delta_vs_market": -12.900000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 3
@@ -1281,6 +1439,8 @@
       "position": "WR",
       "nfl_team": "PIT",
       "position_rank_at_pick": 33,
+      "market_adp": 63.3,
+      "adp_delta_vs_market": -16.700000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 3
@@ -1297,6 +1457,8 @@
       "position": "TE",
       "nfl_team": "NYG",
       "position_rank_at_pick": 9,
+      "market_adp": 136.3,
+      "adp_delta_vs_market": 55.30000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 4
@@ -1313,6 +1475,8 @@
       "position": "RB",
       "nfl_team": "DEN",
       "position_rank_at_pick": 32,
+      "market_adp": 83.3,
+      "adp_delta_vs_market": 1.2999999999999972,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 2
@@ -1329,6 +1493,8 @@
       "position": "WR",
       "nfl_team": "TEN",
       "position_rank_at_pick": 34,
+      "market_adp": 73.9,
+      "adp_delta_vs_market": -9.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 4
@@ -1345,6 +1511,8 @@
       "position": "RB",
       "nfl_team": "DEN",
       "position_rank_at_pick": 33,
+      "market_adp": 93.4,
+      "adp_delta_vs_market": 9.400000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 2
@@ -1361,6 +1529,8 @@
       "position": "TE",
       "nfl_team": "BUF",
       "position_rank_at_pick": 10,
+      "market_adp": 154.1,
+      "adp_delta_vs_market": 69.1,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 5
@@ -1377,6 +1547,8 @@
       "position": "RB",
       "nfl_team": "WAS",
       "position_rank_at_pick": 34,
+      "market_adp": 105.5,
+      "adp_delta_vs_market": 19.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 5
@@ -1393,6 +1565,8 @@
       "position": "WR",
       "nfl_team": "ARI",
       "position_rank_at_pick": 35,
+      "market_adp": 76.1,
+      "adp_delta_vs_market": -10.900000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 1
@@ -1409,6 +1583,8 @@
       "position": "WR",
       "nfl_team": "IND",
       "position_rank_at_pick": 36,
+      "market_adp": 86.9,
+      "adp_delta_vs_market": -1.0999999999999943,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -1425,6 +1601,8 @@
       "position": "WR",
       "nfl_team": "MIN",
       "position_rank_at_pick": 37,
+      "market_adp": 88.9,
+      "adp_delta_vs_market": -0.09999999999999432,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 11
@@ -1441,6 +1619,8 @@
       "position": "TE",
       "nfl_team": "SF",
       "position_rank_at_pick": 11,
+      "market_adp": 117.6,
+      "adp_delta_vs_market": 27.599999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 6
@@ -1457,6 +1637,8 @@
       "position": "RB",
       "nfl_team": "TB",
       "position_rank_at_pick": 35,
+      "market_adp": 100.1,
+      "adp_delta_vs_market": 9.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 2
@@ -1473,6 +1655,8 @@
       "position": "DEF",
       "nfl_team": "DEN",
       "position_rank_at_pick": 1,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": null,
       "picks_until_next_same_position": 5
@@ -1489,6 +1673,8 @@
       "position": "RB",
       "nfl_team": "LAR",
       "position_rank_at_pick": 36,
+      "market_adp": 119.8,
+      "adp_delta_vs_market": 26.799999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 2
@@ -1505,6 +1691,8 @@
       "position": "QB",
       "nfl_team": "LAC",
       "position_rank_at_pick": 9,
+      "market_adp": 109.7,
+      "adp_delta_vs_market": 15.700000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 32,
       "picks_until_next_same_position": 12
@@ -1521,6 +1709,8 @@
       "position": "RB",
       "nfl_team": "PIT",
       "position_rank_at_pick": 37,
+      "market_adp": 74.6,
+      "adp_delta_vs_market": -20.400000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 3
@@ -1537,6 +1727,8 @@
       "position": "TE",
       "nfl_team": "KC",
       "position_rank_at_pick": 12,
+      "market_adp": 122.5,
+      "adp_delta_vs_market": 26.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 6,
       "picks_until_next_same_position": 9
@@ -1553,6 +1745,8 @@
       "position": "DEF",
       "nfl_team": "HOU",
       "position_rank_at_pick": 2,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 23
@@ -1569,6 +1763,8 @@
       "position": "RB",
       "nfl_team": "MIN",
       "position_rank_at_pick": 38,
+      "market_adp": 116.6,
+      "adp_delta_vs_market": 18.599999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 1
@@ -1585,6 +1781,8 @@
       "position": "RB",
       "nfl_team": "CHI",
       "position_rank_at_pick": 39,
+      "market_adp": 101.8,
+      "adp_delta_vs_market": 2.799999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 3
@@ -1601,6 +1799,8 @@
       "position": "WR",
       "nfl_team": "WAS",
       "position_rank_at_pick": 38,
+      "market_adp": 94.1,
+      "adp_delta_vs_market": -5.900000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 11,
       "picks_until_next_same_position": 1
@@ -1617,6 +1817,8 @@
       "position": "WR",
       "nfl_team": "DEN",
       "position_rank_at_pick": 39,
+      "market_adp": 59.7,
+      "adp_delta_vs_market": -41.3,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 2
@@ -1633,6 +1835,8 @@
       "position": "RB",
       "nfl_team": "JAX",
       "position_rank_at_pick": 40,
+      "market_adp": 157.1,
+      "adp_delta_vs_market": 55.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 2
@@ -1649,6 +1853,8 @@
       "position": "WR",
       "nfl_team": "IND",
       "position_rank_at_pick": 40,
+      "market_adp": 56.4,
+      "adp_delta_vs_market": -46.6,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 5
@@ -1665,6 +1871,8 @@
       "position": "RB",
       "nfl_team": "ARI",
       "position_rank_at_pick": 41,
+      "market_adp": 155.5,
+      "adp_delta_vs_market": 51.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 3
@@ -1681,6 +1889,8 @@
       "position": "TE",
       "nfl_team": "LAC",
       "position_rank_at_pick": 13,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 9,
       "picks_until_next_same_position": 11
@@ -1697,6 +1907,8 @@
       "position": "QB",
       "nfl_team": "PHI",
       "position_rank_at_pick": 10,
+      "market_adp": 80.9,
+      "adp_delta_vs_market": -25.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 12,
       "picks_until_next_same_position": 11
@@ -1713,6 +1925,8 @@
       "position": "RB",
       "nfl_team": "MIN",
       "position_rank_at_pick": 42,
+      "market_adp": 103.3,
+      "adp_delta_vs_market": -3.700000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 21
@@ -1729,6 +1943,8 @@
       "position": "WR",
       "nfl_team": "PHI",
       "position_rank_at_pick": 41,
+      "market_adp": 111.5,
+      "adp_delta_vs_market": 3.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 1
@@ -1745,6 +1961,8 @@
       "position": "WR",
       "nfl_team": "LAC",
       "position_rank_at_pick": 42,
+      "market_adp": 86.2,
+      "adp_delta_vs_market": -22.799999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -1761,6 +1979,8 @@
       "position": "WR",
       "nfl_team": "NO",
       "position_rank_at_pick": 43,
+      "market_adp": 126.9,
+      "adp_delta_vs_market": 16.900000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -1777,6 +1997,8 @@
       "position": "WR",
       "nfl_team": "SF",
       "position_rank_at_pick": 44,
+      "market_adp": 136.0,
+      "adp_delta_vs_market": 25.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -1793,6 +2015,8 @@
       "position": "WR",
       "nfl_team": "TEN",
       "position_rank_at_pick": 45,
+      "market_adp": 93.5,
+      "adp_delta_vs_market": -18.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -1809,6 +2033,8 @@
       "position": "WR",
       "nfl_team": "KC",
       "position_rank_at_pick": 46,
+      "market_adp": 100.4,
+      "adp_delta_vs_market": -12.599999999999994,
       "confirmed_homer_pick": true,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -1825,6 +2051,8 @@
       "position": "WR",
       "nfl_team": "GB",
       "position_rank_at_pick": 47,
+      "market_adp": 90.4,
+      "adp_delta_vs_market": -23.599999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -1841,6 +2069,8 @@
       "position": "WR",
       "nfl_team": "TB",
       "position_rank_at_pick": 48,
+      "market_adp": 77.6,
+      "adp_delta_vs_market": -37.400000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 3
@@ -1857,6 +2087,8 @@
       "position": "TE",
       "nfl_team": "DAL",
       "position_rank_at_pick": 14,
+      "market_adp": 144.2,
+      "adp_delta_vs_market": 28.19999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 11,
       "picks_until_next_same_position": 17
@@ -1873,6 +2105,8 @@
       "position": "QB",
       "nfl_team": "JAX",
       "position_rank_at_pick": 11,
+      "market_adp": 95.6,
+      "adp_delta_vs_market": -21.400000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 11,
       "picks_until_next_same_position": 4
@@ -1889,6 +2123,8 @@
       "position": "WR",
       "nfl_team": "CLE",
       "position_rank_at_pick": 49,
+      "market_adp": 117.5,
+      "adp_delta_vs_market": -0.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 1
@@ -1905,6 +2141,8 @@
       "position": "WR",
       "nfl_team": "GB",
       "position_rank_at_pick": 50,
+      "market_adp": 101.8,
+      "adp_delta_vs_market": -17.200000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 10
@@ -1921,6 +2159,8 @@
       "position": "DEF",
       "nfl_team": "SEA",
       "position_rank_at_pick": 3,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 23,
       "picks_until_next_same_position": 4
@@ -1937,6 +2177,8 @@
       "position": "QB",
       "nfl_team": "SF",
       "position_rank_at_pick": 12,
+      "market_adp": 87.0,
+      "adp_delta_vs_market": -34.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 1
@@ -1953,6 +2195,8 @@
       "position": "QB",
       "nfl_team": "DEN",
       "position_rank_at_pick": 13,
+      "market_adp": 115.4,
+      "adp_delta_vs_market": -6.599999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -1969,6 +2213,8 @@
       "position": "QB",
       "nfl_team": "MIN",
       "position_rank_at_pick": 14,
+      "market_adp": 137.9,
+      "adp_delta_vs_market": 14.900000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 2
@@ -1985,6 +2231,8 @@
       "position": "DEF",
       "nfl_team": "LAR",
       "position_rank_at_pick": 4,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 3
@@ -2001,6 +2249,8 @@
       "position": "QB",
       "nfl_team": "LAR",
       "position_rank_at_pick": 15,
+      "market_adp": 79.0,
+      "adp_delta_vs_market": -46.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 1
@@ -2017,6 +2267,8 @@
       "position": "QB",
       "nfl_team": "NYG",
       "position_rank_at_pick": 16,
+      "market_adp": 122.3,
+      "adp_delta_vs_market": -3.700000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 4
@@ -2033,6 +2285,8 @@
       "position": "DEF",
       "nfl_team": "PHI",
       "position_rank_at_pick": 5,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 4
@@ -2049,6 +2303,8 @@
       "position": "RB",
       "nfl_team": "WAS",
       "position_rank_at_pick": 43,
+      "market_adp": 117.4,
+      "adp_delta_vs_market": -10.599999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 21,
       "picks_until_next_same_position": 7
@@ -2065,6 +2321,8 @@
       "position": "WR",
       "nfl_team": "CAR",
       "position_rank_at_pick": 51,
+      "market_adp": 117.4,
+      "adp_delta_vs_market": -11.599999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 10,
       "picks_until_next_same_position": 3
@@ -2081,6 +2339,8 @@
       "position": "QB",
       "nfl_team": "DET",
       "position_rank_at_pick": 17,
+      "market_adp": 103.3,
+      "adp_delta_vs_market": -26.700000000000003,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 16
@@ -2097,6 +2357,8 @@
       "position": "DEF",
       "nfl_team": "BAL",
       "position_rank_at_pick": 6,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 11
@@ -2113,6 +2375,8 @@
       "position": "WR",
       "nfl_team": "PIT",
       "position_rank_at_pick": 52,
+      "market_adp": 81.0,
+      "adp_delta_vs_market": -51.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 4
@@ -2129,6 +2393,8 @@
       "position": "TE",
       "nfl_team": "PHI",
       "position_rank_at_pick": 15,
+      "market_adp": 107.7,
+      "adp_delta_vs_market": -25.299999999999997,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 17,
       "picks_until_next_same_position": 1
@@ -2145,6 +2411,8 @@
       "position": "TE",
       "nfl_team": "NO",
       "position_rank_at_pick": 16,
+      "market_adp": 162.5,
+      "adp_delta_vs_market": 28.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 6
@@ -2161,6 +2429,8 @@
       "position": "RB",
       "nfl_team": "DEN",
       "position_rank_at_pick": 44,
+      "market_adp": 163.2,
+      "adp_delta_vs_market": 28.19999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 7,
       "picks_until_next_same_position": 2
@@ -2177,6 +2447,8 @@
       "position": "WR",
       "nfl_team": "SEA",
       "position_rank_at_pick": 53,
+      "market_adp": 119.9,
+      "adp_delta_vs_market": -16.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 5
@@ -2193,6 +2465,8 @@
       "position": "RB",
       "nfl_team": "NYJ",
       "position_rank_at_pick": 45,
+      "market_adp": 171.3,
+      "adp_delta_vs_market": 34.30000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 1
@@ -2209,6 +2483,8 @@
       "position": "RB",
       "nfl_team": "SEA",
       "position_rank_at_pick": 46,
+      "market_adp": 132.6,
+      "adp_delta_vs_market": -5.400000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -2225,6 +2501,8 @@
       "position": "RB",
       "nfl_team": "HOU",
       "position_rank_at_pick": 47,
+      "market_adp": 142.0,
+      "adp_delta_vs_market": 3.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 4
@@ -2241,6 +2519,8 @@
       "position": "TE",
       "nfl_team": "BAL",
       "position_rank_at_pick": 17,
+      "market_adp": 135.0,
+      "adp_delta_vs_market": -5.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 6,
       "picks_until_next_same_position": 10
@@ -2257,6 +2537,8 @@
       "position": "WR",
       "nfl_team": "NE",
       "position_rank_at_pick": 54,
+      "market_adp": 107.2,
+      "adp_delta_vs_market": -33.8,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 3
@@ -2273,6 +2555,8 @@
       "position": "DEF",
       "nfl_team": "NE",
       "position_rank_at_pick": 7,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 11,
       "picks_until_next_same_position": 12
@@ -2289,6 +2573,8 @@
       "position": "RB",
       "nfl_team": "GB",
       "position_rank_at_pick": 48,
+      "market_adp": 157.1,
+      "adp_delta_vs_market": 14.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 5
@@ -2305,6 +2591,8 @@
       "position": "WR",
       "nfl_team": "NYJ",
       "position_rank_at_pick": 55,
+      "market_adp": 158.0,
+      "adp_delta_vs_market": 14.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 1
@@ -2321,6 +2609,8 @@
       "position": "WR",
       "nfl_team": "SF",
       "position_rank_at_pick": 56,
+      "market_adp": 107.1,
+      "adp_delta_vs_market": -37.900000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 2
@@ -2337,6 +2627,8 @@
       "position": "QB",
       "nfl_team": "GB",
       "position_rank_at_pick": 18,
+      "market_adp": 151.8,
+      "adp_delta_vs_market": 5.800000000000011,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 16,
       "picks_until_next_same_position": 10
@@ -2353,6 +2645,8 @@
       "position": "WR",
       "nfl_team": "JAX",
       "position_rank_at_pick": 57,
+      "market_adp": 85.9,
+      "adp_delta_vs_market": -61.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 4
@@ -2369,6 +2663,8 @@
       "position": "RB",
       "nfl_team": "CLE",
       "position_rank_at_pick": 49,
+      "market_adp": 174.2,
+      "adp_delta_vs_market": 26.19999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 1
@@ -2385,6 +2681,8 @@
       "position": "RB",
       "nfl_team": "NYG",
       "position_rank_at_pick": 50,
+      "market_adp": 153.9,
+      "adp_delta_vs_market": 4.900000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 3
@@ -2401,6 +2699,8 @@
       "position": "TE",
       "nfl_team": "NE",
       "position_rank_at_pick": 18,
+      "market_adp": 157.7,
+      "adp_delta_vs_market": 7.699999999999989,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 10,
       "picks_until_next_same_position": 9
@@ -2417,6 +2717,8 @@
       "position": "WR",
       "nfl_team": "BUF",
       "position_rank_at_pick": 58,
+      "market_adp": 104.9,
+      "adp_delta_vs_market": -46.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 7
@@ -2433,6 +2735,8 @@
       "position": "RB",
       "nfl_team": "KC",
       "position_rank_at_pick": 51,
+      "market_adp": 152.6,
+      "adp_delta_vs_market": 0.5999999999999943,
       "confirmed_homer_pick": true,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 1
@@ -2449,6 +2753,8 @@
       "position": "RB",
       "nfl_team": "LAC",
       "position_rank_at_pick": 52,
+      "market_adp": 155.5,
+      "adp_delta_vs_market": 2.5,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 2
@@ -2465,6 +2771,8 @@
       "position": "DEF",
       "nfl_team": "MIN",
       "position_rank_at_pick": 8,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 12,
       "picks_until_next_same_position": 3
@@ -2481,6 +2789,8 @@
       "position": "RB",
       "nfl_team": "TEN",
       "position_rank_at_pick": 53,
+      "market_adp": 141.8,
+      "adp_delta_vs_market": -13.199999999999989,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 8
@@ -2497,6 +2807,8 @@
       "position": "QB",
       "nfl_team": "TB",
       "position_rank_at_pick": 19,
+      "market_adp": 134.7,
+      "adp_delta_vs_market": -21.30000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 10,
       "picks_until_next_same_position": 6
@@ -2513,6 +2825,8 @@
       "position": "DEF",
       "nfl_team": "JAX",
       "position_rank_at_pick": 9,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 4
@@ -2529,6 +2843,8 @@
       "position": "WR",
       "nfl_team": "KC",
       "position_rank_at_pick": 59,
+      "market_adp": 155.4,
+      "adp_delta_vs_market": -2.5999999999999943,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 7,
       "picks_until_next_same_position": 2
@@ -2545,6 +2861,8 @@
       "position": "TE",
       "nfl_team": "JAX",
       "position_rank_at_pick": 19,
+      "market_adp": 167.0,
+      "adp_delta_vs_market": 8.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 9,
       "picks_until_next_same_position": 8
@@ -2561,6 +2879,8 @@
       "position": "WR",
       "nfl_team": "TB",
       "position_rank_at_pick": 60,
+      "market_adp": 135.4,
+      "adp_delta_vs_market": -24.599999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 5
@@ -2577,6 +2897,8 @@
       "position": "DEF",
       "nfl_team": "KC",
       "position_rank_at_pick": 10,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": true,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 9
@@ -2593,6 +2915,8 @@
       "position": "QB",
       "nfl_team": "SEA",
       "position_rank_at_pick": 20,
+      "market_adp": 150.1,
+      "adp_delta_vs_market": -11.900000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 6,
       "picks_until_next_same_position": 10
@@ -2609,6 +2933,8 @@
       "position": "RB",
       "nfl_team": "NO",
       "position_rank_at_pick": 54,
+      "market_adp": 146.3,
+      "adp_delta_vs_market": -16.69999999999999,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 8,
       "picks_until_next_same_position": 1
@@ -2625,6 +2951,8 @@
       "position": "RB",
       "nfl_team": "PHI",
       "position_rank_at_pick": 55,
+      "market_adp": 152.9,
+      "adp_delta_vs_market": -11.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 7
@@ -2641,6 +2969,8 @@
       "position": "WR",
       "nfl_team": "MIA",
       "position_rank_at_pick": 61,
+      "market_adp": 174.1,
+      "adp_delta_vs_market": 9.099999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": 1
@@ -2657,6 +2987,8 @@
       "position": "WR",
       "nfl_team": "LV",
       "position_rank_at_pick": 62,
+      "market_adp": 143.6,
+      "adp_delta_vs_market": -22.400000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 3
@@ -2673,6 +3005,8 @@
       "position": "TE",
       "nfl_team": "MIN",
       "position_rank_at_pick": 20,
+      "market_adp": 178.7,
+      "adp_delta_vs_market": 11.699999999999989,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 8,
       "picks_until_next_same_position": 1
@@ -2689,6 +3023,8 @@
       "position": "TE",
       "nfl_team": "HOU",
       "position_rank_at_pick": 21,
+      "market_adp": 177.8,
+      "adp_delta_vs_market": 9.800000000000011,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 5
@@ -2705,6 +3041,8 @@
       "position": "WR",
       "nfl_team": "LV",
       "position_rank_at_pick": 63,
+      "market_adp": 132.4,
+      "adp_delta_vs_market": -36.599999999999994,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 6
@@ -2721,6 +3059,8 @@
       "position": "DEF",
       "nfl_team": "PIT",
       "position_rank_at_pick": 11,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 9,
       "picks_until_next_same_position": null
@@ -2737,6 +3077,8 @@
       "position": "RB",
       "nfl_team": "LAC",
       "position_rank_at_pick": 56,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 7,
       "picks_until_next_same_position": 3
@@ -2753,6 +3095,8 @@
       "position": "QB",
       "nfl_team": "MIA",
       "position_rank_at_pick": 21,
+      "market_adp": 155.7,
+      "adp_delta_vs_market": -16.30000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 10,
       "picks_until_next_same_position": 4
@@ -2769,6 +3113,8 @@
       "position": "TE",
       "nfl_team": "SEA",
       "position_rank_at_pick": 22,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 5,
       "picks_until_next_same_position": null
@@ -2785,6 +3131,8 @@
       "position": "RB",
       "nfl_team": "SF",
       "position_rank_at_pick": 57,
+      "market_adp": 165.0,
+      "adp_delta_vs_market": -9.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 6
@@ -2801,6 +3149,8 @@
       "position": "WR",
       "nfl_team": "IND",
       "position_rank_at_pick": 64,
+      "market_adp": 130.7,
+      "adp_delta_vs_market": -44.30000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 6,
       "picks_until_next_same_position": 2
@@ -2817,6 +3167,8 @@
       "position": "QB",
       "nfl_team": "HOU",
       "position_rank_at_pick": 22,
+      "market_adp": 163.1,
+      "adp_delta_vs_market": -12.900000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 3
@@ -2833,6 +3185,8 @@
       "position": "WR",
       "nfl_team": "TB",
       "position_rank_at_pick": 65,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 1
@@ -2849,6 +3203,8 @@
       "position": "WR",
       "nfl_team": "CLE",
       "position_rank_at_pick": 66,
+      "market_adp": 138.6,
+      "adp_delta_vs_market": -39.400000000000006,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": null
@@ -2865,6 +3221,8 @@
       "position": "QB",
       "nfl_team": "NO",
       "position_rank_at_pick": 23,
+      "market_adp": 139.0,
+      "adp_delta_vs_market": -40.0,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": null
@@ -2881,6 +3239,8 @@
       "position": "RB",
       "nfl_team": "ATL",
       "position_rank_at_pick": 58,
+      "market_adp": 161.7,
+      "adp_delta_vs_market": -18.30000000000001,
       "confirmed_homer_pick": false,
       "picks_since_previous_same_position": 6,
       "picks_until_next_same_position": null
@@ -3208,6 +3568,8 @@
         "position": "RB",
         "nfl_team": "DET",
         "position_rank_at_pick": 1,
+        "market_adp": 1.5,
+        "adp_delta_vs_market": 0.5,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": null,
         "picks_until_next_same_position": 1
@@ -3224,6 +3586,8 @@
         "position": "RB",
         "nfl_team": "ATL",
         "position_rank_at_pick": 58,
+        "market_adp": 161.7,
+        "adp_delta_vs_market": -18.30000000000001,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": 6,
         "picks_until_next_same_position": null
@@ -3242,6 +3606,8 @@
         "position": "WR",
         "nfl_team": "CIN",
         "position_rank_at_pick": 1,
+        "market_adp": 3.9,
+        "adp_delta_vs_market": 0.8999999999999999,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": null,
         "picks_until_next_same_position": 3
@@ -3258,6 +3624,8 @@
         "position": "WR",
         "nfl_team": "CLE",
         "position_rank_at_pick": 66,
+        "market_adp": 138.6,
+        "adp_delta_vs_market": -39.400000000000006,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": 1,
         "picks_until_next_same_position": null
@@ -3276,6 +3644,8 @@
         "position": "QB",
         "nfl_team": "BUF",
         "position_rank_at_pick": 1,
+        "market_adp": 32.9,
+        "adp_delta_vs_market": 14.899999999999999,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": null,
         "picks_until_next_same_position": 19
@@ -3292,6 +3662,8 @@
         "position": "QB",
         "nfl_team": "NO",
         "position_rank_at_pick": 23,
+        "market_adp": 139.0,
+        "adp_delta_vs_market": -40.0,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": 3,
         "picks_until_next_same_position": null
@@ -3310,6 +3682,8 @@
         "position": "TE",
         "nfl_team": "LV",
         "position_rank_at_pick": 1,
+        "market_adp": 43.0,
+        "adp_delta_vs_market": 17.0,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": null,
         "picks_until_next_same_position": 4
@@ -3326,6 +3700,8 @@
         "position": "TE",
         "nfl_team": "SEA",
         "position_rank_at_pick": 22,
+        "market_adp": null,
+        "adp_delta_vs_market": null,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": 5,
         "picks_until_next_same_position": null
@@ -3344,6 +3720,8 @@
         "position": "DEF",
         "nfl_team": "DEN",
         "position_rank_at_pick": 1,
+        "market_adp": null,
+        "adp_delta_vs_market": null,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": null,
         "picks_until_next_same_position": 5
@@ -3360,6 +3738,8 @@
         "position": "DEF",
         "nfl_team": "PIT",
         "position_rank_at_pick": 11,
+        "market_adp": null,
+        "adp_delta_vs_market": null,
         "confirmed_homer_pick": false,
         "picks_since_previous_same_position": 9,
         "picks_until_next_same_position": null
@@ -3896,6 +4276,8 @@
       "position": "QB",
       "nfl_team": "KC",
       "position_rank_at_pick": 7,
+      "market_adp": 103.7,
+      "adp_delta_vs_market": 47.7,
       "confirmed_homer_pick": true,
       "picks_since_previous_same_position": 2,
       "picks_until_next_same_position": 6
@@ -3912,6 +4294,8 @@
       "position": "WR",
       "nfl_team": "KC",
       "position_rank_at_pick": 46,
+      "market_adp": 100.4,
+      "adp_delta_vs_market": -12.599999999999994,
       "confirmed_homer_pick": true,
       "picks_since_previous_same_position": 1,
       "picks_until_next_same_position": 1
@@ -3928,6 +4312,8 @@
       "position": "RB",
       "nfl_team": "KC",
       "position_rank_at_pick": 51,
+      "market_adp": 152.6,
+      "adp_delta_vs_market": 0.5999999999999943,
       "confirmed_homer_pick": true,
       "picks_since_previous_same_position": 3,
       "picks_until_next_same_position": 1
@@ -3944,6 +4330,8 @@
       "position": "DEF",
       "nfl_team": "KC",
       "position_rank_at_pick": 10,
+      "market_adp": null,
+      "adp_delta_vs_market": null,
       "confirmed_homer_pick": true,
       "picks_since_previous_same_position": 4,
       "picks_until_next_same_position": 9
