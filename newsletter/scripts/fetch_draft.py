@@ -307,6 +307,29 @@ def team_position_breakdown(enriched_picks, roster_names):
     return breakdown
 
 
+def compute_roster_lean(breakdown):
+    """Precomputed RB-vs-WR roster-construction lean per team. Added after
+    the model looked at a 3 RB / 6 WR roster and called it 'RB-heavy' —
+    backwards, not just imprecise. Grounding instructions to 'quote the
+    exact counts' don't stop a model from drawing a wrong qualitative
+    conclusion FROM correct counts; the fix is the same one that's worked
+    everywhere else in this pipeline — compute the actual conclusion in
+    Python and hand it over finished, don't ask the model to derive it."""
+    lean_by_team = {}
+    for team, counts in breakdown.items():
+        rb = counts.get("RB", 0)
+        wr = counts.get("WR", 0)
+        diff = rb - wr
+        if diff >= 2:
+            lean = "RB-heavy"
+        elif diff <= -2:
+            lean = "WR-heavy"
+        else:
+            lean = "balanced between RB and WR"
+        lean_by_team[team] = {"rb_count": rb, "wr_count": wr, "roster_lean": lean}
+    return lean_by_team
+
+
 def get_confirmed_tendency_hits(enriched_picks):
     """Deterministic, not left to the model to notice."""
     return [p for p in enriched_picks if p["confirmed_homer_pick"]]
@@ -329,6 +352,7 @@ def main():
     position_first_last = position_first_and_last(enriched)
     acquisition_summary = team_first_pick_by_position(enriched)
     breakdown = team_position_breakdown(enriched, roster_names)
+    roster_lean = compute_roster_lean(breakdown)
     runs = detect_positional_runs(enriched)
 
     # Strip internal-only fields (owner_username) from EVERYTHING before
@@ -351,6 +375,7 @@ def main():
         "position_first_last": clean_position_first_last,
         "position_acquisition_summary": acquisition_summary,
         "team_position_breakdown": breakdown,
+        "team_roster_lean": roster_lean,
         "confirmed_tendency_hits": clean_tendency_hits,
     }
 
