@@ -4515,6 +4515,932 @@
       "roster_lean": "balanced between RB and WR"
     }
   },
+  "team_roster_summary": {
+    "Chuba Bucky Doo": [
+      {
+        "pick_label": "1.06",
+        "player_name": "Jaxon Smith-Njigba",
+        "position": "WR"
+      },
+      {
+        "pick_label": "2.07",
+        "player_name": "Justin Jefferson",
+        "position": "WR"
+      },
+      {
+        "pick_label": "3.06",
+        "player_name": "Trey McBride",
+        "position": "TE"
+      },
+      {
+        "pick_label": "4.07",
+        "player_name": "Bucky Irving",
+        "position": "RB"
+      },
+      {
+        "pick_label": "5.06",
+        "player_name": "Jayden Daniels",
+        "position": "QB"
+      },
+      {
+        "pick_label": "6.07",
+        "player_name": "Mike Evans",
+        "position": "WR"
+      },
+      {
+        "pick_label": "7.06",
+        "player_name": "Chuba Hubbard",
+        "position": "RB"
+      },
+      {
+        "pick_label": "8.07",
+        "player_name": "Kenny Gainwell",
+        "position": "RB"
+      },
+      {
+        "pick_label": "9.06",
+        "player_name": "Chris Rodriguez",
+        "position": "RB"
+      },
+      {
+        "pick_label": "10.07",
+        "player_name": "Chris Godwin",
+        "position": "WR"
+      },
+      {
+        "pick_label": "11.06",
+        "player_name": "Jaxson Dart",
+        "position": "QB"
+      },
+      {
+        "pick_label": "12.07",
+        "player_name": "Woody Marks",
+        "position": "RB"
+      },
+      {
+        "pick_label": "13.06",
+        "player_name": "Hunter Henry",
+        "position": "TE"
+      },
+      {
+        "pick_label": "14.07",
+        "player_name": "Alvin Kamara",
+        "position": "RB"
+      },
+      {
+        "pick_label": "15.06",
+        "player_name": "Kaelon Black",
+        "position": "RB"
+      }
+    ],
+    "Joe Mama Angie Daddy": [
+      {
+        "pick_label": "1.01",
+        "player_name": "Jahmyr Gibbs",
+        "position": "RB"
+      },
+      {
+        "pick_label": "2.12",
+        "player_name": "George Pickens",
+        "position": "WR"
+      },
+      {
+        "pick_label": "3.01",
+        "player_name": "Javonte Williams",
+        "position": "RB"
+      },
+      {
+        "pick_label": "4.12",
+        "player_name": "Joe Burrow",
+        "position": "QB"
+      },
+      {
+        "pick_label": "5.01",
+        "player_name": "Tee Higgins",
+        "position": "WR"
+      },
+      {
+        "pick_label": "6.12",
+        "player_name": "Parker Washington",
+        "position": "WR"
+      },
+      {
+        "pick_label": "7.01",
+        "player_name": "Rhamondre Stevenson",
+        "position": "RB"
+      },
+      {
+        "pick_label": "8.12",
+        "player_name": "Travis Kelce",
+        "position": "TE"
+      },
+      {
+        "pick_label": "9.01",
+        "player_name": "Houston Texans",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "10.12",
+        "player_name": "Seattle Seahawks",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "11.01",
+        "player_name": "Brock Purdy",
+        "position": "QB"
+      },
+      {
+        "pick_label": "12.12",
+        "player_name": "Adonai Mitchell",
+        "position": "WR"
+      },
+      {
+        "pick_label": "13.01",
+        "player_name": "Deebo Samuel",
+        "position": "WR"
+      },
+      {
+        "pick_label": "14.12",
+        "player_name": "Dalton Schultz",
+        "position": "TE"
+      },
+      {
+        "pick_label": "15.01",
+        "player_name": "Tre Tucker",
+        "position": "WR"
+      }
+    ],
+    "Broke Dak Mountain": [
+      {
+        "pick_label": "1.07",
+        "player_name": "Christian McCaffrey",
+        "position": "RB"
+      },
+      {
+        "pick_label": "2.06",
+        "player_name": "Josh Allen",
+        "position": "QB"
+      },
+      {
+        "pick_label": "3.07",
+        "player_name": "Jeremiyah Love",
+        "position": "RB"
+      },
+      {
+        "pick_label": "4.06",
+        "player_name": "Emeka Egbuka",
+        "position": "WR"
+      },
+      {
+        "pick_label": "5.07",
+        "player_name": "Jaylen Waddle",
+        "position": "WR"
+      },
+      {
+        "pick_label": "6.06",
+        "player_name": "Tucker Kraft",
+        "position": "TE"
+      },
+      {
+        "pick_label": "7.07",
+        "player_name": "Tony Pollard",
+        "position": "RB"
+      },
+      {
+        "pick_label": "8.06",
+        "player_name": "George Kittle",
+        "position": "TE"
+      },
+      {
+        "pick_label": "9.07",
+        "player_name": "Alec Pierce",
+        "position": "WR"
+      },
+      {
+        "pick_label": "10.06",
+        "player_name": "Jayden Reed",
+        "position": "WR"
+      },
+      {
+        "pick_label": "11.07",
+        "player_name": "Philadelphia Eagles",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "12.06",
+        "player_name": "Zach Charbonnet",
+        "position": "RB"
+      },
+      {
+        "pick_label": "13.07",
+        "player_name": "Khalil Shakir",
+        "position": "WR"
+      },
+      {
+        "pick_label": "14.06",
+        "player_name": "Sam Darnold",
+        "position": "QB"
+      },
+      {
+        "pick_label": "15.07",
+        "player_name": "Keenan Allen",
+        "position": "WR"
+      }
+    ],
+    "Waffle House": [
+      {
+        "pick_label": "1.12",
+        "player_name": "Saquon Barkley",
+        "position": "RB"
+      },
+      {
+        "pick_label": "2.01",
+        "player_name": "Ashton Jeanty",
+        "position": "RB"
+      },
+      {
+        "pick_label": "3.12",
+        "player_name": "DeVonta Smith",
+        "position": "WR"
+      },
+      {
+        "pick_label": "4.01",
+        "player_name": "Lamar Jackson",
+        "position": "QB"
+      },
+      {
+        "pick_label": "5.12",
+        "player_name": "DJ Moore",
+        "position": "WR"
+      },
+      {
+        "pick_label": "6.01",
+        "player_name": "Davante Adams",
+        "position": "WR"
+      },
+      {
+        "pick_label": "7.12",
+        "player_name": "RJ Harvey",
+        "position": "RB"
+      },
+      {
+        "pick_label": "8.01",
+        "player_name": "Dalton Kincaid",
+        "position": "TE"
+      },
+      {
+        "pick_label": "9.12",
+        "player_name": "Makai Lemon",
+        "position": "WR"
+      },
+      {
+        "pick_label": "10.01",
+        "player_name": "Quentin Johnston",
+        "position": "WR"
+      },
+      {
+        "pick_label": "11.12",
+        "player_name": "Michael Pittman",
+        "position": "WR"
+      },
+      {
+        "pick_label": "12.01",
+        "player_name": "Dallas Goedert",
+        "position": "TE"
+      },
+      {
+        "pick_label": "13.12",
+        "player_name": "Baker Mayfield",
+        "position": "QB"
+      },
+      {
+        "pick_label": "14.01",
+        "player_name": "Jacksonville Jaguars",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "15.12",
+        "player_name": "Brian Robinson",
+        "position": "RB"
+      }
+    ],
+    "Silverbacks": [
+      {
+        "pick_label": "1.03",
+        "player_name": "Ja'Marr Chase",
+        "position": "WR"
+      },
+      {
+        "pick_label": "2.10",
+        "player_name": "Nico Collins",
+        "position": "WR"
+      },
+      {
+        "pick_label": "3.03",
+        "player_name": "Travis Etienne",
+        "position": "RB"
+      },
+      {
+        "pick_label": "4.10",
+        "player_name": "David Montgomery",
+        "position": "RB"
+      },
+      {
+        "pick_label": "5.03",
+        "player_name": "Zay Flowers",
+        "position": "WR"
+      },
+      {
+        "pick_label": "6.10",
+        "player_name": "Jaylen Warren",
+        "position": "RB"
+      },
+      {
+        "pick_label": "7.03",
+        "player_name": "Harold Fannin",
+        "position": "TE"
+      },
+      {
+        "pick_label": "8.10",
+        "player_name": "Justin Herbert",
+        "position": "QB"
+      },
+      {
+        "pick_label": "9.03",
+        "player_name": "Kyle Monangai",
+        "position": "RB"
+      },
+      {
+        "pick_label": "10.10",
+        "player_name": "KC Concepcion",
+        "position": "WR"
+      },
+      {
+        "pick_label": "11.03",
+        "player_name": "Kyler Murray",
+        "position": "QB"
+      },
+      {
+        "pick_label": "12.10",
+        "player_name": "New England Patriots",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "13.03",
+        "player_name": "Jakobi Meyers",
+        "position": "WR"
+      },
+      {
+        "pick_label": "14.10",
+        "player_name": "Jalen Nailor",
+        "position": "WR"
+      },
+      {
+        "pick_label": "15.03",
+        "player_name": "Kimani Vidal",
+        "position": "RB"
+      }
+    ],
+    "Geoff Collins Suvivor": [
+      {
+        "pick_label": "1.10",
+        "player_name": "Amon-Ra St. Brown",
+        "position": "WR"
+      },
+      {
+        "pick_label": "2.03",
+        "player_name": "Derrick Henry",
+        "position": "RB"
+      },
+      {
+        "pick_label": "3.10",
+        "player_name": "Rashee Rice",
+        "position": "WR"
+      },
+      {
+        "pick_label": "4.03",
+        "player_name": "Cam Skattebo",
+        "position": "RB"
+      },
+      {
+        "pick_label": "5.10",
+        "player_name": "Tyler Warren",
+        "position": "TE"
+      },
+      {
+        "pick_label": "6.03",
+        "player_name": "Luther Burden",
+        "position": "WR"
+      },
+      {
+        "pick_label": "7.10",
+        "player_name": "J.K. Dobbins",
+        "position": "RB"
+      },
+      {
+        "pick_label": "8.03",
+        "player_name": "Michael Wilson",
+        "position": "WR"
+      },
+      {
+        "pick_label": "9.10",
+        "player_name": "Jalen Hurts",
+        "position": "QB"
+      },
+      {
+        "pick_label": "10.03",
+        "player_name": "De'Zhaun Stribling",
+        "position": "WR"
+      },
+      {
+        "pick_label": "11.10",
+        "player_name": "Jared Goff",
+        "position": "QB"
+      },
+      {
+        "pick_label": "12.03",
+        "player_name": "Jonah Coleman",
+        "position": "RB"
+      },
+      {
+        "pick_label": "13.10",
+        "player_name": "Minnesota Vikings",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "14.03",
+        "player_name": "Brenton Strange",
+        "position": "TE"
+      },
+      {
+        "pick_label": "15.10",
+        "player_name": "Denzel Boston",
+        "position": "WR"
+      }
+    ],
+    "Meredith\u2019s Fan Club": [
+      {
+        "pick_label": "1.08",
+        "player_name": "Puka Nacua",
+        "position": "WR"
+      },
+      {
+        "pick_label": "2.05",
+        "player_name": "Omarion Hampton",
+        "position": "RB"
+      },
+      {
+        "pick_label": "3.08",
+        "player_name": "Breece Hall",
+        "position": "RB"
+      },
+      {
+        "pick_label": "4.05",
+        "player_name": "Colston Loveland",
+        "position": "TE"
+      },
+      {
+        "pick_label": "5.08",
+        "player_name": "Patrick Mahomes",
+        "position": "QB"
+      },
+      {
+        "pick_label": "6.05",
+        "player_name": "Sam LaPorta",
+        "position": "TE"
+      },
+      {
+        "pick_label": "7.08",
+        "player_name": "DK Metcalf",
+        "position": "WR"
+      },
+      {
+        "pick_label": "8.05",
+        "player_name": "Jordan Addison",
+        "position": "WR"
+      },
+      {
+        "pick_label": "9.08",
+        "player_name": "Tyler Allgeier",
+        "position": "RB"
+      },
+      {
+        "pick_label": "10.05",
+        "player_name": "Xavier Worthy",
+        "position": "WR"
+      },
+      {
+        "pick_label": "11.08",
+        "player_name": "Rachaad White",
+        "position": "RB"
+      },
+      {
+        "pick_label": "12.05",
+        "player_name": "Braelon Allen",
+        "position": "RB"
+      },
+      {
+        "pick_label": "13.08",
+        "player_name": "Emmett Johnson",
+        "position": "RB"
+      },
+      {
+        "pick_label": "14.05",
+        "player_name": "Kansas City Chiefs",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "15.08",
+        "player_name": "C.J. Stroud",
+        "position": "QB"
+      }
+    ],
+    "Dak's Stack ": [
+      {
+        "pick_label": "1.11",
+        "player_name": "CeeDee Lamb",
+        "position": "WR"
+      },
+      {
+        "pick_label": "2.02",
+        "player_name": "De'Von Achane",
+        "position": "RB"
+      },
+      {
+        "pick_label": "3.11",
+        "player_name": "Garrett Wilson",
+        "position": "WR"
+      },
+      {
+        "pick_label": "4.02",
+        "player_name": "D'Andre Swift",
+        "position": "RB"
+      },
+      {
+        "pick_label": "5.11",
+        "player_name": "Jameson Williams",
+        "position": "WR"
+      },
+      {
+        "pick_label": "6.02",
+        "player_name": "Dak Prescott",
+        "position": "QB"
+      },
+      {
+        "pick_label": "7.11",
+        "player_name": "Carnell Tate",
+        "position": "WR"
+      },
+      {
+        "pick_label": "8.02",
+        "player_name": "Jacory Croskey-Merritt",
+        "position": "RB"
+      },
+      {
+        "pick_label": "9.11",
+        "player_name": "Aaron Jones",
+        "position": "RB"
+      },
+      {
+        "pick_label": "10.02",
+        "player_name": "Jordyn Tyson",
+        "position": "WR"
+      },
+      {
+        "pick_label": "11.11",
+        "player_name": "Baltimore Ravens",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "12.02",
+        "player_name": "Juwan Johnson",
+        "position": "TE"
+      },
+      {
+        "pick_label": "13.11",
+        "player_name": "Tyjae Spears",
+        "position": "RB"
+      },
+      {
+        "pick_label": "14.02",
+        "player_name": "Cyrus Allen",
+        "position": "WR"
+      },
+      {
+        "pick_label": "15.11",
+        "player_name": "Tyler Shough",
+        "position": "QB"
+      }
+    ],
+    "mikelanta": [
+      {
+        "pick_label": "1.09",
+        "player_name": "Chase Brown",
+        "position": "RB"
+      },
+      {
+        "pick_label": "2.04",
+        "player_name": "Kenneth Walker",
+        "position": "RB"
+      },
+      {
+        "pick_label": "3.09",
+        "player_name": "Chris Olave",
+        "position": "WR"
+      },
+      {
+        "pick_label": "4.04",
+        "player_name": "Caleb Williams",
+        "position": "QB"
+      },
+      {
+        "pick_label": "5.09",
+        "player_name": "Jadarian Price",
+        "position": "RB"
+      },
+      {
+        "pick_label": "6.04",
+        "player_name": "Rome Odunze",
+        "position": "WR"
+      },
+      {
+        "pick_label": "7.09",
+        "player_name": "Isaiah Likely",
+        "position": "TE"
+      },
+      {
+        "pick_label": "8.04",
+        "player_name": "Josh Downs",
+        "position": "WR"
+      },
+      {
+        "pick_label": "9.09",
+        "player_name": "Oronde Gadsden",
+        "position": "TE"
+      },
+      {
+        "pick_label": "10.04",
+        "player_name": "Wan'Dale Robinson",
+        "position": "WR"
+      },
+      {
+        "pick_label": "11.09",
+        "player_name": "Jalen Coker",
+        "position": "WR"
+      },
+      {
+        "pick_label": "12.04",
+        "player_name": "Rashid Shaheed",
+        "position": "WR"
+      },
+      {
+        "pick_label": "13.09",
+        "player_name": "Keaton Mitchell",
+        "position": "RB"
+      },
+      {
+        "pick_label": "14.04",
+        "player_name": "Jalen McMillan",
+        "position": "WR"
+      },
+      {
+        "pick_label": "15.09",
+        "player_name": "Ted Hurst",
+        "position": "WR"
+      }
+    ],
+    "Pukachu Chews You": [
+      {
+        "pick_label": "1.02",
+        "player_name": "Bijan Robinson",
+        "position": "RB"
+      },
+      {
+        "pick_label": "2.11",
+        "player_name": "Drake London",
+        "position": "WR"
+      },
+      {
+        "pick_label": "3.02",
+        "player_name": "Brock Bowers",
+        "position": "TE"
+      },
+      {
+        "pick_label": "4.11",
+        "player_name": "Quinshon Judkins",
+        "position": "RB"
+      },
+      {
+        "pick_label": "5.02",
+        "player_name": "Ladd McConkey",
+        "position": "WR"
+      },
+      {
+        "pick_label": "6.11",
+        "player_name": "Terry McLaurin",
+        "position": "WR"
+      },
+      {
+        "pick_label": "7.02",
+        "player_name": "Brian Thomas",
+        "position": "WR"
+      },
+      {
+        "pick_label": "8.11",
+        "player_name": "Rico Dowdle",
+        "position": "RB"
+      },
+      {
+        "pick_label": "9.02",
+        "player_name": "Jordan Mason",
+        "position": "RB"
+      },
+      {
+        "pick_label": "10.11",
+        "player_name": "Matthew Golden",
+        "position": "WR"
+      },
+      {
+        "pick_label": "11.02",
+        "player_name": "Bo Nix",
+        "position": "QB"
+      },
+      {
+        "pick_label": "12.11",
+        "player_name": "MarShawn Lloyd",
+        "position": "RB"
+      },
+      {
+        "pick_label": "13.02",
+        "player_name": "Jordan Love",
+        "position": "QB"
+      },
+      {
+        "pick_label": "14.11",
+        "player_name": "T.J. Hockenson",
+        "position": "TE"
+      },
+      {
+        "pick_label": "15.02",
+        "player_name": "Pittsburgh Steelers",
+        "position": "DEF"
+      }
+    ],
+    "demon44": [
+      {
+        "pick_label": "1.04",
+        "player_name": "Jonathan Taylor",
+        "position": "RB"
+      },
+      {
+        "pick_label": "2.09",
+        "player_name": "A.J. Brown",
+        "position": "WR"
+      },
+      {
+        "pick_label": "3.04",
+        "player_name": "Malik Nabers",
+        "position": "WR"
+      },
+      {
+        "pick_label": "4.09",
+        "player_name": "Bhayshul Tuten",
+        "position": "RB"
+      },
+      {
+        "pick_label": "5.04",
+        "player_name": "TreVeyon Henderson",
+        "position": "RB"
+      },
+      {
+        "pick_label": "6.09",
+        "player_name": "Jonathon Brooks",
+        "position": "RB"
+      },
+      {
+        "pick_label": "7.04",
+        "player_name": "Kyle Pitts",
+        "position": "TE"
+      },
+      {
+        "pick_label": "8.09",
+        "player_name": "Blake Corum",
+        "position": "RB"
+      },
+      {
+        "pick_label": "9.04",
+        "player_name": "Stefon Diggs",
+        "position": "WR"
+      },
+      {
+        "pick_label": "10.09",
+        "player_name": "Trevor Lawrence",
+        "position": "QB"
+      },
+      {
+        "pick_label": "11.04",
+        "player_name": "Los Angeles Rams",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "12.09",
+        "player_name": "Romeo Doubs",
+        "position": "WR"
+      },
+      {
+        "pick_label": "13.04",
+        "player_name": "Dylan Sampson",
+        "position": "RB"
+      },
+      {
+        "pick_label": "14.09",
+        "player_name": "Caleb Douglas",
+        "position": "WR"
+      },
+      {
+        "pick_label": "15.04",
+        "player_name": "Malik Willis",
+        "position": "QB"
+      }
+    ],
+    "Screaming Eagles": [
+      {
+        "pick_label": "1.05",
+        "player_name": "James Cook",
+        "position": "RB"
+      },
+      {
+        "pick_label": "2.08",
+        "player_name": "Kyren Williams",
+        "position": "RB"
+      },
+      {
+        "pick_label": "3.05",
+        "player_name": "Josh Jacobs",
+        "position": "RB"
+      },
+      {
+        "pick_label": "4.08",
+        "player_name": "Tetairoa McMillan",
+        "position": "WR"
+      },
+      {
+        "pick_label": "5.05",
+        "player_name": "Drake Maye",
+        "position": "QB"
+      },
+      {
+        "pick_label": "6.08",
+        "player_name": "Christian Watson",
+        "position": "WR"
+      },
+      {
+        "pick_label": "7.05",
+        "player_name": "Marvin Harrison",
+        "position": "WR"
+      },
+      {
+        "pick_label": "8.08",
+        "player_name": "Denver Broncos",
+        "position": "DEF"
+      },
+      {
+        "pick_label": "9.05",
+        "player_name": "Courtland Sutton",
+        "position": "WR"
+      },
+      {
+        "pick_label": "10.08",
+        "player_name": "Jake Ferguson",
+        "position": "TE"
+      },
+      {
+        "pick_label": "11.05",
+        "player_name": "Matthew Stafford",
+        "position": "QB"
+      },
+      {
+        "pick_label": "12.08",
+        "player_name": "Mark Andrews",
+        "position": "TE"
+      },
+      {
+        "pick_label": "13.05",
+        "player_name": "Tyrone Tracy",
+        "position": "RB"
+      },
+      {
+        "pick_label": "14.08",
+        "player_name": "Tank Bigsby",
+        "position": "RB"
+      },
+      {
+        "pick_label": "15.05",
+        "player_name": "AJ Barner",
+        "position": "TE"
+      }
+    ]
+  },
   "confirmed_tendency_hits": [
     {
       "pick_no": 56,
