@@ -2082,7 +2082,6 @@ function computeOwnerTendencies(seasons) {
   const numOwnersTotal = Object.keys(perOwner).length || 1;
   const runFairShare = totalRuns / numOwnersTotal;
   const runThreshold = Math.max(TENDENCY.RUN_TRIGGER_MIN_ABS, runFairShare * TENDENCY.RUN_TRIGGER_FAIR_MULT);
-
   Object.values(perOwner).forEach(o => {
     const tags = [];
     const seasonsCount = o.seasons.size;
@@ -2152,6 +2151,7 @@ function computeOwnerTendencies(seasons) {
       (rbBySeasonTeam[key] = rbBySeasonTeam[key] || { season: p.season, team: p.team, count: 0 }).count++;
     });
     Object.values(rbBySeasonTeam).forEach(h => { if (h.count >= TENDENCY.HANDCUFF_MIN) rbSeasonHits.push(h); });
+    const maxRbTeamCount = Object.values(rbBySeasonTeam).reduce((max, h) => Math.max(max, h.count), 0);
     if (rbSeasonHits.length) {
       const recurring = rbSeasonHits.length > 1;
       tags.push({
@@ -2198,8 +2198,22 @@ function computeOwnerTendencies(seasons) {
     }
 
     tags.sort((a, b) => b.strength - a.strength);
-    result[o.ownerId] = { ownerId: o.ownerId, name: o.name, seasonsCount, tags, isMe: o.ownerId === CONFIG.MY_OWNER_ID };
+    result[o.ownerId] = {
+      ownerId: o.ownerId, name: o.name, seasonsCount, tags, isMe: o.ownerId === CONFIG.MY_OWNER_ID,
+      // Raw numbers behind the run-trigger and handcuff tags specifically —
+      // both are threshold-gated in a way that can legitimately show nothing
+      // at n=2-3 seasons, and that's easy to mistake for a bug rather than
+      // an honest "no standout yet." Surfaced in Debug rather than guessed
+      // at from outside, so a silent tag can actually be checked against the
+      // real pooled numbers instead of re-tuning a threshold blind.
+      raw: { runCount, runThreshold, runFairShare, maxRbTeamCount, handcuffMin: TENDENCY.HANDCUFF_MIN },
+    };
   });
+
+  // Pool-wide numbers, kept off the per-owner objects so Object.values(...)
+  // loops elsewhere (rendering the 12-owner panel) don't have to filter a
+  // stray non-owner entry back out.
+  result._meta = { totalRuns, runThreshold, runFairShare, seasonsUsed: draftSeasons.map(s => s.season), draftSeasonCount: draftSeasons.length };
 
   return result;
 }
@@ -5048,6 +5062,40 @@ function renderHistoryTransactionsHtml(season) {
 function renderDebug() {
   const host = document.getElementById('debugGrid');
   const cards = [];
+
+  // Owner Tendencies — raw numbers behind the run-trigger and handcuff
+  // tags. Both are threshold-gated against a pooled baseline (see
+  // computeOwnerTendencies), which means "nobody's tagged" can honestly
+  // mean either "no real standout yet at n=2-3 seasons" or "the threshold's
+  // still miscalibrated" — this card is what tells those two apart instead
+  // of guessing at another number blind.
+  if (state.ownerTendencies) {
+    const meta = state.ownerTendencies._meta || {};
+    const ownerRows = Object.values(state.ownerTendencies)
+      .filter(o => o.ownerId) // drop the _meta entry
+      .sort((a, b) => (b.raw ? b.raw.runCount : 0) - (a.raw ? a.raw.runCount : 0));
+    cards.push(`<div class="debug-card">
+      <h4>Owner Tendencies — raw counts</h4>
+      <div class="kv"><span class="kv-k">seasons pooled</span><span class="kv-v">${(meta.seasonsUsed || []).join(', ') || 'none'}</span></div>
+      <div class="kv"><span class="kv-k">total runs detected</span><span class="kv-v">${meta.totalRuns ?? '—'}</span></div>
+      <div class="kv"><span class="kv-k">run-trigger threshold</span><span class="kv-v">${meta.runThreshold != null ? meta.runThreshold.toFixed(1) : '—'} (fair share ${meta.runFairShare != null ? meta.runFairShare.toFixed(1) : '—'} \u00d7 ${TENDENCY.RUN_TRIGGER_FAIR_MULT}, floor ${TENDENCY.RUN_TRIGGER_MIN_ABS})</span></div>
+      <div class="kv"><span class="kv-k">handcuff threshold</span><span class="kv-v">${TENDENCY.HANDCUFF_MIN}+ same-team RBs, one draft</span></div>
+      <div style="max-height:220px; overflow-y:auto; margin-top:8px; border-top:1px solid var(--line); padding-top:6px;">
+        ${ownerRows.map(o => {
+          const r = o.raw || {};
+          const runHit = r.runCount >= (r.runThreshold || Infinity);
+          const cuffHit = r.maxRbTeamCount >= (r.handcuffMin || Infinity);
+          return `<div class="kv" style="font-size:10.5px;">
+            <span class="kv-k">${escapeHtml(o.name)}${o.isMe ? ' (you)' : ''}</span>
+            <span class="kv-v" style="font-family:var(--font-mono);">
+              runs ${r.runCount ?? 0}${runHit ? '\u2713' : ''} \u00b7 maxRB/team ${r.maxRbTeamCount ?? 0}${cuffHit ? '\u2713' : ''} \u00b7 ${o.seasonsCount}szn
+            </span>
+          </div>`;
+        }).join('')}
+      </div>
+      <p class="hist-note" style="margin-top:8px; margin-bottom:0;">\u2713 = cleared the threshold and got tagged. No checkmarks anywhere means the real pooled numbers this season genuinely don't clear the bar yet — re-evaluate the threshold constants (TENDENCY block, computeOwnerTendencies) only if the counts here look artificially low for the sample size, not just because the panel looks empty.</p>
+    </div>`);
+  }
 
   const tagKeys = Object.keys(state.injuryTags);
   cards.push(`<div class="debug-card">
