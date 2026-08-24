@@ -833,6 +833,44 @@
   .need-pill.need-open { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, var(--bg-elev-2)); }
   .need-pill.need-full { color: var(--fg-dim); }
 
+  /* Owner Tendencies — passive tags, Live Draft tab */
+  .tendency-tags {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .tendency-tag {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    padding: 2px 7px;
+    border-radius: 100px;
+    background: var(--bg-elev-2);
+    color: var(--fg-mute);
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .tendency-tag.t-lean { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); }
+  .tendency-tag.t-reach { color: var(--down); border-color: color-mix(in srgb, var(--down) 40%, var(--line)); }
+  .tendency-tag.t-stack, .tendency-tag.t-handcuff { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+  .owner-tendency-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .owner-tendency-row:last-child { border-bottom: none; }
+  .owner-tendency-name {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: 150px;
+  }
+  .owner-tendency-name .otc-flag { color: var(--warn); font-size: 10px; margin-left: 4px; }
+
   /* ============================================================
      Legend footer
      ============================================================ */
@@ -1283,6 +1321,7 @@ const state = {
   boardRaw: null,
   boardError: null,      // set when board fetch fails
   boardDropped: 0,       // rows that made it through CSV but failed name+pos check
+  ownerTendencies: null, // ownerId -> {name, seasonsCount, tags[]} — computed once when history loads (see boot loader), reused by Live Draft renders rather than recomputed on every poll tick
   sleeperLeague: null,
   sleeperError: null,
   filter: { pos: 'ALL', search: '' },
@@ -1910,6 +1949,242 @@ const NFL_TEAM_ABBRS = new Set([
 ]);
 function countDefAdds(adds) {
   return Object.keys(adds || {}).filter(pid => NFL_TEAM_ABBRS.has(pid)).length;
+}
+
+/* ============================================================
+   Owner Tendencies — per-owner draft habits pooled across every
+   drafted season (2024/2025/2026), computed straight from Sleeper
+   draftPicks. Built so this shows up passively during the live
+   draft instead of living only in the History tab as a lookup
+   nobody remembers to make mid-pick — every owner gets checked for
+   every tendency type below, including the person running the app;
+   an owner with no notable signal just shows no tags, not a filler
+   placeholder pretending to have found something.
+
+   Scope rule (deliberate): only tendencies computable from data
+   this app already has on hand from draftPicks/rosters. Age or
+   rookie-status bias would need the ~5MB Sleeper players/nfl dump
+   joined on player_id, and bye-week clustering would need historical
+   per-season bye data this app doesn't load — both left out rather
+   than approximated on data that isn't really there.
+
+   Sample-size honesty: with 2-3 seasons this is thin per owner (the
+   same caveat the Homer Watch card and DEF-behavior card already
+   carry). seasonsCount travels with every owner's result so the
+   render layer can show it, not hide it.
+   ============================================================ */
+const TENDENCY = {
+  LEAN_ROSTER_SHARE: 1.0,   // min avg delta (picks) vs league avg to call a positional lean
+  LEAN_ROUND_GAP: 0.75,     // min |vs field| rounds to call a position-timing reach
+  LEAN_MIN_POS_PICKS: 3,    // min pooled picks of a position before timing-reach is even evaluated
+  STACK_MIN: 3,             // same-team offensive skill-position picks in one draft to call a "stack"
+  HANDCUFF_MIN: 2,          // same-team RB picks in one draft to call a handcuff/committee lean
+  BENCH_DELTA: 1.5,         // min delta in total "extra beyond starters" picks to call bench-heavy/thin
+  RUN_WINDOW: 6,            // overall-pick window size used to detect a positional run
+  RUN_DENSITY: 3,           // picks of the same position within RUN_WINDOW to count as a run
+  RUN_TRIGGER_MIN: 2,       // min runs triggered (pooled across seasons) before tagging
+};
+
+function computeOwnerTendencies(seasons) {
+  const draftSeasons = (seasons || []).filter(s => s.draftPicks && s.draftPicks.length);
+  if (!draftSeasons.length) return {};
+
+  const perOwner = {}; // owner_id -> { ownerId, name, seasons:Set, picks:[] }
+  const ensureOwner = (ownerId, season) => {
+    if (!perOwner[ownerId]) {
+      perOwner[ownerId] = { ownerId, name: histOwnerName(season, ownerId), seasons: new Set(), picks: [] };
+    }
+    perOwner[ownerId].seasons.add(season.season);
+    perOwner[ownerId].name = histOwnerName(season, ownerId); // later season's team_name wins if renamed
+    return perOwner[ownerId];
+  };
+
+  draftSeasons.forEach(season => {
+    const teams = (season.meta && season.meta.settings && season.meta.settings.teams) || 12;
+    (season.draftPicks || []).forEach(pk => {
+      const ownerId = pk.picked_by || histRosterOwner(season, pk.roster_id);
+      if (!ownerId) return;
+      const md = pk.metadata || {};
+      const round = pk.round || Math.floor((pk.pick_no - 1) / teams) + 1;
+      const o = ensureOwner(ownerId, season);
+      o.picks.push({
+        season: season.season, round, pick_no: pk.pick_no,
+        pos: md.position || '', team: (md.team || '').toUpperCase(),
+        name: `${md.first_name || ''} ${md.last_name || ''}`.trim(),
+      });
+    });
+  });
+
+  // League-wide avg round per position, pooled — the baseline every owner's
+  // position-timing reach is measured against. Same shape as histTeamDraftBias,
+  // grouped by position instead of NFL team.
+  const allByPos = {};
+  Object.values(perOwner).forEach(o => o.picks.forEach(p => {
+    if (!p.pos) return;
+    (allByPos[p.pos] = allByPos[p.pos] || []).push(p.round);
+  }));
+  const fieldAvgRoundByPos = {};
+  Object.keys(allByPos).forEach(pos => {
+    const arr = allByPos[pos];
+    fieldAvgRoundByPos[pos] = arr.reduce((a, b) => a + b, 0) / arr.length;
+  });
+
+  // Per-season roster-composition league averages — reuses the exact same
+  // calc the History tab's Roster Construction table shows, so a "leans RB"
+  // tag reads against the same number a person could go verify there.
+  const compBySeason = {};
+  draftSeasons.forEach(s => { compBySeason[s.season] = histRosterComposition(s); });
+
+  // Positional-run detection, once per season: slide a window across the
+  // sorted pick order; a window where one position accounts for RUN_DENSITY+
+  // of RUN_WINDOW consecutive overall picks counts as a run, credited to
+  // whichever owner made the window's FIRST pick of that position. Windows
+  // don't overlap — once one fires, scanning resumes after it, so one long
+  // run doesn't get double- or triple-counted as several runs.
+  const runTriggerCounts = {}; // ownerId -> count
+  const runTriggerExamples = {}; // ownerId -> [{season, pos, round}]
+  draftSeasons.forEach(season => {
+    const sorted = (season.draftPicks || []).slice().sort((a, b) => a.pick_no - b.pick_no);
+    const teams = (season.meta && season.meta.settings && season.meta.settings.teams) || 12;
+    let i = 0;
+    while (i < sorted.length) {
+      const windowEnd = Math.min(i + TENDENCY.RUN_WINDOW, sorted.length);
+      const window = sorted.slice(i, windowEnd);
+      const counts = {};
+      window.forEach(pk => {
+        const pos = (pk.metadata && pk.metadata.position) || '';
+        if (!pos) return;
+        (counts[pos] = counts[pos] || []).push(pk);
+      });
+      const runPos = Object.keys(counts).find(pos => counts[pos].length >= TENDENCY.RUN_DENSITY);
+      if (runPos) {
+        const firstPk = counts[runPos][0];
+        const triggerOwner = firstPk.picked_by || histRosterOwner(season, firstPk.roster_id);
+        if (triggerOwner) {
+          runTriggerCounts[triggerOwner] = (runTriggerCounts[triggerOwner] || 0) + 1;
+          const round = firstPk.round || Math.floor((firstPk.pick_no - 1) / teams) + 1;
+          (runTriggerExamples[triggerOwner] = runTriggerExamples[triggerOwner] || [])
+            .push({ season: season.season, pos: runPos, round });
+        }
+        i = windowEnd; // consume the whole window, no overlap
+      } else {
+        i++;
+      }
+    }
+  });
+
+  const result = {};
+
+  Object.values(perOwner).forEach(o => {
+    const tags = [];
+    const seasonsCount = o.seasons.size;
+
+    // ---- Positional lean: roster share vs league average, per season ----
+    const posDeltas = { QB: [], RB: [], WR: [], TE: [], DEF: [] };
+    draftSeasons.forEach(s => {
+      const comp = compBySeason[s.season];
+      const row = comp.rows.find(r => r.owner_id === o.ownerId);
+      if (!row) return;
+      ['QB', 'RB', 'WR', 'TE', 'DEF'].forEach(pos => posDeltas[pos].push(row[pos] - comp.leagueAvg[pos]));
+    });
+    Object.keys(posDeltas).forEach(pos => {
+      const arr = posDeltas[pos];
+      if (!arr.length) return;
+      const avgDelta = arr.reduce((a, b) => a + b, 0) / arr.length;
+      if (avgDelta >= TENDENCY.LEAN_ROSTER_SHARE) {
+        tags.push({ type: 'lean', pos, dir: 'over', label: `Overdrafts ${pos}`, detail: `${avgDelta >= 0 ? '+' : ''}${avgDelta.toFixed(1)} picks vs league avg roster share`, strength: avgDelta });
+      } else if (avgDelta <= -TENDENCY.LEAN_ROSTER_SHARE) {
+        tags.push({ type: 'lean', pos, dir: 'under', label: `Skips ${pos}`, detail: `${avgDelta.toFixed(1)} picks vs league avg roster share`, strength: -avgDelta });
+      }
+    });
+
+    // ---- Position-timing reach: avg round for this position vs the field ----
+    const byPos = {};
+    o.picks.forEach(p => { if (p.pos) (byPos[p.pos] = byPos[p.pos] || []).push(p.round); });
+    Object.keys(byPos).forEach(pos => {
+      const arr = byPos[pos];
+      if (arr.length < TENDENCY.LEAN_MIN_POS_PICKS || fieldAvgRoundByPos[pos] == null) return;
+      const avgRound = arr.reduce((a, b) => a + b, 0) / arr.length;
+      const vsField = avgRound - fieldAvgRoundByPos[pos];
+      if (vsField <= -TENDENCY.LEAN_ROUND_GAP) {
+        tags.push({ type: 'reach', pos, label: `Reaches for ${pos}`, detail: `avg Rd ${avgRound.toFixed(1)} vs field ${fieldAvgRoundByPos[pos].toFixed(1)} (${vsField.toFixed(1)})`, strength: -vsField });
+      }
+    });
+
+    // ---- Team stacking: 3+ offensive-skill picks from one NFL team, one draft ----
+    const stackSeasonHits = []; // {season, team, count}
+    const bySeasonTeam = {};
+    o.picks.forEach(p => {
+      if (!p.team || !NFL_TEAM_ABBRS.has(p.team)) return;
+      if (!['QB', 'RB', 'WR', 'TE'].includes(p.pos)) return; // own-DEF pick isn't a "stack"
+      const key = `${p.season}|${p.team}`;
+      (bySeasonTeam[key] = bySeasonTeam[key] || { season: p.season, team: p.team, count: 0 }).count++;
+    });
+    Object.values(bySeasonTeam).forEach(h => { if (h.count >= TENDENCY.STACK_MIN) stackSeasonHits.push(h); });
+    if (stackSeasonHits.length) {
+      stackSeasonHits.sort((a, b) => b.count - a.count);
+      const top = stackSeasonHits[0];
+      const recurring = stackSeasonHits.length > 1;
+      tags.push({
+        type: 'stack', pos: null, label: `Stacks ${top.team}`,
+        detail: `${top.count} skill-pos picks, ${top.season}${recurring ? ` (+${stackSeasonHits.length - 1} more season${stackSeasonHits.length > 2 ? 's' : ''})` : ''}`,
+        strength: top.count,
+      });
+    }
+
+    // ---- Handcuff/committee lean: 2+ RBs from the same NFL team, one draft ----
+    // Proxy, not proof — can't distinguish "drafted his own RB1's backup" from
+    // "drafted two committee backs on the same team who aren't a handcuff pair
+    // at all." Read as "pairs same-team RBs," not confirmed handcuffing.
+    const rbSeasonHits = [];
+    const rbBySeasonTeam = {};
+    o.picks.forEach(p => {
+      if (p.pos !== 'RB' || !p.team || !NFL_TEAM_ABBRS.has(p.team)) return;
+      const key = `${p.season}|${p.team}`;
+      (rbBySeasonTeam[key] = rbBySeasonTeam[key] || { season: p.season, team: p.team, count: 0 }).count++;
+    });
+    Object.values(rbBySeasonTeam).forEach(h => { if (h.count >= TENDENCY.HANDCUFF_MIN) rbSeasonHits.push(h); });
+    if (rbSeasonHits.length) {
+      const recurring = rbSeasonHits.length > 1;
+      tags.push({
+        type: 'handcuff', pos: 'RB', label: 'Pairs same-team RBs',
+        detail: `${rbSeasonHits[0].team} x${rbSeasonHits[0].count}, ${rbSeasonHits[0].season}${recurring ? ` (+${rbSeasonHits.length - 1} more)` : ''}`,
+        strength: rbSeasonHits.length,
+      });
+    }
+
+    // ---- Bench-heavy vs starter-heavy: total picks beyond required starters ----
+    const benchDeltas = [];
+    draftSeasons.forEach(s => {
+      const comp = compBySeason[s.season];
+      const row = comp.rows.find(r => r.owner_id === o.ownerId);
+      if (!row) return;
+      const myExtra = row.extraRB + row.extraWR + row.extraTE + row.extraQB + row.extraDEF;
+      const leagueExtra = comp.leagueAvg.extraRB + comp.leagueAvg.extraWR + comp.leagueAvg.extraTE + comp.leagueAvg.extraQB + comp.leagueAvg.extraDEF;
+      benchDeltas.push(myExtra - leagueExtra);
+    });
+    if (benchDeltas.length) {
+      const avgDelta = benchDeltas.reduce((a, b) => a + b, 0) / benchDeltas.length;
+      if (avgDelta >= TENDENCY.BENCH_DELTA) {
+        tags.push({ type: 'bench', pos: null, label: 'Bench-heavy drafter', detail: `+${avgDelta.toFixed(1)} bench picks vs league avg`, strength: avgDelta });
+      } else if (avgDelta <= -TENDENCY.BENCH_DELTA) {
+        tags.push({ type: 'bench', pos: null, label: 'Drafts thin', detail: `${avgDelta.toFixed(1)} bench picks vs league avg`, strength: -avgDelta });
+      }
+    }
+
+    // ---- Position-run triggering: pooled from the season-level pass above ----
+    const runCount = runTriggerCounts[o.ownerId] || 0;
+    if (runCount >= TENDENCY.RUN_TRIGGER_MIN) {
+      const examples = (runTriggerExamples[o.ownerId] || []).slice(0, 2)
+        .map(e => `${e.pos} Rd${e.round} '${String(e.season).slice(2)}`).join(', ');
+      tags.push({ type: 'run', pos: null, label: 'Triggers position runs', detail: `${runCount} run${runCount > 1 ? 's' : ''} started \u2014 ${examples}`, strength: runCount });
+    }
+
+    tags.sort((a, b) => b.strength - a.strength);
+    result[o.ownerId] = { ownerId: o.ownerId, name: o.name, seasonsCount, tags, isMe: o.ownerId === CONFIG.MY_OWNER_ID };
+  });
+
+  return result;
 }
 
 function pearsonCorr(xs, ys) {
@@ -3793,6 +4068,61 @@ function renderRosterTab() {
   `;
 }
 
+// Compact tag row for one owner, reused in both the on-the-clock banner and
+// the full Owner Tendencies panel. Returns '' (not a placeholder) when the
+// owner has no tags yet — a thin-data owner should look unremarked-on, not
+// like the app is telling you something and coming up empty.
+function tendencyTagsHtml(ownerId, opts = {}) {
+  const max = opts.max || 4;
+  const t = state.ownerTendencies && state.ownerTendencies[ownerId];
+  if (!t || !t.tags.length) return '';
+  const shown = t.tags.slice(0, max);
+  return `<div class="tendency-tags">${shown.map(tag =>
+    `<span class="tendency-tag t-${tag.type}" title="${escapeHtml(tag.detail)}">${escapeHtml(tag.label)}</span>`
+  ).join('')}</div>`;
+}
+
+// Full-roster panel — every drafted slot in the connected draft, matched to
+// its Sleeper user_id (== the owner_id draftPicks/history are keyed by, and
+// stable across seasons even when team names change), each with whatever
+// tendencies the pooled history actually supports. Deliberately shows every
+// slot, not just flagged ones — an owner with nothing notable yet shows a
+// plain "no notable tendencies (n seasons)" line so it's clear the app
+// checked, not that it hasn't loaded.
+function renderOwnerTendenciesPanel() {
+  if (!draftState.connected || !draftState.meta) return '';
+  const teams = (draftState.meta.settings && draftState.meta.settings.teams) || 12;
+  const mySlot = resolveMySlot();
+  const rows = [];
+  for (let slot = 1; slot <= teams; slot++) {
+    const draftOrder = draftState.meta.draft_order || {};
+    const userId = Object.keys(draftOrder).find(uid => draftOrder[uid] === slot);
+    const name = ownerNameForSlot(slot);
+    const isMe = mySlot != null && slot === mySlot;
+    const t = userId ? state.ownerTendencies && state.ownerTendencies[userId] : null;
+    rows.push({ slot, name, isMe, userId, t });
+  }
+  if (!state.ownerTendencies) {
+    return `<div class="draft-card" style="grid-column: 1 / -1;">
+      <h4>Owner Tendencies</h4>
+      <p style="color:var(--fg-dim); font-size:12px;">Loading league history in the background \u2014 tendency tags fill in once prior drafts finish loading (Debug tab shows progress).</p>
+    </div>`;
+  }
+  const body = rows.map(r => {
+    const tagsHtml = r.t && r.t.tags.length
+      ? tendencyTagsHtml(r.userId)
+      : `<span style="color:var(--fg-dim); font-size:10px;">no notable tendencies${r.t ? ` (${r.t.seasonsCount} szn)` : ' (no draft history)'}</span>`;
+    return `<div class="owner-tendency-row">
+      <span class="owner-tendency-name">${escapeHtml(r.name)}${r.isMe ? ' <span style="color:var(--accent); font-size:10px;">(you)</span>' : ''}</span>
+      ${tagsHtml}
+    </div>`;
+  }).join('');
+  return `<div class="draft-card" style="grid-column: 1 / -1;">
+    <h4>Owner Tendencies <span style="font-family:var(--font-mono); font-size:10px; font-weight:400; color:var(--fg-dim); text-transform:none; letter-spacing:0;">from pooled draft history \u2014 hover a tag for detail</span></h4>
+    ${body}
+  </div>`;
+}
+
 function renderDraftTab() {
   const host = document.getElementById('draftHost');
   if (!draftState.connected) {
@@ -3918,11 +4248,21 @@ function renderDraftTab() {
       ? '<p style="color:var(--fg-dim); font-size:12px;">Set "My Slot" above to track your picks and get recommendations.</p>'
       : '<p style="color:var(--fg-dim); font-size:12px;">No picks yet.</p>');
 
+  // On-the-clock owner's tag(s), if any — the passive-recall use case: this
+  // is the one moment during a live draft someone actually has time to glance
+  // at, so it's the highest-value single place for a tendency to surface.
+  const otcOwnerId = (() => {
+    const draftOrder = (draftState.meta && draftState.meta.draft_order) || {};
+    return Object.keys(draftOrder).find(uid => draftOrder[uid] === slot) || null;
+  })();
+  const otcTagsHtml = (!isMe && otcOwnerId) ? tendencyTagsHtml(otcOwnerId, { max: 3 }) : '';
+
   const statusBanner = draftComplete
     ? `<div class="draft-status-banner"><span class="otc-label">DRAFT COMPLETE</span><span class="pick-count">${totalPicks} picks made</span></div>`
     : `<div class="draft-status-banner">
         <span class="otc-label">ON THE CLOCK</span>
         <span class="otc-name ${isMe ? 'is-me' : ''}">${escapeHtml(otcName)}${isMe ? ' (you)' : ''}</span>
+        ${otcTagsHtml}
         <span class="otc-label">Pick ${round}.${String(slot).padStart(2,'0')} · #${nextPickNo}</span>
         <span class="pick-count">${totalPicks} picks made · ${unmatchedCount ? unmatchedCount + ' unmatched' : 'all matched'}</span>
       </div>`;
@@ -4162,6 +4502,7 @@ function renderDraftTab() {
     ${recHtml}
     ${biggestFlagBanner}
     <div class="draft-grid">
+      ${renderOwnerTendenciesPanel()}
       <div class="draft-card">
         <h4>Recent Picks</h4>
         <div class="pick-feed">${feed}</div>
@@ -4943,6 +5284,7 @@ async function boot() {
       state.history.seasons = seasons;
       state.history.lightweight = true;
       state.history.loading = false;
+      state.ownerTendencies = computeOwnerTendencies(seasons);
       const applied = applyHistoricalPlan(seasons);
       setPill('statusHistory', applied ? 'ok' : 'warn', applied ? `History \u00b7 ${seasons.filter(histIsSeasonComplete).length}/${seasons.length} szn complete` : 'History · no drafts found');
       // The "Plan" pill was set once, synchronously, right after the Round
@@ -4962,6 +5304,13 @@ async function boot() {
       // instead of showing incomplete weekly/churn cards.
       if (document.getElementById('tab-history')?.classList.contains('active')) {
         renderHistory();
+      }
+      // Owner Tendency tags depend on the same background load — if the
+      // person is already sitting on Live Draft (very plausible on draft
+      // day, when this finishes loading a beat after the tab opens), push
+      // the tags in without needing a manual tab switch.
+      if (draftState.connected && document.getElementById('tab-draft')?.classList.contains('active')) {
+        renderDraftTab();
       }
     } catch (e) {
       state.history.loading = false;
