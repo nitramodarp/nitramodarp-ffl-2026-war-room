@@ -1978,11 +1978,12 @@ const TENDENCY = {
   LEAN_ROUND_GAP: 0.75,     // min |vs field| rounds to call a position-timing reach
   LEAN_MIN_POS_PICKS: 3,    // min pooled picks of a position before timing-reach is even evaluated
   STACK_MIN: 3,             // same-team offensive skill-position picks in one draft to call a "stack"
-  HANDCUFF_MIN: 2,          // same-team RB picks in one draft to call a handcuff/committee lean
+  HANDCUFF_MIN: 3,          // same-team RB picks in one draft to call a handcuff/committee lean
   BENCH_DELTA: 1.5,         // min delta in total "extra beyond starters" picks to call bench-heavy/thin
   RUN_WINDOW: 6,            // overall-pick window size used to detect a positional run
   RUN_DENSITY: 3,           // picks of the same position within RUN_WINDOW to count as a run
-  RUN_TRIGGER_MIN: 2,       // min runs triggered (pooled across seasons) before tagging
+  RUN_TRIGGER_FAIR_MULT: 1.75, // min multiple of an owner's "fair share" of total runs before tagging
+  RUN_TRIGGER_MIN_ABS: 3,   // absolute floor regardless of fair share, so 2 lucky windows early in the sample can't tag someone
 };
 
 function computeOwnerTendencies(seasons) {
@@ -2074,6 +2075,13 @@ function computeOwnerTendencies(seasons) {
   });
 
   const result = {};
+
+  // Run-trigger fair-share baseline, computed once — see the "Position-run
+  // triggering" comment below for why this can't be a flat count.
+  const totalRuns = Object.values(runTriggerCounts).reduce((a, b) => a + b, 0);
+  const numOwnersTotal = Object.keys(perOwner).length || 1;
+  const runFairShare = totalRuns / numOwnersTotal;
+  const runThreshold = Math.max(TENDENCY.RUN_TRIGGER_MIN_ABS, runFairShare * TENDENCY.RUN_TRIGGER_FAIR_MULT);
 
   Object.values(perOwner).forEach(o => {
     const tags = [];
@@ -2173,11 +2181,20 @@ function computeOwnerTendencies(seasons) {
     }
 
     // ---- Position-run triggering: pooled from the season-level pass above ----
+    // Flat counts don't discriminate here: a 12-team, 15-round draft creates
+    // ~30 non-overlapping RUN_WINDOW slices per season, and with any real
+    // clustering (DEF/TE/QB runs are common in specific round bands) roughly
+    // half of those fire — which alone puts every owner's "fair share" above
+    // a small flat threshold, tagging all 12 owners regardless of actual
+    // behavior. Compared instead against each owner's fair share of the
+    // pooled total (mirrors the "vs field" convention used everywhere else
+    // in this app, e.g. Homer Watch) so the tag only fires for someone who
+    // triggers runs disproportionately, not just near one.
     const runCount = runTriggerCounts[o.ownerId] || 0;
-    if (runCount >= TENDENCY.RUN_TRIGGER_MIN) {
+    if (runCount >= runThreshold) {
       const examples = (runTriggerExamples[o.ownerId] || []).slice(0, 2)
         .map(e => `${e.pos} Rd${e.round} '${String(e.season).slice(2)}`).join(', ');
-      tags.push({ type: 'run', pos: null, label: 'Triggers position runs', detail: `${runCount} run${runCount > 1 ? 's' : ''} started \u2014 ${examples}`, strength: runCount });
+      tags.push({ type: 'run', pos: null, label: 'Triggers position runs', detail: `${runCount} run${runCount > 1 ? 's' : ''} started vs. ${runFairShare.toFixed(1)} fair share \u2014 ${examples}`, strength: runCount - runFairShare });
     }
 
     tags.sort((a, b) => b.strength - a.strength);
