@@ -1059,6 +1059,7 @@
        track pick-value curves. Underlying code (buildPickCurve, renderPickValues,
        parsePickList) left in place but unreachable; nothing else depends on it. -->
   <button class="tab" data-tab="draft">Live Draft</button>
+  <button class="tab" data-tab="waivers">Waivers</button>
   <button class="tab" data-tab="roster">Roster Needs</button>
   <button class="tab" data-tab="history">History</button>
   <button class="tab" data-tab="debug">Debug</button>
@@ -1167,6 +1168,30 @@
       <div class="state">
         <h3>Live Draft Tracker</h3>
         <p>Enter a draft ID above and click Connect. Defaults to this league's draft (<code id="draftIdDefault"></code>) — paste a Sleeper mock draft ID here to test the tracker before Aug 22. Set "My Slot" manually to test recommendations against a mock (auto-resolves from your real owner ID once the actual draft starts).</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-waivers">
+    <div class="controls">
+      <div class="chips" id="waiversPosFilter">
+        <button class="chip active" data-pos="ALL">All</button>
+        <button class="chip" data-pos="QB">QB</button>
+        <button class="chip" data-pos="RB">RB</button>
+        <button class="chip" data-pos="WR">WR</button>
+        <button class="chip" data-pos="TE">TE</button>
+        <button class="chip" data-pos="DEF">DEF</button>
+      </div>
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+        <input type="text" id="waiversSearchBox" placeholder="Search player or team">
+      </label>
+      <span class="result-count" id="waiversResultCount"></span>
+    </div>
+    <div id="waiversHost">
+      <div class="state">
+        <div class="spinner"></div>
+        <p style="margin-top:12px">Loading free agents…</p>
       </div>
     </div>
   </section>
@@ -1322,6 +1347,14 @@ const state = {
   boardError: null,      // set when board fetch fails
   boardDropped: 0,       // rows that made it through CSV but failed name+pos check
   ownerTendencies: null, // ownerId -> {name, seasonsCount, tags[]} — computed once when history loads (see boot loader), reused by Live Draft renders rather than recomputed on every poll tick
+  waiverPlayers: null,     // raw Sleeper /players/nfl dump (~5MB), fetched once and localStorage-cached — see fetchAllPlayers
+  waiverPlayersSource: null, // 'network' | 'cache' | null, for the Debug tab / loading note
+  waiverPlayersError: null,
+  waiverPlayersLoading: false,
+  waiverRosters: null,     // live current-season rosters (owned player_id sets) — refetched every time the tab opens, unlike the player dump, since roster contents change with every claim
+  waiverIndex: null,       // normalized-name -> [{id, full_name, pos, team}] built once from waiverPlayers
+  waiversFilter: { pos: 'ALL', search: '' },
+  waiversCache: null,      // { freeAgents, owned, unmatched, ownedCount, computedAt } — recomputed each tab open (rosters change constantly), not on every filter keystroke
   sleeperLeague: null,
   sleeperError: null,
   filter: { pos: 'ALL', search: '' },
@@ -1436,6 +1469,117 @@ async function fetchLeagueRosters() {
   const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${CONFIG.LEAGUE_ID}/rosters`);
   if (!resp.ok) throw new Error(`League rosters fetch failed (${resp.status})`);
   return resp.json();
+}
+
+/* ============================================================
+   Waivers — full Sleeper player database
+   Sleeper's roster payload only lists bare player_id strings, no
+   name/position/team — there's no way to identify who's actually on a
+   roster (and by complement, who's a free agent) without this dump.
+   That's different from every other Sleeper fetch this app makes:
+   draft-pick payloads self-describe each pick with name/position/team
+   in `metadata`, which is why nothing else here needed this ~5MB
+   endpoint. Fetched once, cached in localStorage (players change teams
+   or retire slowly enough that a same-day cache is safe) — NOT
+   refetched every tab open the way live rosters are, since rosters
+   change with every waiver claim but the player database itself barely
+   moves day to day.
+   ============================================================ */
+const WAIVER_PLAYERS_CACHE_KEY = 'ffl_waiver_players_v1';
+const WAIVER_PLAYERS_TTL_MS = 20 * 60 * 60 * 1000; // ~20h — refreshes daily without re-pulling on every reload
+
+async function fetchAllPlayers() {
+  // Try localStorage first. Wrapped defensively both ways: a ~5MB string
+  // can legitimately blow a browser's localStorage quota (5-10MB total,
+  // shared with injury-tag notes etc.), so a failed write should degrade
+  // to "just don't cache this session," never a crash, and a failed read
+  // (corrupt JSON, quota-evicted) should fall through to a fresh fetch.
+  try {
+    const raw = localStorage.getItem(WAIVER_PLAYERS_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.fetchedAt && (Date.now() - parsed.fetchedAt) < WAIVER_PLAYERS_TTL_MS && parsed.data) {
+        return { data: parsed.data, source: 'cache', fetchedAt: parsed.fetchedAt };
+      }
+    }
+  } catch (e) { /* corrupt or missing cache — fall through to network */ }
+
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/players/nfl`);
+  if (!resp.ok) throw new Error(`Player database fetch failed (${resp.status})`);
+  const data = await resp.json();
+  const fetchedAt = Date.now();
+  try {
+    localStorage.setItem(WAIVER_PLAYERS_CACHE_KEY, JSON.stringify({ fetchedAt, data }));
+  } catch (e) { /* quota exceeded or storage disabled — fine, just won't cache this session */ }
+  return { data, source: 'network', fetchedAt };
+}
+
+// normalized-name -> [{id, full_name, pos, team}]. A name can collide
+// across positions rarely enough (kickers/backups sharing a common name)
+// that this stays a list per key, resolved with a position check at
+// match time rather than assumed unique.
+function buildWaiverIndex(playersDump) {
+  const index = {};
+  Object.keys(playersDump || {}).forEach(id => {
+    const p = playersDump[id];
+    if (!p) return;
+    const isDef = p.position === 'DEF' || NFL_TEAM_ABBRS.has(id);
+    const name = isDef ? (p.full_name || p.team || id) : (p.full_name || `${p.first_name || ''} ${p.last_name || ''}`.trim());
+    const norm = draftNormName(name);
+    if (!norm) return;
+    const entry = { id, full_name: name, pos: isDef ? 'DEF' : p.position, team: (p.team || id || '').toUpperCase() };
+    (index[norm] = index[norm] || []).push(entry);
+  });
+  return index;
+}
+
+// Resolves one Board row (Ciely-sourced name) to a Sleeper player_id, using
+// the same normalize-then-fallback approach matchPickToBoard already uses
+// in the other direction (Sleeper -> Board). Returns null rather than
+// guessing when nothing lines up — an unresolved player becomes "unmatched"
+// in the Waivers UI, not silently marked available or silently dropped.
+function resolveBoardPlayerToSleeperId(boardPlayer, index) {
+  const target = draftNormName(boardPlayer.name);
+  if (!target || !index) return null;
+  const candidates = index[target];
+  if (candidates && candidates.length) {
+    const posMatch = candidates.find(c => c.pos === boardPlayer.pos);
+    return (posMatch || candidates[0]).id;
+  }
+  if (boardPlayer.pos === 'DEF') {
+    // DEF names vary in phrasing ("Houston Texans" vs "Texans") — fall back
+    // to a team-abbreviation match the same way matchPickToBoard does DEF
+    // fallback in the other direction.
+    const teamGuess = Object.keys(index).find(k => {
+      const c = index[k].find(x => x.pos === 'DEF');
+      return c && target.includes(draftNormName(c.full_name).split(' ').pop());
+    });
+    if (teamGuess) return index[teamGuess][0].id;
+  }
+  return null;
+}
+
+// Cross-references the board against every current-season roster to find
+// who's actually a free agent. IMPORTANT caveat surfaced in the UI, not
+// hidden here: VORP on every row is the board's preseason, full-season
+// projection — it does not get recalculated week to week for games
+// already played, injuries, or role changes. This tells you who's
+// talented and available, not who's hot right now.
+function computeFreeAgents(board, rosters, index) {
+  const ownedIds = new Set();
+  (rosters || []).forEach(r => (r.players || []).forEach(pid => ownedIds.add(pid)));
+
+  const freeAgents = [];
+  const owned = [];
+  const unmatched = [];
+  (board || []).forEach(p => {
+    const sleeperId = resolveBoardPlayerToSleeperId(p, index);
+    if (!sleeperId) { unmatched.push(p); return; }
+    if (ownedIds.has(sleeperId)) { owned.push(p); return; }
+    freeAgents.push(p);
+  });
+  freeAgents.sort((a, b) => (b.vorp ?? -Infinity) - (a.vorp ?? -Infinity));
+  return { freeAgents, owned, unmatched, ownedCount: ownedIds.size };
 }
 
 /* ============================================================
@@ -4154,6 +4298,113 @@ function renderOwnerTendenciesPanel() {
   </div>`;
 }
 
+/* ============================================================
+   Waivers tab
+   ============================================================ */
+async function renderWaiversTab() {
+  const host = document.getElementById('waiversHost');
+  if (!host) return;
+
+  if (!state.board) {
+    host.innerHTML = '<div class="state"><p style="color:var(--fg-dim); font-size:12px;">Board hasn\'t loaded yet — free agents are cross-referenced against it, so this needs the Board tab\'s data first. Should fill in automatically once it loads.</p></div>';
+    return;
+  }
+
+  // One-time-per-session player database load (~5MB, localStorage-cached
+  // across sessions — see fetchAllPlayers). Live rosters are cheap and
+  // change constantly with waiver activity, so those refetch every time
+  // this tab is opened rather than being cached at all.
+  if (!state.waiverPlayers && !state.waiverPlayersLoading) {
+    state.waiverPlayersLoading = true;
+    host.innerHTML = `<div class="state"><div class="spinner"></div><p style="margin-top:12px">Loading Sleeper's player database\u2026</p><p style="font-size:11px; color:var(--fg-dim); margin-top:6px;">~5MB, first time only \u2014 cached in this browser for about a day after.</p></div>`;
+    try {
+      const { data, source } = await fetchAllPlayers();
+      state.waiverPlayers = data;
+      state.waiverPlayersSource = source;
+      state.waiverIndex = buildWaiverIndex(data);
+      state.waiverPlayersLoading = false;
+    } catch (e) {
+      state.waiverPlayersLoading = false;
+      state.waiverPlayersError = e.message;
+      state.errors.push('Waivers (player db): ' + e.message);
+    }
+  }
+  if (state.waiverPlayersLoading) return; // will re-render on completion
+  if (state.waiverPlayersError) {
+    host.innerHTML = `<div class="state"><h3>Couldn't load the player database</h3><p style="color:var(--down); font-family:var(--font-mono); font-size:12px;">${escapeHtml(state.waiverPlayersError)}</p><button onclick="state.waiverPlayersError=null; renderWaiversTab();">Retry</button></div>`;
+    return;
+  }
+
+  // Live rosters — always fresh (not cached), since the whole point of this
+  // tab is "who's actually available right now."
+  try {
+    const [rosters, users] = await Promise.all([fetchLeagueRosters(), fetchLeagueUsers()]);
+    state.waiverRosters = rosters;
+    state.waiverUsers = users;
+  } catch (e) {
+    host.innerHTML = `<div class="state"><h3>Couldn't load current rosters</h3><p style="color:var(--down); font-family:var(--font-mono); font-size:12px;">${escapeHtml(e.message)}</p><button onclick="renderWaiversTab();">Retry</button></div>`;
+    return;
+  }
+
+  const { freeAgents, unmatched, ownedCount } = computeFreeAgents(state.board, state.waiverRosters, state.waiverIndex);
+  state.waiversCache = { freeAgents, unmatched, ownedCount, computedAt: Date.now() };
+
+  // My current waiver priority, if the field's present — degrades to
+  // nothing rather than a guess if this league/Sleeper's payload doesn't
+  // carry it in the shape expected.
+  const myRoster = (state.waiverRosters || []).find(r => r.owner_id === CONFIG.MY_OWNER_ID);
+  const myPriority = myRoster && myRoster.settings && myRoster.settings.waiver_position != null
+    ? myRoster.settings.waiver_position : null;
+  const priorityNote = myPriority != null
+    ? ` \u00b7 Your waiver priority: <strong style="color:var(--fg);">${myPriority}</strong> of ${(state.waiverRosters || []).length}`
+    : '';
+
+  host.innerHTML = `
+    <div id="waiversBanner" class="hist-note" style="margin-bottom:10px; font-size:11px;">
+      VORP here is your board's <strong>preseason, full-season</strong> projection \u2014 not recalculated week to week for
+      games already played, injuries, or role changes. Read it as "who's talented and available," not "who's hot right now."${priorityNote}
+      ${unmatched.length ? ` \u00b7 <span style="color:var(--warn);">${unmatched.length} board player${unmatched.length !== 1 ? 's' : ''} couldn't be matched to a Sleeper ID</span> (name-mismatch, not necessarily rostered \u2014 check Debug)` : ''}
+    </div>
+    <div id="waiversTableWrap"></div>
+  `;
+  renderWaiversTable();
+}
+
+function renderWaiversTable() {
+  const wrap = document.getElementById('waiversTableWrap');
+  if (!wrap || !state.waiversCache) return;
+  const { freeAgents } = state.waiversCache;
+
+  const s = state.waiversFilter.search.toLowerCase().trim();
+  const rows = freeAgents.filter(p => {
+    if (state.waiversFilter.pos !== 'ALL' && p.pos !== state.waiversFilter.pos) return false;
+    if (s && !(p.name.toLowerCase().includes(s) || (p.team || '').toLowerCase().includes(s))) return false;
+    return true;
+  });
+
+  const countEl = document.getElementById('waiversResultCount');
+  if (countEl) countEl.textContent = `${rows.length} free agents`;
+
+  const body = rows.slice(0, 200).map(p => `
+    <tr>
+      <td class="num">${p.ovr ?? ''}</td>
+      <td><span class="pos-tag pos-${p.pos}">${p.pos}</span></td>
+      <td>${escapeHtml(p.name)}${disagreementBadge(p.name)}</td>
+      <td>${escapeHtml(p.team || '')}</td>
+      <td class="num">${p.bye ?? ''}</td>
+      <td class="num">${p.tier ?? ''}</td>
+      <td class="num" style="font-weight:600;">${p.vorp != null ? p.vorp.toFixed(1) : ''}</td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center; color:var(--fg-dim); padding:20px;">No free agents match this filter.</td></tr>';
+
+  wrap.innerHTML = `
+    <table class="hist-table">
+      <thead><tr><th class="num">RK</th><th>POS</th><th>PLAYER</th><th>TEAM</th><th class="num">BYE</th><th class="num">TIER</th><th class="num">VORP</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+    ${rows.length > 200 ? `<p style="font-size:11px; color:var(--fg-dim); margin-top:8px;">Showing top 200 of ${rows.length} \u2014 narrow with the position filter or search to see further down.</p>` : ''}
+  `;
+}
+
 function renderDraftTab() {
   const host = document.getElementById('draftHost');
   if (!draftState.connected) {
@@ -5455,6 +5706,19 @@ document.getElementById('tabs').addEventListener('click', e => {
   if (target === 'pickcurve') renderPickValues();
   if (target === 'history') renderHistory();
   if (target === 'roster' && !draftState.connected) renderRosterTab();
+  if (target === 'waivers') renderWaiversTab();
+});
+
+document.getElementById('waiversPosFilter').addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('#waiversPosFilter .chip').forEach(c => c.classList.toggle('active', c === btn));
+  state.waiversFilter.pos = btn.dataset.pos;
+  renderWaiversTable();
+});
+document.getElementById('waiversSearchBox').addEventListener('input', e => {
+  state.waiversFilter.search = e.target.value;
+  renderWaiversTable();
 });
 
 document.getElementById('mySlotInput').addEventListener('input', () => renderPickValues());
