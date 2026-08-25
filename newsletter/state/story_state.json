@@ -1,13 +1,17 @@
 {
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
-  "last_week_updated": 1,
+  "last_week_updated": 2,
   "running_jokes": [
+    "Broke Dak Mountain's Week 1 adds (Najee Harris, Xavier Hutchinson) remain scoreless through two weeks, quietly the least productive stash in the league.",
+    "The Great Zero continues \u2014 two straight weeks, every single matchup in the league at 0.0-0.0, an unbroken streak of total offensive nonexistence.",
     "The Great Week 1 Zero \u2014 every single matchup finished 0.0 to 0.0, a perfectly balanced and utterly meaningless slate.",
     "wazimo's KC homerism is already loaded into his Week 1 roster, waiting to fire."
   ],
   "streaks": {
     "Saturn75": "1-game 'winning' streak (0.0-0.0)",
-    "Joe": "1-game 'losing' streak (0.0-0.0), already living up to last-place commissioner curse jokes"
+    "Joe": "1-game 'losing' streak (0.0-0.0), already living up to last-place commissioner curse jokes",
+    "Chuba Bucky Doo": "2-0 in the standings despite scoring exactly zero points both weeks",
+    "league_wide": "Every team is 0-0 through two weeks with identical points for and against across the board"
   },
   "notable_quotes": [],
   "season_awards_tracker": {
@@ -26,7 +30,7 @@
       "player_added_id": "DET",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
+      "weeks_tracked": 2
     },
     {
       "week_added": 1,
@@ -36,7 +40,7 @@
       "player_added_id": "7528",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
+      "weeks_tracked": 2
     },
     {
       "week_added": 1,
@@ -46,21 +50,21 @@
       "player_added_id": "10218",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
+      "weeks_tracked": 2
     }
   ],
   "last_known_waiver_priority": {
-    "1": 7,
-    "2": 12,
-    "3": 6,
+    "1": 6,
+    "2": 11,
+    "3": 5,
     "4": 1,
-    "5": 10,
+    "5": 9,
     "6": 3,
-    "7": 5,
+    "7": 4,
     "8": 2,
-    "9": 4,
-    "10": 11,
-    "11": 9,
-    "12": 8
+    "9": 12,
+    "10": 10,
+    "11": 8,
+    "12": 7
   }
 }
