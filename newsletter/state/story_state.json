@@ -1,17 +1,22 @@
 {
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
-  "last_week_updated": 2,
+  "last_week_updated": 1,
   "running_jokes": [
-    "Broke Dak Mountain's Week 1 adds (Najee Harris, Xavier Hutchinson) remain scoreless through two weeks, quietly the least productive stash in the league.",
-    "The Great Zero continues \u2014 two straight weeks, every single matchup in the league at 0.0-0.0, an unbroken streak of total offensive nonexistence.",
+    "Four teams (Joe Mama Angie Daddy, Meredith's Fan Club, mikelanta, Pukachu Chews You) all burned waiver priority on the same replacement-level running back, Mike Washington, in the same week.",
+    "The Great Zero enters its third straight week \u2014 no team in the league has scored a single point yet.",
+    "wazimo's KC homerism is already loaded into his Week 1 roster, waiting to fire.",
     "The Great Week 1 Zero \u2014 every single matchup finished 0.0 to 0.0, a perfectly balanced and utterly meaningless slate.",
-    "wazimo's KC homerism is already loaded into his Week 1 roster, waiting to fire."
+    "Broke Dak Mountain's Week 1 adds (Najee Harris, Xavier Hutchinson) remain scoreless through two weeks, quietly the least productive stash in the league.",
+    "Broke Dak Mountain's Najee Harris and Xavier Hutchinson remain scoreless additions, extending the least productive stash in the league.",
+    "Chuba Bucky Doo is unbeaten in the standings and dead last in points, both at zero.",
+    "mikelanta added and dropped a receiver within the same week window just to make room for the same running back three other teams also claimed.",
+    "The Great Zero continues \u2014 two straight weeks, every single matchup in the league at 0.0-0.0, an unbroken streak of total offensive nonexistence."
   ],
   "streaks": {
     "Saturn75": "1-game 'winning' streak (0.0-0.0)",
     "Joe": "1-game 'losing' streak (0.0-0.0), already living up to last-place commissioner curse jokes",
-    "Chuba Bucky Doo": "2-0 in the standings despite scoring exactly zero points both weeks",
-    "league_wide": "Every team is 0-0 through two weeks with identical points for and against across the board"
+    "Chuba Bucky Doo": "3-0 in the standings across a still-scoreless season",
+    "league_wide": "Every team remains 0-0 with identical zero points for and against through the season's opening stretch"
   },
   "notable_quotes": [],
   "season_awards_tracker": {
@@ -30,7 +35,7 @@
       "player_added_id": "DET",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
+      "weeks_tracked": 3
     },
     {
       "week_added": 1,
@@ -40,7 +45,7 @@
       "player_added_id": "7528",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
+      "weeks_tracked": 3
     },
     {
       "week_added": 1,
@@ -50,19 +55,149 @@
       "player_added_id": "10218",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Ted Hurst",
+      "player_added_id": "13317",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Player LV",
+      "player_added_id": "LV",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 5,
+      "team_name": "Silverbacks",
+      "player_added": "Hunter Henry",
+      "player_added_id": "3214",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 1,
+      "team_name": "Chuba Bucky Doo",
+      "player_added": "Player LAC",
+      "player_added_id": "LAC",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 1,
+      "team_name": "Chuba Bucky Doo",
+      "player_added": "Chig Okonkwo",
+      "player_added_id": "8210",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 2,
+      "team_name": "Joe Mama Angie Daddy",
+      "player_added": "Malik Davis",
+      "player_added_id": "8800",
+      "used_waiver_priority": true,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 2,
+      "team_name": "Joe Mama Angie Daddy",
+      "player_added": "Mike Washington",
+      "player_added_id": "13305",
+      "used_waiver_priority": true,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 7,
+      "team_name": "Meredith\u2019s Fan Club",
+      "player_added": "Mike Washington",
+      "player_added_id": "13305",
+      "used_waiver_priority": true,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Mike Washington",
+      "player_added_id": "13305",
+      "used_waiver_priority": true,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 10,
+      "team_name": "Pukachu Chews You",
+      "player_added": "Mike Washington",
+      "player_added_id": "13305",
+      "used_waiver_priority": true,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Player DET",
+      "player_added_id": "DET",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 3,
+      "team_name": "Broke Dak Mountain",
+      "player_added": "Najee Harris",
+      "player_added_id": "7528",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 3,
+      "team_name": "Broke Dak Mountain",
+      "player_added": "Xavier Hutchinson",
+      "player_added_id": "10218",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
     }
   ],
   "last_known_waiver_priority": {
     "1": 6,
-    "2": 11,
+    "2": 12,
     "3": 5,
     "4": 1,
     "5": 9,
     "6": 3,
     "7": 4,
     "8": 2,
-    "9": 12,
+    "9": 11,
     "10": 10,
     "11": 8,
     "12": 7

@@ -1,80 +1,83 @@
 {
-  "headline": "League Sits at 0.0-0.0 For Second Straight Week, Nobody Has Scored a Point in 2026",
-  "meme_brief": "Twelve grown men in a fantasy league where literally nothing has happened for two weeks straight \u2014 every scoreboard reads 0.0 to 0.0, like the games are being played but the lights are off and nobody's told the players.",
-  "recap": "For the second consecutive week, every game in the league finished 0.0 to 0.0. All six matchups \u2014 Chuba Bucky Doo versus Geoff Collins Suvivor, Joe Mama Angie Daddy versus Screaming Eagles, Broke Dak Mountain versus Pukachu Chews You, Waffle House versus mikelanta, Silverbacks versus demon44, and Meredith's Fan Club versus Dak's Stack \u2014 ended in a dead-even nothing. There is no closest game because they were all equally close. There is no blowout because a blowout requires a differential greater than zero. There is no top scorer because nobody scored.",
-  "transaction_desk": "No moves were logged around the league this week \u2014 a quiet stretch on waivers across the board. The only items worth tracking are three adds still sitting from Week 1, and they're all still stuck at zero cumulative points through two weeks: Detroit's team defense on mikelanta's roster, Najee Harris on Broke Dak Mountain's bench, and Xavier Hutchinson also on Broke Dak Mountain. None of it cost waiver priority, so at least nobody burned anything for the privilege of watching a zero.",
+  "headline": "Every Team Still 0-0, Still 0.0 Points, and Four Franchises Just Burned Waiver Priority on the Same Undrafted Running Back",
+  "meme_brief": "The whole league is stuck in a scoreless purgatory where nobody has played a game yet, but that didn't stop four separate teams from racing to grab the exact same anonymous waiver-wire running back like it was a Black Friday doorbuster.",
+  "recap": "Week 1 is, once again, a dead heat everywhere \u2014 every one of the six matchups finished 0.0 to 0.0, the second consecutive week the entire league has failed to score a single point. Chuba Bucky Doo's supposed dominance continues in the standings only, sitting at the top of nothing in particular, while the commissioner's own team joins the other eleven at a flat zero. There is no closest game because there is no game with any points in it. There is no blowout, because a blowout requires one side to have more than zero. The top scorer across the league is, mathematically, everyone and no one, tied at 0.0. As for worst bench decision \u2014 hard to bench-manage your way into a loss when the entire league's slate refuses to generate a single stat. This remains the fantasy equivalent of a rain delay that just keeps not ending.",
+  "transaction_desk": "The headline move of the week wasn't really a move \u2014 it was four of them, all the same. Joe Mama Angie Daddy, Meredith's Fan Club, mikelanta, and Pukachu Chews You all burned real waiver priority on the same depth-chart running back, Mike Washington, in what amounts to a four-way tie for a lottery ticket. Three of those four gave up nothing to get him; mikelanta had to drop the receiver it had just added days earlier to make room, which is either efficient roster churn or an admission the original pickup was a mistake before it ever played a snap. Joe Mama Angie Daddy also used priority on Malik Davis, spending real draft-order currency on a depth back with no guarantee of playing time \u2014 a real bet by rolling-waiver standards, not a free look.\n\nElsewhere the moves were lower-stakes. Chuba Bucky Doo cycled through the defense and tight end slots on the wire (added, then dropped, Hunter Henry within the same week window as picking up Chig Okonkwo) without spending priority \u2014 free, uncontested, low risk. Broke Dak Mountain added Najee Harris and Xavier Hutchinson off the wire at zero cost, which given that team's now-established habit of stockpiling names that immediately go dormant, continues to track. Silverbacks grabbed Hunter Henry for free the moment Chuba Bucky Doo cut him loose, which at minimum wins the week's most efficient recycling operation, if not yet any actual points.",
   "power_rankings": [
     {
       "rank": 1,
       "team": "Chuba Bucky Doo",
-      "blurb": "Undefeated, un-scored-upon, and commissioner-run \u2014 draw your own conclusions."
+      "blurb": "Perfect record, zero points, run by the commissioner \u2014 draw your own conclusions."
     },
     {
       "rank": 2,
       "team": "Joe Mama Angie Daddy",
-      "blurb": "0-0, same as everybody, but the name carries the whole roster right now."
+      "blurb": "Spent two waiver claims chasing backfield lottery tickets in a week nobody scored."
     },
     {
       "rank": 3,
       "team": "Broke Dak Mountain",
-      "blurb": "Two Week 1 adds still sitting at zero points through two weeks \u2014 patience is a virtue."
+      "blurb": "Quietly building the least productive stash in the league, one free add at a time."
     },
     {
       "rank": 4,
       "team": "Waffle House",
-      "blurb": "Nothing separates this roster from the pack, literally, down to the decimal."
+      "blurb": "Did nothing this week, which given everyone else's results, may have been the smart play."
     },
     {
       "rank": 5,
       "team": "Silverbacks",
-      "blurb": "A full lineup, a full bench, a completely empty stat line."
+      "blurb": "Picked Chuba Bucky Doo's pocket for a free tight end within hours of the drop."
     },
     {
       "rank": 6,
       "team": "Geoff Collins Suvivor",
-      "blurb": "Named for a coach who got fired for losing worse than this team has scored."
+      "blurb": "No moves, no points, no news \u2014 the definition of treading water."
     },
     {
       "rank": 7,
       "team": "Meredith's Fan Club",
-      "blurb": "Loaded roster on paper, zero points on the ledger."
+      "blurb": "Burned priority on the same running back three other teams also wanted."
     },
     {
       "rank": 8,
       "team": "Dak's Stack",
-      "blurb": "Whatever Dak's doing, it isn't showing up in the box score yet."
+      "blurb": "Sat still while half the league fought over roster scraps."
     },
     {
       "rank": 9,
       "team": "mikelanta",
-      "blurb": "Rostering the Detroit defense and still hasn't cracked a single point."
+      "blurb": "Added a receiver, dropped him days later for the same running back everyone else grabbed \u2014 an eventful week that produced nothing."
     },
     {
       "rank": 10,
       "team": "Pukachu Chews You",
-      "blurb": "Two weeks in, this team has generated the exact same offense as everyone else: none."
+      "blurb": "Fourth team into the Mike Washington sweepstakes, priority spent, outcome pending."
     },
     {
       "rank": 11,
       "team": "demon44",
-      "blurb": "The name suggests chaos. The scoreboard suggests otherwise."
+      "blurb": "No transactions, no scoring, no distinguishing characteristics yet."
     },
     {
       "rank": 12,
       "team": "Screaming Eagles",
-      "blurb": "Screaming into a void that has so far returned zero fantasy points."
+      "blurb": "Same story as everyone else: 0-0, 0.0, nothing to report."
     }
   ],
-  "standings_narrative": "Every team sits at 0-0 with identical points for and against, which makes discussing a playoff bubble technically impossible but structurally hilarious \u2014 six of these twelve teams are going to make it, and right now the tiebreaker could be a coin flip. Nobody has separated themselves, nobody has fallen behind, and the league is functioning as the most perfectly egalitarian fantasy football experience in recorded history. That will not last.",
-  "look_ahead": "Week 3 brings a fresh slate: Chuba Bucky Doo draws Waffle House, Joe Mama Angie Daddy gets Meredith's Fan Club, Broke Dak Mountain faces Silverbacks, Geoff Collins Suvivor meets mikelanta, Dak's Stack takes on Screaming Eagles, and Pukachu Chews You squares off with demon44. Given the first two weeks of this league's data, the safest prediction anyone can make is that literally anything is possible, since apparently nothing is required to happen at all.",
+  "standings_narrative": "With every team sitting at 0-0 and every scoreboard reading zero, there is technically no playoff picture yet \u2014 six of these twelve teams will make it, and right now that is as true for Screaming Eagles as it is for anyone posting real numbers eventually will. The only separation in the league so far is behavioral: who is spending waiver priority (Joe Mama Angie Daddy, Meredith's Fan Club, mikelanta, Pukachu Chews You) and who is sitting on their hands (Waffle House, Geoff Collins Suvivor, demon44, Dak's Stack, Screaming Eagles). None of it means anything until points actually get recorded, but the early bubble, if you want to call it that, is going to be about who wasted their draft-order leverage on a running back four other teams also wanted.",
+  "look_ahead": "Next week's matchups are the same six pairings, and the obvious hope around the league is that somebody, anybody, finally gets a stat line that isn't a zero. The four-team scramble for the same waiver running back will start to sort itself out by usage, and it will be worth tracking whether that spent priority produces anything or just moves those four rosters toward the back of the line for nothing. Chuba Bucky Doo will again enter as the only unbeaten team in football scoring no points, which is either a bit or a genuine season-long identity at this point.",
   "story_state_updates": {
     "running_jokes": [
-      "The Great Zero continues \u2014 two straight weeks, every single matchup in the league at 0.0-0.0, an unbroken streak of total offensive nonexistence.",
-      "Broke Dak Mountain's Week 1 adds (Najee Harris, Xavier Hutchinson) remain scoreless through two weeks, quietly the least productive stash in the league."
+      "The Great Zero enters its third straight week \u2014 no team in the league has scored a single point yet.",
+      "Broke Dak Mountain's Najee Harris and Xavier Hutchinson remain scoreless additions, extending the least productive stash in the league.",
+      "Chuba Bucky Doo is unbeaten in the standings and dead last in points, both at zero.",
+      "Four teams (Joe Mama Angie Daddy, Meredith's Fan Club, mikelanta, Pukachu Chews You) all burned waiver priority on the same replacement-level running back, Mike Washington, in the same week.",
+      "mikelanta added and dropped a receiver within the same week window just to make room for the same running back three other teams also claimed."
     ],
     "streaks": {
-      "Chuba Bucky Doo": "2-0 in the standings despite scoring exactly zero points both weeks",
-      "league_wide": "Every team is 0-0 through two weeks with identical points for and against across the board"
+      "Chuba Bucky Doo": "3-0 in the standings across a still-scoreless season",
+      "league_wide": "Every team remains 0-0 with identical zero points for and against through the season's opening stretch"
     },
     "notable_quotes": []
   }
