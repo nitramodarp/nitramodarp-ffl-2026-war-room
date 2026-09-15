@@ -1,132 +1,132 @@
 {
   "season": "2026",
   "week_recapped": 1,
-  "week_upcoming": 1,
+  "week_upcoming": 2,
   "standings": [
+    {
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "is_commissioner": false,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "fpts": 213.65,
+      "fpts_against": 176.5
+    },
+    {
+      "roster_id": 6,
+      "team_name": "Long Live King Henry ",
+      "is_commissioner": false,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "fpts": 157.15,
+      "fpts_against": 127.8
+    },
+    {
+      "roster_id": 8,
+      "team_name": "Dak to the Future",
+      "is_commissioner": false,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "fpts": 133.95,
+      "fpts_against": 125.6
+    },
+    {
+      "roster_id": 5,
+      "team_name": "Silverbacks",
+      "is_commissioner": false,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "fpts": 128.35,
+      "fpts_against": 100.95
+    },
+    {
+      "roster_id": 11,
+      "team_name": "demon44",
+      "is_commissioner": false,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "fpts": 104.55,
+      "fpts_against": 102.2
+    },
+    {
+      "roster_id": 7,
+      "team_name": "Meredith\u2019s Fan Club",
+      "is_commissioner": false,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "fpts": 99.8,
+      "fpts_against": 99.5
+    },
     {
       "roster_id": 1,
       "team_name": "Chuba Bucky Doo",
       "is_commissioner": true,
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
-    },
-    {
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "is_commissioner": false,
-      "wins": 0,
-      "losses": 0,
-      "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
-    },
-    {
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "is_commissioner": false,
-      "wins": 0,
-      "losses": 0,
-      "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
+      "fpts": 176.5,
+      "fpts_against": 213.65
     },
     {
       "roster_id": 4,
       "team_name": "Waffle House",
       "is_commissioner": false,
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
+      "fpts": 127.8,
+      "fpts_against": 157.15
     },
     {
-      "roster_id": 5,
-      "team_name": "Silverbacks",
+      "roster_id": 2,
+      "team_name": "Joe Mama Angie Daddy",
       "is_commissioner": false,
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
+      "fpts": 125.6,
+      "fpts_against": 133.95
     },
     {
-      "roster_id": 6,
-      "team_name": "Geoff Collins Suvivor",
+      "roster_id": 3,
+      "team_name": "Broke Dak Mountain",
       "is_commissioner": false,
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
-    },
-    {
-      "roster_id": 7,
-      "team_name": "Meredith\u2019s Fan Club",
-      "is_commissioner": false,
-      "wins": 0,
-      "losses": 0,
-      "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
-    },
-    {
-      "roster_id": 8,
-      "team_name": "Dak's Stack ",
-      "is_commissioner": false,
-      "wins": 0,
-      "losses": 0,
-      "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
-    },
-    {
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "is_commissioner": false,
-      "wins": 0,
-      "losses": 0,
-      "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
+      "fpts": 102.2,
+      "fpts_against": 104.55
     },
     {
       "roster_id": 10,
       "team_name": "Pukachu Chews You",
       "is_commissioner": false,
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
-    },
-    {
-      "roster_id": 11,
-      "team_name": "demon44",
-      "is_commissioner": false,
-      "wins": 0,
-      "losses": 0,
-      "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
+      "fpts": 100.95,
+      "fpts_against": 128.35
     },
     {
       "roster_id": 12,
       "team_name": "Screaming Eagles",
       "is_commissioner": false,
       "wins": 0,
-      "losses": 0,
+      "losses": 1,
       "ties": 0,
-      "fpts": 0.0,
-      "fpts_against": 0.0
+      "fpts": 99.5,
+      "fpts_against": 99.8
     }
   ],
   "matchups_recap": [
     {
-      "points": 0.0,
+      "points": 176.5,
       "players": [
         "10219",
         "11566",
@@ -159,37 +159,37 @@
         "LAC"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        37.9,
+        17.8,
+        24.2,
+        23.2,
+        29.2,
+        21.0,
+        14.9,
+        6.3,
+        2.0
       ],
       "players_points": {
-        "10219": 0.0,
-        "11566": 0.0,
-        "11584": 0.0,
-        "12474": 0.0,
-        "12508": 0.0,
-        "2216": 0.0,
+        "10219": 2.3,
+        "11566": 25.3,
+        "11584": 17.8,
+        "12474": 4.5,
+        "12508": 37.9,
+        "2216": 14.9,
         "4035": 0.0,
-        "4037": 0.0,
-        "6794": 0.0,
-        "7567": 0.0,
-        "7594": 0.0,
-        "8130": 0.0,
-        "8210": 0.0,
-        "9488": 0.0,
-        "LAC": 0.0
+        "4037": 6.3,
+        "6794": 29.2,
+        "7567": 2.3,
+        "7594": 24.2,
+        "8130": 21.0,
+        "8210": 2.6,
+        "9488": 23.2,
+        "LAC": 2.0
       },
       "team_name": "Chuba Bucky Doo"
     },
     {
-      "points": 0.0,
+      "points": 125.6,
       "players": [
         "11237",
         "11625",
@@ -222,37 +222,37 @@
         "HOU"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        20.7,
+        12.0,
+        33.1,
+        17.8,
+        7.4,
+        8.6,
+        23.7,
+        4.3,
+        -2.0
       ],
       "players_points": {
         "11237": 0.0,
-        "11625": 0.0,
-        "1466": 0.0,
-        "5001": 0.0,
-        "5872": 0.0,
-        "6770": 0.0,
-        "6801": 0.0,
-        "7588": 0.0,
-        "7611": 0.0,
-        "8137": 0.0,
-        "8183": 0.0,
-        "9221": 0.0,
-        "9487": 0.0,
-        "HOU": 0.0,
-        "SEA": 0.0
+        "11625": 7.5,
+        "1466": 8.6,
+        "5001": 5.5,
+        "5872": 16.0,
+        "6770": 20.7,
+        "6801": 7.4,
+        "7588": 23.7,
+        "7611": 12.0,
+        "8137": 4.3,
+        "8183": 33.15,
+        "9221": 33.1,
+        "9487": 17.8,
+        "HOU": -2.0,
+        "SEA": 16.0
       },
       "team_name": "Joe Mama Angie Daddy"
     },
     {
-      "points": 0.0,
+      "points": 102.2,
       "players": [
         "10222",
         "12514",
@@ -285,37 +285,37 @@
         "PHI"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        47.0,
+        11.3,
+        13.0,
+        8.8,
+        0.7,
+        8.0,
+        3.9,
+        3.5,
+        6.0
       ],
       "players_points": {
-        "10222": 0.0,
-        "12514": 0.0,
-        "13287": 0.0,
-        "1479": 0.0,
-        "4034": 0.0,
-        "4217": 0.0,
-        "4943": 0.0,
-        "4984": 0.0,
-        "5967": 0.0,
-        "7526": 0.0,
-        "8134": 0.0,
-        "8142": 0.0,
-        "9484": 0.0,
+        "10222": 3.5,
+        "12514": 8.8,
+        "13287": 13.0,
+        "1479": 6.2,
+        "4034": 11.3,
+        "4217": 2.2,
+        "4943": 0.65,
+        "4984": 47.0,
+        "5967": 3.9,
+        "7526": 0.7,
+        "8134": 7.0,
+        "8142": 8.1,
+        "9484": 8.0,
         "9753": 0.0,
-        "PHI": 0.0
+        "PHI": 6.0
       },
       "team_name": "Broke Dak Mountain"
     },
     {
-      "points": 0.0,
+      "points": 127.8,
       "players": [
         "10236",
         "12489",
@@ -337,48 +337,48 @@
       "custom_points": null,
       "matchup_id": 3,
       "starters": [
-        "4881",
+        "4892",
         "4866",
         "12527",
         "7525",
         "2133",
-        "10236",
+        "5022",
         "4983",
         "9754",
         "JAX"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        14.8,
+        8.5,
+        31.7,
+        6.8,
+        4.1,
+        23.7,
+        19.5,
+        2.7,
+        16.0
       ],
       "players_points": {
-        "10236": 0.0,
-        "12489": 0.0,
-        "12527": 0.0,
-        "13294": 0.0,
-        "2133": 0.0,
-        "4866": 0.0,
-        "4881": 0.0,
-        "4892": 0.0,
-        "4983": 0.0,
-        "5022": 0.0,
-        "6819": 0.0,
-        "7525": 0.0,
-        "8154": 0.0,
-        "9754": 0.0,
-        "JAX": 0.0
+        "10236": 15.5,
+        "12489": 6.1,
+        "12527": 31.7,
+        "13294": 1.0,
+        "2133": 4.1,
+        "4866": 8.5,
+        "4881": 34.2,
+        "4892": 14.8,
+        "4983": 19.5,
+        "5022": 23.7,
+        "6819": 7.3,
+        "7525": 6.8,
+        "8154": 3.1,
+        "9754": 2.7,
+        "JAX": 16.0
       },
       "team_name": "Waffle House"
     },
     {
-      "points": 0.0,
+      "points": 128.35,
       "players": [
         "12506",
         "12534",
@@ -411,37 +411,37 @@
         "NE"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        19.35,
+        11.3,
+        30.4,
+        2.2,
+        18.7,
+        3.1,
+        26.5,
+        7.8,
+        9.0
       ],
       "players_points": {
-        "12506": 0.0,
-        "12534": 0.0,
-        "13298": 0.0,
-        "13414": 0.0,
-        "3214": 0.0,
-        "5849": 0.0,
-        "5892": 0.0,
-        "5947": 0.0,
-        "6797": 0.0,
-        "7543": 0.0,
-        "7564": 0.0,
-        "7569": 0.0,
-        "8228": 0.0,
-        "9997": 0.0,
-        "NE": 0.0
+        "12506": 3.1,
+        "12534": 22.4,
+        "13298": 5.8,
+        "13414": 7.5,
+        "3214": 4.1,
+        "5849": 0.8,
+        "5892": 30.4,
+        "5947": 12.2,
+        "6797": 19.35,
+        "7543": 11.3,
+        "7564": 2.2,
+        "7569": 18.7,
+        "8228": 7.8,
+        "9997": 26.5,
+        "NE": 9.0
       },
       "team_name": "Silverbacks"
     },
     {
-      "points": 0.0,
+      "points": 157.15,
       "players": [
         "10229",
         "10232",
@@ -463,7 +463,7 @@
       "custom_points": null,
       "matchup_id": 3,
       "starters": [
-        "3163",
+        "6904",
         "3198",
         "12481",
         "7547",
@@ -474,37 +474,37 @@
         "MIN"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        35.75,
+        37.8,
+        15.1,
+        25.7,
+        9.9,
+        9.8,
+        7.0,
+        8.1,
+        8.0
       ],
       "players_points": {
-        "10229": 0.0,
-        "10232": 0.0,
-        "11834": 0.0,
-        "12481": 0.0,
-        "12518": 0.0,
-        "12519": 0.0,
+        "10229": 9.9,
+        "10232": 8.1,
+        "11834": 17.4,
+        "12481": 15.1,
+        "12518": 9.8,
+        "12519": 7.0,
         "13345": 0.0,
         "13417": 0.0,
-        "3163": 0.0,
-        "3198": 0.0,
-        "6806": 0.0,
-        "6904": 0.0,
-        "7547": 0.0,
-        "9480": 0.0,
-        "MIN": 0.0
+        "3163": 24.5,
+        "3198": 37.8,
+        "6806": 3.6,
+        "6904": 35.75,
+        "7547": 25.7,
+        "9480": 10.3,
+        "MIN": 8.0
       },
-      "team_name": "Geoff Collins Suvivor"
+      "team_name": "Long Live King Henry "
     },
     {
-      "points": 0.0,
+      "points": 99.8,
       "players": [
         "10859",
         "11576",
@@ -537,37 +537,37 @@
         "KC"
       ],
       "starters_points": [
+        31.5,
+        9.3,
+        19.8,
+        9.9,
+        6.0,
         0.0,
+        7.3,
         0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        16.0
       ],
       "players_points": {
-        "10859": 0.0,
-        "11576": 0.0,
-        "11624": 0.0,
-        "12507": 0.0,
+        "10859": 7.3,
+        "11576": 4.0,
+        "11624": 3.3,
+        "12507": 9.3,
         "12517": 0.0,
-        "13337": 0.0,
-        "4046": 0.0,
-        "5846": 0.0,
-        "8132": 0.0,
-        "8136": 0.0,
-        "8155": 0.0,
-        "9493": 0.0,
+        "13337": 7.8,
+        "4046": 31.5,
+        "5846": 6.0,
+        "8132": 8.0,
+        "8136": 3.7,
+        "8155": 19.8,
+        "9493": 9.9,
         "9756": 0.0,
-        "9758": 0.0,
-        "KC": 0.0
+        "9758": 25.2,
+        "KC": 16.0
       },
       "team_name": "Meredith\u2019s Fan Club"
     },
     {
-      "points": 0.0,
+      "points": 133.95,
       "players": [
         "12533",
         "12545",
@@ -596,41 +596,41 @@
         "8146",
         "7002",
         "8148",
-        "13279",
+        "12533",
         "BAL"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        23.15,
+        8.6,
+        34.9,
+        13.9,
+        10.9,
+        13.9,
+        6.5,
+        13.1,
+        9.0
       ],
       "players_points": {
-        "12533": 0.0,
-        "12545": 0.0,
-        "13279": 0.0,
+        "12533": 13.1,
+        "12545": 38.3,
+        "13279": 5.8,
         "13281": 0.0,
         "13413": 0.0,
-        "3294": 0.0,
-        "4199": 0.0,
-        "6786": 0.0,
-        "6790": 0.0,
-        "7002": 0.0,
-        "8146": 0.0,
-        "8148": 0.0,
-        "9226": 0.0,
-        "9508": 0.0,
-        "BAL": 0.0
+        "3294": 23.15,
+        "4199": 11.0,
+        "6786": 13.9,
+        "6790": 34.9,
+        "7002": 13.9,
+        "8146": 10.9,
+        "8148": 6.5,
+        "9226": 8.6,
+        "9508": 3.4,
+        "BAL": 9.0
       },
-      "team_name": "Dak's Stack "
+      "team_name": "Dak to the Future"
     },
     {
-      "points": 0.0,
+      "points": 213.65,
       "players": [
         "11560",
         "11620",
@@ -660,42 +660,42 @@
         "11620",
         "8131",
         "13286",
-        "9500",
+        "11646",
         "LV"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        47.95,
+        17.3,
+        36.6,
+        23.2,
+        6.2,
+        25.8,
+        6.8,
+        33.8,
+        16.0
       ],
       "players_points": {
-        "11560": 0.0,
-        "11620": 0.0,
-        "11646": 0.0,
-        "13286": 0.0,
-        "13305": 0.0,
-        "13317": 0.0,
-        "8126": 0.0,
-        "8131": 0.0,
-        "8144": 0.0,
-        "8151": 0.0,
+        "11560": 47.95,
+        "11620": 6.2,
+        "11646": 33.8,
+        "13286": 6.8,
+        "13305": 4.1,
+        "13317": 5.1,
+        "8126": 6.3,
+        "8131": 25.8,
+        "8144": 23.2,
+        "8151": 36.6,
         "8205": 0.0,
-        "8676": 0.0,
-        "9224": 0.0,
-        "9500": 0.0,
-        "9511": 0.0,
-        "LV": 0.0
+        "8676": 0.9,
+        "9224": 17.3,
+        "9500": 4.7,
+        "9511": 0.9,
+        "LV": 16.0
       },
       "team_name": "mikelanta"
     },
     {
-      "points": 0.0,
+      "points": 100.95,
       "players": [
         "11563",
         "11581",
@@ -704,12 +704,13 @@
         "11635",
         "12501",
         "12512",
-        "5844",
         "5927",
         "6804",
         "7021",
         "8112",
         "8408",
+        "9482",
+        "9502",
         "9509",
         "PIT"
       ],
@@ -722,43 +723,44 @@
         "12512",
         "8112",
         "11635",
-        "11604",
+        "9482",
         "5927",
         "7021",
         "PIT"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        10.75,
+        28.3,
+        6.0,
+        4.5,
+        17.7,
+        6.2,
+        2.4,
+        3.1,
+        22.0
       ],
       "players_points": {
-        "11563": 0.0,
-        "11581": 0.0,
+        "11563": 10.75,
+        "11581": 3.7,
         "11604": 0.0,
-        "11631": 0.0,
-        "11635": 0.0,
-        "12501": 0.0,
-        "12512": 0.0,
-        "5844": 0.0,
-        "5927": 0.0,
-        "6804": 0.0,
-        "7021": 0.0,
-        "8112": 0.0,
-        "8408": 0.0,
-        "9509": 0.0,
-        "PIT": 0.0
+        "11631": 5.5,
+        "11635": 17.7,
+        "12501": 12.5,
+        "12512": 6.0,
+        "5927": 2.4,
+        "6804": 32.35,
+        "7021": 3.1,
+        "8112": 4.5,
+        "8408": 12.9,
+        "9482": 6.2,
+        "9502": 0.0,
+        "9509": 28.3,
+        "PIT": 22.0
       },
       "team_name": "Pukachu Chews You"
     },
     {
-      "points": 0.0,
+      "points": 104.55,
       "players": [
         "11583",
         "11586",
@@ -791,37 +793,37 @@
         "LAR"
       ],
       "starters_points": [
+        40.55,
+        5.4,
+        9.3,
+        4.1,
+        9.9,
         0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        6.7,
+        25.6,
+        3.0
       ],
       "players_points": {
-        "11583": 0.0,
-        "11586": 0.0,
-        "11632": 0.0,
-        "12490": 0.0,
+        "11583": 6.7,
+        "11586": 5.4,
+        "11632": 9.9,
+        "12490": 9.3,
         "12529": 0.0,
-        "13293": 0.0,
-        "13296": 0.0,
-        "2449": 0.0,
-        "5859": 0.0,
-        "6813": 0.0,
-        "7523": 0.0,
+        "13293": 1.6,
+        "13296": 11.9,
+        "2449": 14.5,
+        "5859": 4.1,
+        "6813": 25.6,
+        "7523": 40.55,
         "7553": 0.0,
         "8121": 0.0,
-        "8161": 0.0,
-        "LAR": 0.0
+        "8161": 20.9,
+        "LAR": 3.0
       },
       "team_name": "demon44"
     },
     {
-      "points": 0.0,
+      "points": 99.5,
       "players": [
         "11564",
         "11603",
@@ -854,32 +856,32 @@
         "DEN"
       ],
       "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        17.6,
+        8.4,
+        15.0,
+        8.0,
+        33.7,
+        6.9,
+        3.8,
+        2.1,
+        4.0
       ],
       "players_points": {
-        "11564": 0.0,
-        "11603": 0.0,
-        "11628": 0.0,
-        "11655": 0.0,
-        "12526": 0.0,
-        "421": 0.0,
-        "5012": 0.0,
-        "5045": 0.0,
+        "11564": 17.6,
+        "11603": 2.3,
+        "11628": 3.8,
+        "11655": -0.6,
+        "12526": 8.0,
+        "421": 6.65,
+        "5012": 6.9,
+        "5045": 2.1,
         "5850": 0.0,
-        "8110": 0.0,
-        "8138": 0.0,
-        "8150": 0.0,
-        "8167": 0.0,
-        "9225": 0.0,
-        "DEN": 0.0
+        "8110": 1.6,
+        "8138": 8.4,
+        "8150": 15.0,
+        "8167": 33.7,
+        "9225": 0.3,
+        "DEN": 4.0
       },
       "team_name": "Screaming Eagles"
     }
@@ -969,7 +971,7 @@
       ],
       "roster_id": 2,
       "custom_points": null,
-      "matchup_id": 2,
+      "matchup_id": 1,
       "starters": [
         "6770",
         "7611",
@@ -979,7 +981,7 @@
         "1466",
         "7588",
         "8137",
-        "HOU"
+        "SEA"
       ],
       "starters_points": [
         0.0,
@@ -1032,7 +1034,7 @@
       ],
       "roster_id": 3,
       "custom_points": null,
-      "matchup_id": 5,
+      "matchup_id": 6,
       "starters": [
         "4984",
         "4034",
@@ -1097,12 +1099,12 @@
       "custom_points": null,
       "matchup_id": 3,
       "starters": [
-        "4881",
+        "4892",
         "4866",
         "12527",
         "7525",
         "2133",
-        "10236",
+        "5022",
         "4983",
         "9754",
         "JAX"
@@ -1158,29 +1160,9 @@
       ],
       "roster_id": 5,
       "custom_points": null,
-      "matchup_id": 6,
-      "starters": [
-        "6797",
-        "7543",
-        "5892",
-        "7564",
-        "7569",
-        "12506",
-        "9997",
-        "8228",
-        "NE"
-      ],
-      "starters_points": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
-      ],
+      "matchup_id": 5,
+      "starters": null,
+      "starters_points": [],
       "players_points": {
         "12506": 0.0,
         "12534": 0.0,
@@ -1221,9 +1203,9 @@
       ],
       "roster_id": 6,
       "custom_points": null,
-      "matchup_id": 3,
+      "matchup_id": 4,
       "starters": [
-        "3163",
+        "6904",
         "3198",
         "12481",
         "7547",
@@ -1261,7 +1243,7 @@
         "9480": 0.0,
         "MIN": 0.0
       },
-      "team_name": "Geoff Collins Suvivor"
+      "team_name": "Long Live King Henry "
     },
     {
       "points": 0.0,
@@ -1284,7 +1266,7 @@
       ],
       "roster_id": 7,
       "custom_points": null,
-      "matchup_id": 1,
+      "matchup_id": 2,
       "starters": [
         "4046",
         "12507",
@@ -1356,7 +1338,7 @@
         "8146",
         "7002",
         "8148",
-        "13279",
+        "12533",
         "BAL"
       ],
       "starters_points": [
@@ -1387,7 +1369,7 @@
         "9508": 0.0,
         "BAL": 0.0
       },
-      "team_name": "Dak's Stack "
+      "team_name": "Dak to the Future"
     },
     {
       "points": 0.0,
@@ -1411,7 +1393,7 @@
       ],
       "roster_id": 9,
       "custom_points": null,
-      "matchup_id": 4,
+      "matchup_id": 3,
       "starters": [
         "11560",
         "9224",
@@ -1420,7 +1402,7 @@
         "11620",
         "8131",
         "13286",
-        "9500",
+        "11646",
         "LV"
       ],
       "starters_points": [
@@ -1464,12 +1446,13 @@
         "11635",
         "12501",
         "12512",
-        "5844",
         "5927",
         "6804",
         "7021",
         "8112",
         "8408",
+        "9482",
+        "9502",
         "9509",
         "PIT"
       ],
@@ -1484,7 +1467,7 @@
         "11635",
         "11604",
         "5927",
-        "7021",
+        "11581",
         "PIT"
       ],
       "starters_points": [
@@ -1506,12 +1489,13 @@
         "11635": 0.0,
         "12501": 0.0,
         "12512": 0.0,
-        "5844": 0.0,
         "5927": 0.0,
         "6804": 0.0,
         "7021": 0.0,
         "8112": 0.0,
         "8408": 0.0,
+        "9482": 0.0,
+        "9502": 0.0,
         "9509": 0.0,
         "PIT": 0.0
       },
@@ -1647,6 +1631,54 @@
   "transactions_this_week": [
     {
       "type": "free_agent",
+      "team_name": "mikelanta",
+      "roster_id": 9,
+      "player_added": "Ted Hurst",
+      "player_added_id": "13317",
+      "position": "WR",
+      "player_dropped": "Michael Penix",
+      "used_waiver_priority": false,
+      "waiver_priority_before_move": 11,
+      "confirmed_homer_transaction": false
+    },
+    {
+      "type": "free_agent",
+      "team_name": "Pukachu Chews You",
+      "roster_id": 10,
+      "player_added": "Michael Mayer",
+      "player_added_id": "9482",
+      "position": "TE",
+      "player_dropped": null,
+      "used_waiver_priority": false,
+      "waiver_priority_before_move": 10,
+      "confirmed_homer_transaction": false
+    },
+    {
+      "type": "free_agent",
+      "team_name": "Pukachu Chews You",
+      "roster_id": 10,
+      "player_added": "Tank Dell",
+      "player_added_id": "9502",
+      "position": "WR",
+      "player_dropped": "T.J. Hockenson",
+      "used_waiver_priority": false,
+      "waiver_priority_before_move": 10,
+      "confirmed_homer_transaction": false
+    },
+    {
+      "type": "free_agent",
+      "team_name": "mikelanta",
+      "roster_id": 9,
+      "player_added": "Michael Penix",
+      "player_added_id": "11559",
+      "position": "QB",
+      "player_dropped": "Ted Hurst",
+      "used_waiver_priority": false,
+      "waiver_priority_before_move": 11,
+      "confirmed_homer_transaction": false
+    },
+    {
+      "type": "free_agent",
       "team_name": "Silverbacks",
       "roster_id": 5,
       "player_added": "Kaelon Black",
@@ -1659,7 +1691,7 @@
     },
     {
       "type": "free_agent",
-      "team_name": "Geoff Collins Suvivor",
+      "team_name": "Long Live King Henry ",
       "roster_id": 6,
       "player_added": "Devaughn Vele",
       "player_added_id": "11834",
@@ -1895,7 +1927,7 @@
       "player_added_id": "DET",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
+      "weeks_tracked": 5
     },
     {
       "week_added": 1,
@@ -1905,7 +1937,7 @@
       "player_added_id": "7528",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
+      "weeks_tracked": 5
     },
     {
       "week_added": 1,
@@ -1915,7 +1947,7 @@
       "player_added_id": "10218",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
+      "weeks_tracked": 5
     },
     {
       "week_added": 1,
@@ -1924,7 +1956,147 @@
       "player_added": "Ted Hurst",
       "player_added_id": "13317",
       "used_waiver_priority": false,
+      "cumulative_points_since_add": 5.1,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Player LV",
+      "player_added_id": "LV",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 16.0,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 5,
+      "team_name": "Silverbacks",
+      "player_added": "Hunter Henry",
+      "player_added_id": "3214",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 4.1,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 1,
+      "team_name": "Chuba Bucky Doo",
+      "player_added": "Player LAC",
+      "player_added_id": "LAC",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 2.0,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 1,
+      "team_name": "Chuba Bucky Doo",
+      "player_added": "Chig Okonkwo",
+      "player_added_id": "8210",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 2.6,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 2,
+      "team_name": "Joe Mama Angie Daddy",
+      "player_added": "Malik Davis",
+      "player_added_id": "8800",
+      "used_waiver_priority": true,
       "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 2,
+      "team_name": "Joe Mama Angie Daddy",
+      "player_added": "Mike Washington",
+      "player_added_id": "13305",
+      "used_waiver_priority": true,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 7,
+      "team_name": "Meredith\u2019s Fan Club",
+      "player_added": "Mike Washington",
+      "player_added_id": "13305",
+      "used_waiver_priority": true,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Mike Washington",
+      "player_added_id": "13305",
+      "used_waiver_priority": true,
+      "cumulative_points_since_add": 4.1,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 10,
+      "team_name": "Pukachu Chews You",
+      "player_added": "Mike Washington",
+      "player_added_id": "13305",
+      "used_waiver_priority": true,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Player DET",
+      "player_added_id": "DET",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 3,
+      "team_name": "Broke Dak Mountain",
+      "player_added": "Najee Harris",
+      "player_added_id": "7528",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 3,
+      "team_name": "Broke Dak Mountain",
+      "player_added": "Xavier Hutchinson",
+      "player_added_id": "10218",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 3
+    },
+    {
+      "week_added": 1,
+      "roster_id": 5,
+      "team_name": "Silverbacks",
+      "player_added": "Kaelon Black",
+      "player_added_id": "13414",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 7.5,
+      "weeks_tracked": 2
+    },
+    {
+      "week_added": 1,
+      "roster_id": 6,
+      "team_name": "Geoff Collins Suvivor",
+      "player_added": "Devaughn Vele",
+      "player_added_id": "11834",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 17.4,
       "weeks_tracked": 2
     },
     {
@@ -1934,7 +2106,67 @@
       "player_added": "Player LV",
       "player_added_id": "LV",
       "used_waiver_priority": false,
+      "cumulative_points_since_add": 16.0,
+      "weeks_tracked": 2
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Isiah Pacheco",
+      "player_added_id": "8205",
+      "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 2
+    },
+    {
+      "week_added": 1,
+      "roster_id": 11,
+      "team_name": "demon44",
+      "player_added": "Ja'Kobi Lane",
+      "player_added_id": "13293",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 1.6,
+      "weeks_tracked": 2
+    },
+    {
+      "week_added": 1,
+      "roster_id": 2,
+      "team_name": "Joe Mama Angie Daddy",
+      "player_added": "Jacob Saylors",
+      "player_added_id": "11237",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 2
+    },
+    {
+      "week_added": 1,
+      "roster_id": 5,
+      "team_name": "Silverbacks",
+      "player_added": "Tre Tucker",
+      "player_added_id": "10213",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 2
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Ted Hurst",
+      "player_added_id": "13317",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 5.1,
+      "weeks_tracked": 2
+    },
+    {
+      "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Player LV",
+      "player_added_id": "LV",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 16.0,
       "weeks_tracked": 2
     },
     {
@@ -1944,7 +2176,7 @@
       "player_added": "Hunter Henry",
       "player_added_id": "3214",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 4.1,
       "weeks_tracked": 2
     },
     {
@@ -1954,7 +2186,7 @@
       "player_added": "Player LAC",
       "player_added_id": "LAC",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 2.0,
       "weeks_tracked": 2
     },
     {
@@ -1964,7 +2196,7 @@
       "player_added": "Chig Okonkwo",
       "player_added_id": "8210",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 2.6,
       "weeks_tracked": 2
     },
     {
@@ -2004,7 +2236,7 @@
       "player_added": "Mike Washington",
       "player_added_id": "13305",
       "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 4.1,
       "weeks_tracked": 2
     },
     {
@@ -2049,22 +2281,62 @@
     },
     {
       "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Kaelon Black",
-      "player_added_id": "13414",
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Ted Hurst",
+      "player_added_id": "13317",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 5.1,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 10,
+      "team_name": "Pukachu Chews You",
+      "player_added": "Michael Mayer",
+      "player_added_id": "9482",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 6.2,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 10,
+      "team_name": "Pukachu Chews You",
+      "player_added": "Tank Dell",
+      "player_added_id": "9502",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
       "weeks_tracked": 1
     },
     {
       "week_added": 1,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Michael Penix",
+      "player_added_id": "11559",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
+      "roster_id": 5,
+      "team_name": "Silverbacks",
+      "player_added": "Kaelon Black",
+      "player_added_id": "13414",
+      "used_waiver_priority": false,
+      "cumulative_points_since_add": 7.5,
+      "weeks_tracked": 1
+    },
+    {
+      "week_added": 1,
       "roster_id": 6,
-      "team_name": "Geoff Collins Suvivor",
+      "team_name": "Long Live King Henry ",
       "player_added": "Devaughn Vele",
       "player_added_id": "11834",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 17.4,
       "weeks_tracked": 1
     },
     {
@@ -2074,7 +2346,7 @@
       "player_added": "Player LV",
       "player_added_id": "LV",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 16.0,
       "weeks_tracked": 1
     },
     {
@@ -2094,7 +2366,7 @@
       "player_added": "Ja'Kobi Lane",
       "player_added_id": "13293",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 1.6,
       "weeks_tracked": 1
     },
     {
@@ -2124,7 +2396,7 @@
       "player_added": "Ted Hurst",
       "player_added_id": "13317",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 5.1,
       "weeks_tracked": 1
     },
     {
@@ -2134,7 +2406,7 @@
       "player_added": "Player LV",
       "player_added_id": "LV",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 16.0,
       "weeks_tracked": 1
     },
     {
@@ -2144,7 +2416,7 @@
       "player_added": "Hunter Henry",
       "player_added_id": "3214",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 4.1,
       "weeks_tracked": 1
     },
     {
@@ -2154,7 +2426,7 @@
       "player_added": "Player LAC",
       "player_added_id": "LAC",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 2.0,
       "weeks_tracked": 1
     },
     {
@@ -2164,7 +2436,7 @@
       "player_added": "Chig Okonkwo",
       "player_added_id": "8210",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 2.6,
       "weeks_tracked": 1
     },
     {
@@ -2204,7 +2476,7 @@
       "player_added": "Mike Washington",
       "player_added_id": "13305",
       "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
+      "cumulative_points_since_add": 4.1,
       "weeks_tracked": 1
     },
     {
