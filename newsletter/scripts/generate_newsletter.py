@@ -95,18 +95,24 @@ external projections or a proprietary value board — don't invent one or
 imply one exists. Grade transactions using ONLY what's in the data below:
 - "transactions_this_week" gives you PROCESS signals for brand-new moves:
   this is a rolling-waivers league with NO FAAB — there's no dollar amount
-  to grade. Instead judge whether the move was a "waiver" claim (burned
-  priority, sends that roster to the back of the order) or a "free_agent"
-  pickup (free, uncontested — nobody else wanted him). A team spending its
-  #1 priority slot is making a real bet; a free-agent add off the wire the
-  day after cut day isn't. Also judge whether the position was actually
-  needed on that roster, and what got dropped to make room. If
-  "possible_handcuff_of" is set on an add, that means the player shares an
-  NFL team and position with someone already on that roster — very likely
-  a deliberate injury-insurance pickup, not a speculative panic add. Grade
-  it as the sensible depth move it almost certainly is unless something
-  else about the move suggests otherwise; don't read it as low-value just
-  because the added player isn't a starter-caliber name on his own.
+  to grade. Every entry has a precomputed "priority_cost_description" —
+  USE THIS DIRECTLY for what the move actually cost, don't estimate or
+  generalize from used_waiver_priority alone. A team's priority number
+  varies week to week (1 = best, 12 = worst) and burning a bad priority
+  slot (already near the back) costs almost nothing, while burning a
+  premium one is a real bet — priority_cost_description already reflects
+  the ACTUAL number for that specific team, so quote its substance
+  directly rather than writing your own generic line like "spent their
+  #1 priority" for every waiver claim regardless of what number it
+  actually was. This was gotten wrong once already. Also judge whether
+  the position was actually needed on that roster, and what got dropped
+  to make room. If "possible_handcuff_of" is set on an add, that means the
+  player shares an NFL team and position with someone already on that
+  roster — very likely a deliberate injury-insurance pickup, not a
+  speculative panic add. Grade it as the sensible depth move it almost
+  certainly is unless something else about the move suggests otherwise;
+  don't read it as low-value just because the added player isn't a
+  starter-caliber name on his own.
 - "transaction_tracking_all_active" gives you RESULTS signals for adds from
   recent weeks: real cumulative points scored since the pickup (already
   correctly scored under this league's exact rules, straight from Sleeper —

@@ -316,6 +316,26 @@ def find_handcuff_teammate(added_player_id, added_player, roster, players_db):
     return None
 
 
+def describe_priority_cost(used_priority, priority_before, team_count):
+    """Precomputed, unambiguous description of what a waiver claim actually
+    cost — added after the model latched onto an illustrative example
+    phrase ('spending its #1 priority slot') and started attaching it to
+    every waiver claim regardless of the team's real priority number. A
+    team burning priority 12 of 12 (already last) gave up almost nothing;
+    a team burning priority 1 of 12 gave up a real, valuable asset. Same
+    fix pattern as market_verdict and roster_lean: hand over the finished
+    conclusion, don't ask the model to correctly interpret a raw number."""
+    if not used_priority:
+        return "no priority spent — an uncontested free-agent pickup, nobody else wanted him"
+    if priority_before is None:
+        return "used a waiver claim, but this team's priority position before the move isn't available"
+    if priority_before <= max(1, team_count // 4):
+        return f"spent a premium priority slot (was #{priority_before} of {team_count}) — a real, costly bet"
+    if priority_before >= team_count - max(1, team_count // 4) + 1:
+        return f"was already near the back of the priority order (#{priority_before} of {team_count}) — burning it cost next to nothing"
+    return f"spent a mid-tier priority slot (#{priority_before} of {team_count})"
+
+
 def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, story_state):
     """Attach names, positions, and pre-move roster construction to each
     transaction — all sourced from Sleeper, nothing external.
@@ -365,6 +385,9 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
                 "player_dropped": resolve_player_name(dropped_pid, players_db) if dropped_pid else None,
                 "used_waiver_priority": used_priority,
                 "waiver_priority_before_move": prev_priority.get(str(roster_id)),
+                "priority_cost_description": describe_priority_cost(
+                    used_priority, prev_priority.get(str(roster_id)), len(roster_names)
+                ),
                 "possible_handcuff_of": find_handcuff_teammate(pid, player, roster, players_db),
                 "confirmed_homer_transaction": bool(note and note.get("homer_team") == player.get("team")),
             })
