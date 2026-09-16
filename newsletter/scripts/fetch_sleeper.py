@@ -293,6 +293,29 @@ def roster_position_counts(roster, players_db):
     return counts
 
 
+def find_handcuff_teammate(added_player_id, added_player, roster, players_db):
+    """If the added player shares an NFL team AND position with someone
+    already on this fantasy roster, that's very likely a handcuff /
+    injury-insurance pickup — not a speculative add. We have no external
+    scouting or depth-chart source in this pipeline, but this signal is
+    fully derivable from Sleeper's own roster + player data: added after
+    a real add (Malik Davis, Javonte Williams' backup) got read as a
+    low-value speculative move when it was actually a deliberate handcuff.
+    Only catches same-team/same-position — doesn't know WHICH one is the
+    lead back, so the model still has to reason about that direction."""
+    added_team = added_player.get("team")
+    added_position = added_player.get("position")
+    if not added_team or not added_position:
+        return None
+    for pid in roster.get("players") or []:
+        if str(pid) == str(added_player_id):
+            continue
+        teammate = players_db.get(str(pid), {})
+        if teammate.get("team") == added_team and teammate.get("position") == added_position:
+            return teammate.get("full_name") or resolve_player_name(pid, players_db)
+    return None
+
+
 def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, story_state):
     """Attach names, positions, and pre-move roster construction to each
     transaction — all sourced from Sleeper, nothing external.
@@ -342,6 +365,7 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
                 "player_dropped": resolve_player_name(dropped_pid, players_db) if dropped_pid else None,
                 "used_waiver_priority": used_priority,
                 "waiver_priority_before_move": prev_priority.get(str(roster_id)),
+                "possible_handcuff_of": find_handcuff_teammate(pid, player, roster, players_db),
                 "confirmed_homer_transaction": bool(note and note.get("homer_team") == player.get("team")),
             })
     return enriched, skipped_incomplete
@@ -433,6 +457,20 @@ def main():
     league = get_league()
     division_names = get_division_names(league)
 
+    # Current waiver priority order — deterministic, no LLM involved. This
+    # is a plain factual list; there's no upside to having the model
+    # author it and real risk of it getting an order or name wrong.
+    current_waiver_priority_order = sorted(
+        (
+            {
+                "priority": r.get("settings", {}).get("waiver_position"),
+                "team_name": roster_names.get(r["roster_id"], {}).get("team_name", "Unknown"),
+            }
+            for r in rosters
+        ),
+        key=lambda x: (x["priority"] is None, x["priority"]),
+    )
+
     matchups_recap = get_matchups(week_to_recap)
     matchups_preview = get_matchups(week_to_preview)
     raw_transactions = get_transactions(week_to_recap)
@@ -470,6 +508,7 @@ def main():
         "week_upcoming": week_to_preview,
         "standings": standings,
         "playoff_picture": compute_playoff_picture(standings),
+        "current_waiver_priority_order": current_waiver_priority_order,
         "matchups_recap": matchups_recap,
         "matchups_preview": matchups_preview,
         "league_top_scorer": league_top_scorer,

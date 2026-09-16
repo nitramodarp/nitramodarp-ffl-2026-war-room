@@ -23,6 +23,14 @@ def main():
         for r in sorted(draft["power_rankings"], key=lambda x: x["rank"])
     )
 
+    # Deterministic — built directly from raw data, not authored by the
+    # model. It's a plain factual ordered list; there's no upside to
+    # having an LLM write it and real risk of a wrong order or name.
+    waiver_priority_html = "\n".join(
+        f"      <li>{entry['priority']}. {entry['team_name']}</li>"
+        for entry in raw.get("current_waiver_priority_order", [])
+    )
+
     html = (template
         .replace("{{HEADLINE}}", draft["headline"])
         .replace("{{WEEK}}", str(raw["week_recapped"]))
@@ -32,6 +40,7 @@ def main():
         .replace("{{TRANSACTION_DESK}}", draft["transaction_desk"])
         .replace("{{POWER_RANKINGS_HTML}}", rankings_html)
         .replace("{{STANDINGS_NARRATIVE}}", draft["standings_narrative"])
+        .replace("{{WAIVER_PRIORITY_HTML}}", waiver_priority_html)
         .replace("{{LOOK_AHEAD}}", draft["look_ahead"])
     )
 

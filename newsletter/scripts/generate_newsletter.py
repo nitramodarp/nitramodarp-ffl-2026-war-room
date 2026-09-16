@@ -100,7 +100,13 @@ imply one exists. Grade transactions using ONLY what's in the data below:
   pickup (free, uncontested — nobody else wanted him). A team spending its
   #1 priority slot is making a real bet; a free-agent add off the wire the
   day after cut day isn't. Also judge whether the position was actually
-  needed on that roster, and what got dropped to make room.
+  needed on that roster, and what got dropped to make room. If
+  "possible_handcuff_of" is set on an add, that means the player shares an
+  NFL team and position with someone already on that roster — very likely
+  a deliberate injury-insurance pickup, not a speculative panic add. Grade
+  it as the sensible depth move it almost certainly is unless something
+  else about the move suggests otherwise; don't read it as low-value just
+  because the added player isn't a starter-caliber name on his own.
 - "transaction_tracking_all_active" gives you RESULTS signals for adds from
   recent weeks: real cumulative points scored since the pickup (already
   correctly scored under this league's exact rules, straight from Sleeper —
