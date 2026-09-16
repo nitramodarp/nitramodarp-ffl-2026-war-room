@@ -301,6 +301,56 @@
       }
     ]
   },
+  "current_waiver_priority_order": [
+    {
+      "priority": 1,
+      "team_name": "Waffle House"
+    },
+    {
+      "priority": 2,
+      "team_name": "Dak to the Future"
+    },
+    {
+      "priority": 3,
+      "team_name": "Long Live King Henry "
+    },
+    {
+      "priority": 4,
+      "team_name": "Meredith\u2019s Fan Club"
+    },
+    {
+      "priority": 5,
+      "team_name": "Broke Dak Mountain"
+    },
+    {
+      "priority": 6,
+      "team_name": "Chuba Bucky Doo"
+    },
+    {
+      "priority": 7,
+      "team_name": "Screaming Eagles"
+    },
+    {
+      "priority": 8,
+      "team_name": "demon44"
+    },
+    {
+      "priority": 9,
+      "team_name": "Silverbacks"
+    },
+    {
+      "priority": 10,
+      "team_name": "Pukachu Chews You"
+    },
+    {
+      "priority": 11,
+      "team_name": "mikelanta"
+    },
+    {
+      "priority": 12,
+      "team_name": "Joe Mama Angie Daddy"
+    }
+  ],
   "matchups_recap": [
     {
       "points": 176.5,
@@ -3284,6 +3334,7 @@
       "player_dropped": "Michael Penix",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3296,6 +3347,7 @@
       "player_dropped": null,
       "used_waiver_priority": false,
       "waiver_priority_before_move": 10,
+      "possible_handcuff_of": "Brock Bowers",
       "confirmed_homer_transaction": false
     },
     {
@@ -3308,6 +3360,7 @@
       "player_dropped": "T.J. Hockenson",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 10,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3320,6 +3373,7 @@
       "player_dropped": "Ted Hurst",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3332,6 +3386,7 @@
       "player_dropped": "Tre Tucker",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 9,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3344,6 +3399,7 @@
       "player_dropped": "Denzel Boston",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 3,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3356,6 +3412,7 @@
       "player_dropped": null,
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3368,6 +3425,7 @@
       "player_dropped": "Las Vegas Raiders",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3380,6 +3438,7 @@
       "player_dropped": "Dylan Sampson",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 8,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3392,6 +3451,7 @@
       "player_dropped": "Malik Davis",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 12,
+      "possible_handcuff_of": "Jahmyr Gibbs",
       "confirmed_homer_transaction": false
     },
     {
@@ -3404,6 +3464,7 @@
       "player_dropped": "Jalen Nailor",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 9,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3416,6 +3477,7 @@
       "player_dropped": "Oronde Gadsden",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3428,6 +3490,7 @@
       "player_dropped": "Detroit Lions",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3440,6 +3503,7 @@
       "player_dropped": "Kimani Vidal",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 9,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3452,6 +3516,7 @@
       "player_dropped": "Kaelon Black",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 6,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3464,6 +3529,7 @@
       "player_dropped": "Hunter Henry",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 6,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3476,6 +3542,7 @@
       "player_dropped": "Tre Tucker",
       "used_waiver_priority": true,
       "waiver_priority_before_move": 12,
+      "possible_handcuff_of": "Javonte Williams",
       "confirmed_homer_transaction": false
     },
     {
@@ -3488,6 +3555,7 @@
       "player_dropped": "Ted Hurst",
       "used_waiver_priority": true,
       "waiver_priority_before_move": 11,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3500,6 +3568,7 @@
       "player_dropped": "Jalen McMillan",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3512,6 +3581,7 @@
       "player_dropped": null,
       "used_waiver_priority": false,
       "waiver_priority_before_move": 5,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
     {
@@ -3524,6 +3594,7 @@
       "player_dropped": null,
       "used_waiver_priority": false,
       "waiver_priority_before_move": 5,
+      "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     }
   ],
