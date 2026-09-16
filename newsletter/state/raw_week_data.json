@@ -124,6 +124,133 @@
       "fpts_against": 99.8
     }
   ],
+  "playoff_picture": {
+    "note": "6th and final playoff spot goes to the highest-scoring team among those NOT in the top 5 by record \u2014 not the next-best record.",
+    "top_5_by_record": [
+      {
+        "roster_id": 9,
+        "team_name": "mikelanta",
+        "is_commissioner": false,
+        "wins": 1,
+        "losses": 0,
+        "ties": 0,
+        "fpts": 213.65,
+        "fpts_against": 176.5
+      },
+      {
+        "roster_id": 6,
+        "team_name": "Long Live King Henry ",
+        "is_commissioner": false,
+        "wins": 1,
+        "losses": 0,
+        "ties": 0,
+        "fpts": 157.15,
+        "fpts_against": 127.8
+      },
+      {
+        "roster_id": 8,
+        "team_name": "Dak to the Future",
+        "is_commissioner": false,
+        "wins": 1,
+        "losses": 0,
+        "ties": 0,
+        "fpts": 133.95,
+        "fpts_against": 125.6
+      },
+      {
+        "roster_id": 5,
+        "team_name": "Silverbacks",
+        "is_commissioner": false,
+        "wins": 1,
+        "losses": 0,
+        "ties": 0,
+        "fpts": 128.35,
+        "fpts_against": 100.95
+      },
+      {
+        "roster_id": 11,
+        "team_name": "demon44",
+        "is_commissioner": false,
+        "wins": 1,
+        "losses": 0,
+        "ties": 0,
+        "fpts": 104.55,
+        "fpts_against": 102.2
+      }
+    ],
+    "sixth_seed_by_points": {
+      "roster_id": 1,
+      "team_name": "Chuba Bucky Doo",
+      "is_commissioner": true,
+      "wins": 0,
+      "losses": 1,
+      "ties": 0,
+      "fpts": 176.5,
+      "fpts_against": 213.65
+    },
+    "on_the_bubble_by_points": {
+      "roster_id": 4,
+      "team_name": "Waffle House",
+      "is_commissioner": false,
+      "wins": 0,
+      "losses": 1,
+      "ties": 0,
+      "fpts": 127.8,
+      "fpts_against": 157.15
+    },
+    "teams_outside_playoff_picture": [
+      {
+        "roster_id": 2,
+        "team_name": "Joe Mama Angie Daddy",
+        "is_commissioner": false,
+        "wins": 0,
+        "losses": 1,
+        "ties": 0,
+        "fpts": 125.6,
+        "fpts_against": 133.95
+      },
+      {
+        "roster_id": 3,
+        "team_name": "Broke Dak Mountain",
+        "is_commissioner": false,
+        "wins": 0,
+        "losses": 1,
+        "ties": 0,
+        "fpts": 102.2,
+        "fpts_against": 104.55
+      },
+      {
+        "roster_id": 10,
+        "team_name": "Pukachu Chews You",
+        "is_commissioner": false,
+        "wins": 0,
+        "losses": 1,
+        "ties": 0,
+        "fpts": 100.95,
+        "fpts_against": 128.35
+      },
+      {
+        "roster_id": 7,
+        "team_name": "Meredith\u2019s Fan Club",
+        "is_commissioner": false,
+        "wins": 1,
+        "losses": 0,
+        "ties": 0,
+        "fpts": 99.8,
+        "fpts_against": 99.5
+      },
+      {
+        "roster_id": 12,
+        "team_name": "Screaming Eagles",
+        "is_commissioner": false,
+        "wins": 0,
+        "losses": 1,
+        "ties": 0,
+        "fpts": 99.5,
+        "fpts_against": 99.8
+      }
+    ]
+  },
   "matchups_recap": [
     {
       "points": 176.5,
@@ -288,7 +415,7 @@
         },
         {
           "player_id": "LAC",
-          "name": "Player LAC",
+          "name": "Los Angeles Chargers",
           "position": "DEF",
           "points": 2.0,
           "started": true
@@ -459,14 +586,14 @@
         },
         {
           "player_id": "HOU",
-          "name": "Player HOU",
+          "name": "Houston Texans",
           "position": "DEF",
           "points": -2.0,
           "started": true
         },
         {
           "player_id": "SEA",
-          "name": "Player SEA",
+          "name": "Seattle Seahawks",
           "position": "DEF",
           "points": 16.0,
           "started": false
@@ -480,9 +607,9 @@
         "started": false
       },
       "bench_mistake": {
-        "benched_player": "Player SEA",
+        "benched_player": "Seattle Seahawks",
         "benched_points": 16.0,
-        "started_instead": "Player HOU",
+        "started_instead": "Houston Texans",
         "started_points": -2.0,
         "margin": 18.0
       }
@@ -650,7 +777,7 @@
         },
         {
           "player_id": "PHI",
-          "name": "Player PHI",
+          "name": "Philadelphia Eagles",
           "position": "DEF",
           "points": 6.0,
           "started": true
@@ -834,7 +961,7 @@
         },
         {
           "player_id": "JAX",
-          "name": "Player JAX",
+          "name": "Jacksonville Jaguars",
           "position": "DEF",
           "points": 16.0,
           "started": true
@@ -1018,7 +1145,7 @@
         },
         {
           "player_id": "NE",
-          "name": "Player NE",
+          "name": "New England Patriots",
           "position": "DEF",
           "points": 9.0,
           "started": true
@@ -1202,7 +1329,7 @@
         },
         {
           "player_id": "MIN",
-          "name": "Player MIN",
+          "name": "Minnesota Vikings",
           "position": "DEF",
           "points": 8.0,
           "started": true
@@ -1386,7 +1513,7 @@
         },
         {
           "player_id": "KC",
-          "name": "Player KC",
+          "name": "Kansas City Chiefs",
           "position": "DEF",
           "points": 16.0,
           "started": true
@@ -1570,7 +1697,7 @@
         },
         {
           "player_id": "BAL",
-          "name": "Player BAL",
+          "name": "Baltimore Ravens",
           "position": "DEF",
           "points": 9.0,
           "started": true
@@ -1763,7 +1890,7 @@
         },
         {
           "player_id": "LV",
-          "name": "Player LV",
+          "name": "Las Vegas Raiders",
           "position": "DEF",
           "points": 16.0,
           "started": true
@@ -1956,7 +2083,7 @@
         },
         {
           "player_id": "PIT",
-          "name": "Player PIT",
+          "name": "Pittsburgh Steelers",
           "position": "DEF",
           "points": 22.0,
           "started": true
@@ -2140,7 +2267,7 @@
         },
         {
           "player_id": "LAR",
-          "name": "Player LAR",
+          "name": "Los Angeles Rams",
           "position": "DEF",
           "points": 3.0,
           "started": true
@@ -2324,7 +2451,7 @@
         },
         {
           "player_id": "DEN",
-          "name": "Player DEN",
+          "name": "Denver Broncos",
           "position": "DEF",
           "points": 4.0,
           "started": true
@@ -3173,7 +3300,7 @@
       "type": "free_agent",
       "team_name": "mikelanta",
       "roster_id": 9,
-      "player_added": "Player LV",
+      "player_added": "Las Vegas Raiders",
       "player_added_id": "LV",
       "position": "DEF",
       "player_dropped": null,
@@ -3188,7 +3315,7 @@
       "player_added": "Isiah Pacheco",
       "player_added_id": "8205",
       "position": "RB",
-      "player_dropped": null,
+      "player_dropped": "Las Vegas Raiders",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
       "confirmed_homer_transaction": false
@@ -3245,10 +3372,10 @@
       "type": "free_agent",
       "team_name": "mikelanta",
       "roster_id": 9,
-      "player_added": "Player LV",
+      "player_added": "Las Vegas Raiders",
       "player_added_id": "LV",
       "position": "DEF",
-      "player_dropped": null,
+      "player_dropped": "Detroit Lions",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
       "confirmed_homer_transaction": false
@@ -3269,7 +3396,7 @@
       "type": "free_agent",
       "team_name": "Chuba Bucky Doo",
       "roster_id": 1,
-      "player_added": "Player LAC",
+      "player_added": "Los Angeles Chargers",
       "player_added_id": "LAC",
       "position": "DEF",
       "player_dropped": "Kaelon Black",
@@ -3317,7 +3444,7 @@
       "type": "free_agent",
       "team_name": "mikelanta",
       "roster_id": 9,
-      "player_added": "Player DET",
+      "player_added": "Detroit Lions",
       "player_added_id": "DET",
       "position": "DEF",
       "player_dropped": "Jalen McMillan",
@@ -3355,11 +3482,14 @@
       "week_added": 1,
       "roster_id": 9,
       "team_name": "mikelanta",
-      "player_added": "Player DET",
+      "player_added": "Detroit Lions",
       "player_added_id": "DET",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 7
+      "weeks_tracked": 7,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3369,7 +3499,10 @@
       "player_added_id": "7528",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 7
+      "weeks_tracked": 7,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3379,7 +3512,10 @@
       "player_added_id": "10218",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 7
+      "weeks_tracked": 7,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3389,17 +3525,23 @@
       "player_added_id": "13317",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 15.299999999999999,
-      "weeks_tracked": 5
+      "weeks_tracked": 5,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
       "roster_id": 9,
       "team_name": "mikelanta",
-      "player_added": "Player LV",
+      "player_added": "Las Vegas Raiders",
       "player_added_id": "LV",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 48.0,
-      "weeks_tracked": 5
+      "weeks_tracked": 5,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3409,17 +3551,23 @@
       "player_added_id": "3214",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 12.299999999999999,
-      "weeks_tracked": 5
+      "weeks_tracked": 5,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
       "roster_id": 1,
       "team_name": "Chuba Bucky Doo",
-      "player_added": "Player LAC",
+      "player_added": "Los Angeles Chargers",
       "player_added_id": "LAC",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 6.0,
-      "weeks_tracked": 5
+      "weeks_tracked": 5,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3429,7 +3577,10 @@
       "player_added_id": "8210",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 7.800000000000001,
-      "weeks_tracked": 5
+      "weeks_tracked": 5,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3439,27 +3590,10 @@
       "player_added_id": "8800",
       "used_waiver_priority": true,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 5
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 5
-    },
-    {
-      "week_added": 1,
-      "roster_id": 7,
-      "team_name": "Meredith\u2019s Fan Club",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 5
+      "weeks_tracked": 5,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3469,47 +3603,10 @@
       "player_added_id": "13305",
       "used_waiver_priority": true,
       "cumulative_points_since_add": 12.299999999999999,
-      "weeks_tracked": 5
-    },
-    {
-      "week_added": 1,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 5
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player DET",
-      "player_added_id": "DET",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 5
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Najee Harris",
-      "player_added_id": "7528",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 5
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Xavier Hutchinson",
-      "player_added_id": "10218",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 5
+      "weeks_tracked": 5,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3519,7 +3616,10 @@
       "player_added_id": "13414",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 22.5,
-      "weeks_tracked": 4
+      "weeks_tracked": 4,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3529,17 +3629,10 @@
       "player_added_id": "11834",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 52.199999999999996,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player LV",
-      "player_added_id": "LV",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 48.0,
-      "weeks_tracked": 4
+      "weeks_tracked": 4,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3549,7 +3642,10 @@
       "player_added_id": "8205",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
+      "weeks_tracked": 4,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3559,7 +3655,10 @@
       "player_added_id": "13293",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 4.800000000000001,
-      "weeks_tracked": 4
+      "weeks_tracked": 4,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3569,7 +3668,10 @@
       "player_added_id": "11237",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
+      "weeks_tracked": 4,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3579,147 +3681,10 @@
       "player_added_id": "10213",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Ted Hurst",
-      "player_added_id": "13317",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 15.299999999999999,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player LV",
-      "player_added_id": "LV",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 48.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Hunter Henry",
-      "player_added_id": "3214",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 12.299999999999999,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 1,
-      "team_name": "Chuba Bucky Doo",
-      "player_added": "Player LAC",
-      "player_added_id": "LAC",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 6.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 1,
-      "team_name": "Chuba Bucky Doo",
-      "player_added": "Chig Okonkwo",
-      "player_added_id": "8210",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 7.800000000000001,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Malik Davis",
-      "player_added_id": "8800",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 7,
-      "team_name": "Meredith\u2019s Fan Club",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 12.299999999999999,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player DET",
-      "player_added_id": "DET",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Najee Harris",
-      "player_added_id": "7528",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Xavier Hutchinson",
-      "player_added_id": "10218",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Ted Hurst",
-      "player_added_id": "13317",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 15.299999999999999,
-      "weeks_tracked": 3
+      "weeks_tracked": 4,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3729,7 +3694,10 @@
       "player_added_id": "9482",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 18.6,
-      "weeks_tracked": 3
+      "weeks_tracked": 3,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3739,7 +3707,10 @@
       "player_added_id": "9502",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
+      "weeks_tracked": 3,
+      "weeks_counted": [
+        1
+      ]
     },
     {
       "week_added": 1,
@@ -3749,657 +3720,10 @@
       "player_added_id": "11559",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Kaelon Black",
-      "player_added_id": "13414",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 22.5,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 6,
-      "team_name": "Long Live King Henry ",
-      "player_added": "Devaughn Vele",
-      "player_added_id": "11834",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 52.199999999999996,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player LV",
-      "player_added_id": "LV",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 48.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Isiah Pacheco",
-      "player_added_id": "8205",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 11,
-      "team_name": "demon44",
-      "player_added": "Ja'Kobi Lane",
-      "player_added_id": "13293",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 4.800000000000001,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Jacob Saylors",
-      "player_added_id": "11237",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Tre Tucker",
-      "player_added_id": "10213",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Ted Hurst",
-      "player_added_id": "13317",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 15.299999999999999,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player LV",
-      "player_added_id": "LV",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 48.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Hunter Henry",
-      "player_added_id": "3214",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 12.299999999999999,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 1,
-      "team_name": "Chuba Bucky Doo",
-      "player_added": "Player LAC",
-      "player_added_id": "LAC",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 6.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 1,
-      "team_name": "Chuba Bucky Doo",
-      "player_added": "Chig Okonkwo",
-      "player_added_id": "8210",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 7.800000000000001,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Malik Davis",
-      "player_added_id": "8800",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 7,
-      "team_name": "Meredith\u2019s Fan Club",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 12.299999999999999,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player DET",
-      "player_added_id": "DET",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Najee Harris",
-      "player_added_id": "7528",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Xavier Hutchinson",
-      "player_added_id": "10218",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Ted Hurst",
-      "player_added_id": "13317",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 10.2,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Michael Mayer",
-      "player_added_id": "9482",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 12.4,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Tank Dell",
-      "player_added_id": "9502",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Michael Penix",
-      "player_added_id": "11559",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Kaelon Black",
-      "player_added_id": "13414",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 15.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 6,
-      "team_name": "Long Live King Henry ",
-      "player_added": "Devaughn Vele",
-      "player_added_id": "11834",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 34.8,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player LV",
-      "player_added_id": "LV",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 32.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Isiah Pacheco",
-      "player_added_id": "8205",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 11,
-      "team_name": "demon44",
-      "player_added": "Ja'Kobi Lane",
-      "player_added_id": "13293",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 3.2,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Jacob Saylors",
-      "player_added_id": "11237",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Tre Tucker",
-      "player_added_id": "10213",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Ted Hurst",
-      "player_added_id": "13317",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 10.2,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player LV",
-      "player_added_id": "LV",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 32.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Hunter Henry",
-      "player_added_id": "3214",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 8.2,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 1,
-      "team_name": "Chuba Bucky Doo",
-      "player_added": "Player LAC",
-      "player_added_id": "LAC",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 4.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 1,
-      "team_name": "Chuba Bucky Doo",
-      "player_added": "Chig Okonkwo",
-      "player_added_id": "8210",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 5.2,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Malik Davis",
-      "player_added_id": "8800",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 7,
-      "team_name": "Meredith\u2019s Fan Club",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 8.2,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player DET",
-      "player_added_id": "DET",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Najee Harris",
-      "player_added_id": "7528",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Xavier Hutchinson",
-      "player_added_id": "10218",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Ted Hurst",
-      "player_added_id": "13317",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 5.1,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Michael Mayer",
-      "player_added_id": "9482",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 6.2,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Tank Dell",
-      "player_added_id": "9502",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Michael Penix",
-      "player_added_id": "11559",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Kaelon Black",
-      "player_added_id": "13414",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 7.5,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 6,
-      "team_name": "Long Live King Henry ",
-      "player_added": "Devaughn Vele",
-      "player_added_id": "11834",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 17.4,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player LV",
-      "player_added_id": "LV",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 16.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Isiah Pacheco",
-      "player_added_id": "8205",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 11,
-      "team_name": "demon44",
-      "player_added": "Ja'Kobi Lane",
-      "player_added_id": "13293",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 1.6,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Jacob Saylors",
-      "player_added_id": "11237",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Tre Tucker",
-      "player_added_id": "10213",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Ted Hurst",
-      "player_added_id": "13317",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 5.1,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player LV",
-      "player_added_id": "LV",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 16.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 5,
-      "team_name": "Silverbacks",
-      "player_added": "Hunter Henry",
-      "player_added_id": "3214",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 4.1,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 1,
-      "team_name": "Chuba Bucky Doo",
-      "player_added": "Player LAC",
-      "player_added_id": "LAC",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 2.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 1,
-      "team_name": "Chuba Bucky Doo",
-      "player_added": "Chig Okonkwo",
-      "player_added_id": "8210",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 2.6,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Malik Davis",
-      "player_added_id": "8800",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Mike Washington",
-      "player_added_id": "13305",
-      "used_waiver_priority": true,
-      "cumulative_points_since_add": 4.1,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "Player DET",
-      "player_added_id": "DET",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Najee Harris",
-      "player_added_id": "7528",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
-    },
-    {
-      "week_added": 1,
-      "roster_id": 3,
-      "team_name": "Broke Dak Mountain",
-      "player_added": "Xavier Hutchinson",
-      "player_added_id": "10218",
-      "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1
+      "weeks_tracked": 3,
+      "weeks_counted": [
+        1
+      ]
     }
   ]
 }
