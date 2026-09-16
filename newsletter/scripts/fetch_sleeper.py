@@ -13,7 +13,7 @@ import json
 import os
 import time
 import requests
-from config import LEAGUE_ID, OWNER_MAP, PATHS, COMMISSIONER_OWNER_USERNAME, OWNER_NOTES
+from config import LEAGUE_ID, OWNER_MAP, PATHS, COMMISSIONER_OWNER_USERNAME, OWNER_NOTES, resolve_player_name, NFL_TEAM_NAMES
 
 BASE = "https://api.sleeper.app/v1"
 PLAYERS_CACHE_PATH = "newsletter/state/players_cache.json"
@@ -108,6 +108,28 @@ def build_standings(rosters, roster_names):
     return standings
 
 
+def compute_playoff_picture(standings):
+    """This league's playoff format is NOT standard top-6-by-record: the
+    top 5 teams by record get in normally, but the 6th and final spot goes
+    to whichever of the REMAINING 7 teams has the highest total points
+    scored on the season — not the next-best record. Confirmed directly by
+    the commissioner. Computed here rather than left to the model, since
+    an unusual rule like this is exactly the kind of thing that's easy to
+    silently get wrong by defaulting to the standard assumption."""
+    top_5 = standings[:5]
+    remaining = sorted(standings[5:], key=lambda x: -x["fpts"])
+    sixth_seed = remaining[0] if remaining else None
+    on_the_bubble = remaining[1] if len(remaining) > 1 else None
+    return {
+        "note": "6th and final playoff spot goes to the highest-scoring team "
+                "among those NOT in the top 5 by record — not the next-best record.",
+        "top_5_by_record": top_5,
+        "sixth_seed_by_points": sixth_seed,
+        "on_the_bubble_by_points": on_the_bubble,
+        "teams_outside_playoff_picture": remaining[2:],
+    }
+
+
 def determine_weeks(nfl_state):
     current = nfl_state["week"]
     return max(current - 1, 1), current
@@ -141,10 +163,11 @@ def enrich_matchup_players(matchups, players_db):
         resolved = []
         for pid, pts in players_points.items():
             player = players_db.get(str(pid), {})
+            position = player.get("position") or ("DEF" if pid in NFL_TEAM_NAMES else "UNK")
             resolved.append({
                 "player_id": pid,
-                "name": player.get("full_name", f"Player {pid}"),
-                "position": player.get("position", "UNK"),
+                "name": resolve_player_name(pid, players_db),
+                "position": position,
                 "points": pts or 0,
                 "started": pid in starters,
             })
@@ -248,17 +271,16 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
             roster = rosters_by_id.get(roster_id, {})
             counts_before = roster_position_counts(roster, players_db)
             dropped_pid = next((dpid for dpid, drid in drops.items() if drid == roster_id), None)
-            dropped_player = players_db.get(str(dropped_pid), {}) if dropped_pid else None
             owner_username = roster_names.get(roster_id, {}).get("owner_username")  # internal only, not written out below
             note = OWNER_NOTES.get(owner_username)
             enriched.append({
                 "type": t["type"],
                 "team_name": roster_names.get(roster_id, {}).get("team_name", "Unknown"),
                 "roster_id": roster_id,
-                "player_added": player.get("full_name", f"Player {pid}"),
+                "player_added": resolve_player_name(pid, players_db),
                 "player_added_id": pid,
-                "position": player.get("position"),
-                "player_dropped": dropped_player.get("full_name") if dropped_player else None,
+                "position": player.get("position") or ("DEF" if pid in NFL_TEAM_NAMES else None),
+                "player_dropped": resolve_player_name(dropped_pid, players_db) if dropped_pid else None,
                 "used_waiver_priority": used_priority,
                 "waiver_priority_before_move": prev_priority.get(str(roster_id)),
                 "confirmed_homer_transaction": bool(note and note.get("homer_team") == player.get("team")),
@@ -278,11 +300,23 @@ def track_waiver_priority(story_state, rosters):
 
 def update_transaction_tracking(story_state, new_transactions, week):
     """Add this week's adds to the rolling tracker so future weeks can
-    report real cumulative points scored since the pickup."""
+    report real cumulative points scored since the pickup.
+
+    Deduplicated by (roster_id, player_added_id, week_added) — confirmed in
+    production that re-running the workflow multiple times for the same
+    week (routine during testing/debugging) silently appended a fresh
+    duplicate entry every single time, with no cleanup. One case grew to
+    105 tracked entries where 22 distinct ones should have existed. This
+    function must be safe to call any number of times for the same week's
+    data without changing the result beyond the first call."""
     tracked = story_state.setdefault("transaction_tracking", [])
+    existing_keys = {(t["roster_id"], t["player_added_id"], t["week_added"]) for t in tracked}
     for tx in new_transactions:
         if tx["type"] == "trade":
             continue  # trades tracked separately if desired later; keep v1 simple
+        key = (tx["roster_id"], tx["player_added_id"], week)
+        if key in existing_keys:
+            continue  # already tracked from a prior run of this same week — don't duplicate
         tracked.append({
             "week_added": week,
             "roster_id": tx["roster_id"],
@@ -292,23 +326,35 @@ def update_transaction_tracking(story_state, new_transactions, week):
             "used_waiver_priority": tx["used_waiver_priority"],
             "cumulative_points_since_add": 0.0,
             "weeks_tracked": 0,
+            "weeks_counted": [],  # which week numbers have already had points applied — prevents double-counting on re-runs
         })
+        existing_keys.add(key)
     return tracked
 
 
 def refresh_tracked_points(story_state, current_week_matchups, current_week):
     """For every add still inside its tracking window, add this week's
     actual scored points (already under the league's real scoring) to its
-    running total. Drops tracking after TRANSACTION_TRACKING_WINDOW_WEEKS."""
+    running total. Drops tracking after TRANSACTION_TRACKING_WINDOW_WEEKS.
+
+    Idempotent per week via weeks_counted — re-running this for the same
+    current_week (routine during testing) must not add the same week's
+    points to the total a second time. Older entries from before this
+    field existed default to an empty list via .setdefault, so they'll
+    correctly accept the next real week's points without re-adding
+    anything already (incorrectly) baked into their total."""
     tracked = story_state.get("transaction_tracking", [])
     points_by_roster = {m["roster_id"]: m.get("players_points", {}) for m in current_week_matchups}
     still_tracking = []
     for entry in tracked:
+        entry.setdefault("weeks_counted", [])
         weeks_elapsed = current_week - entry["week_added"]
         if 0 <= weeks_elapsed <= TRANSACTION_TRACKING_WINDOW_WEEKS:
-            pts = points_by_roster.get(entry["roster_id"], {}).get(str(entry["player_added_id"]), 0) or 0
-            entry["cumulative_points_since_add"] += pts
-            entry["weeks_tracked"] += 1
+            if current_week not in entry["weeks_counted"]:
+                pts = points_by_roster.get(entry["roster_id"], {}).get(str(entry["player_added_id"]), 0) or 0
+                entry["cumulative_points_since_add"] += pts
+                entry["weeks_tracked"] += 1
+                entry["weeks_counted"].append(current_week)
             still_tracking.append(entry)
         elif weeks_elapsed < 0:
             still_tracking.append(entry)  # not reached yet, shouldn't happen but keep safe
@@ -357,6 +403,7 @@ def main():
         "week_recapped": week_to_recap,
         "week_upcoming": week_to_preview,
         "standings": standings,
+        "playoff_picture": compute_playoff_picture(standings),
         "matchups_recap": matchups_recap,
         "matchups_preview": matchups_preview,
         "league_top_scorer": league_top_scorer,

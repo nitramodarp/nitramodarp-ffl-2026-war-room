@@ -121,12 +121,13 @@ Return ONLY valid JSON (no markdown fences, no preamble) matching this shape:
   "transaction_desk": "1-3 paragraphs grading the week's waiver adds and
     trades against real scoring logic, calling out good and bad process",
   "power_rankings": [{"rank": 1, "team": "name", "blurb": "one line"}, ... all 12],
-  "standings_narrative": "1-2 paragraphs on the playoff picture, who's on
-    the bubble with 6 teams making it",
+  "standings_narrative": "1-2 paragraphs on the playoff picture. Use
+    playoff_picture directly (see below) rather than assuming standard
+    top-6-by-record — this league's 6th and final spot works differently.",
   "look_ahead": "1-2 paragraphs previewing next week's matchups",
   "story_state_updates": {
     "running_jokes": ["any new or continued bits to track"],
-    "streaks": {"team_name": "description of current streak"},
+    "streaks": {"<real team name only — NEVER a username or person's name>": "description of current streak"},
     "notable_quotes": ["anything worth remembering"]
   }
 }
@@ -249,9 +250,23 @@ def main():
     # Fold this week's updates into persistent state
     updates = draft.get("story_state_updates", {})
     story_state["last_week_updated"] = raw["week_recapped"]
-    story_state["running_jokes"] = list(set(
-        story_state.get("running_jokes", []) + updates.get("running_jokes", [])
-    ))
+
+    # Dedupe exact repeats (order-preserving) AND cap length — the model
+    # rewords the same underlying story slightly differently most weeks
+    # ("The Great Zero enters its third week" vs "...is officially over"),
+    # so exact-string dedup alone doesn't stop the list from growing
+    # unbounded. Confirmed in production: 27+ near-duplicate entries about
+    # the same 2-3 stories after repeated runs. Capping at the most recent
+    # 10 bounds the damage even without true semantic dedup.
+    combined_jokes = story_state.get("running_jokes", []) + updates.get("running_jokes", [])
+    seen = set()
+    deduped_jokes = []
+    for joke in combined_jokes:
+        if joke not in seen:
+            seen.add(joke)
+            deduped_jokes.append(joke)
+    story_state["running_jokes"] = deduped_jokes[-10:]
+
     story_state.setdefault("streaks", {}).update(updates.get("streaks", {}))
     story_state["notable_quotes"] = (
         story_state.get("notable_quotes", []) + updates.get("notable_quotes", [])

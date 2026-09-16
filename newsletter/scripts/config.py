@@ -42,6 +42,39 @@ OWNER_NOTES = {
     },
 }
 
+# Sleeper's player database doesn't populate full_name for team defenses
+# the same way it does individual players (confirmed in production: DEF
+# adds/drops were resolving to "Player DET" instead of "Detroit Lions").
+# The draft-recap pipeline dodges this by using a different metadata field
+# draft picks carry that transactions/matchups don't — this static mapping
+# is the reliable fallback for everywhere else.
+NFL_TEAM_NAMES = {
+    "ARI": "Arizona Cardinals", "ATL": "Atlanta Falcons", "BAL": "Baltimore Ravens",
+    "BUF": "Buffalo Bills", "CAR": "Carolina Panthers", "CHI": "Chicago Bears",
+    "CIN": "Cincinnati Bengals", "CLE": "Cleveland Browns", "DAL": "Dallas Cowboys",
+    "DEN": "Denver Broncos", "DET": "Detroit Lions", "GB": "Green Bay Packers",
+    "HOU": "Houston Texans", "IND": "Indianapolis Colts", "JAX": "Jacksonville Jaguars",
+    "KC": "Kansas City Chiefs", "LAC": "Los Angeles Chargers", "LAR": "Los Angeles Rams",
+    "LV": "Las Vegas Raiders", "MIA": "Miami Dolphins", "MIN": "Minnesota Vikings",
+    "NE": "New England Patriots", "NO": "New Orleans Saints", "NYG": "New York Giants",
+    "NYJ": "New York Jets", "PHI": "Philadelphia Eagles", "PIT": "Pittsburgh Steelers",
+    "SEA": "Seattle Seahawks", "SF": "San Francisco 49ers", "TB": "Tampa Bay Buccaneers",
+    "TEN": "Tennessee Titans", "WAS": "Washington Commanders",
+}
+
+
+def resolve_player_name(player_id, players_db):
+    """Look up a player's real name, with a guaranteed-correct fallback for
+    team defenses via NFL_TEAM_NAMES rather than a generic 'Player {id}'
+    placeholder."""
+    player = players_db.get(str(player_id), {})
+    name = player.get("full_name")
+    if name:
+        return name
+    if player_id in NFL_TEAM_NAMES:
+        return NFL_TEAM_NAMES[player_id]
+    return f"Player {player_id}"
+
 PATHS = {
     "raw_data": "newsletter/state/raw_week_data.json",
     "story_state": "newsletter/state/story_state.json",
