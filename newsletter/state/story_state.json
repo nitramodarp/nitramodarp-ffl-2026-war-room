@@ -39,7 +39,7 @@
       "player_added_id": "DET",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 7,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -47,12 +47,12 @@
     {
       "week_added": 1,
       "roster_id": 3,
-      "team_name": "BrianHixon",
+      "team_name": "Broke Dak Mountain",
       "player_added": "Najee Harris",
       "player_added_id": "7528",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 7,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -60,12 +60,12 @@
     {
       "week_added": 1,
       "roster_id": 3,
-      "team_name": "BrianHixon",
+      "team_name": "Broke Dak Mountain",
       "player_added": "Xavier Hutchinson",
       "player_added_id": "10218",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 7,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -77,8 +77,8 @@
       "player_added": "Ted Hurst",
       "player_added_id": "13317",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 15.299999999999999,
-      "weeks_tracked": 5,
+      "cumulative_points_since_add": 5.1,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -90,8 +90,8 @@
       "player_added": "Las Vegas Raiders",
       "player_added_id": "LV",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 48.0,
-      "weeks_tracked": 5,
+      "cumulative_points_since_add": 16.0,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -103,8 +103,8 @@
       "player_added": "Hunter Henry",
       "player_added_id": "3214",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 12.299999999999999,
-      "weeks_tracked": 5,
+      "cumulative_points_since_add": 4.1,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -116,8 +116,8 @@
       "player_added": "Los Angeles Chargers",
       "player_added_id": "LAC",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 6.0,
-      "weeks_tracked": 5,
+      "cumulative_points_since_add": 2.0,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -129,8 +129,8 @@
       "player_added": "Chig Okonkwo",
       "player_added_id": "8210",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 7.800000000000001,
-      "weeks_tracked": 5,
+      "cumulative_points_since_add": 2.6,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -143,7 +143,7 @@
       "player_added_id": "8800",
       "used_waiver_priority": true,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 5,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -155,8 +155,8 @@
       "player_added": "Mike Washington",
       "player_added_id": "13305",
       "used_waiver_priority": true,
-      "cumulative_points_since_add": 12.299999999999999,
-      "weeks_tracked": 5,
+      "cumulative_points_since_add": 4.1,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -168,8 +168,8 @@
       "player_added": "Kaelon Black",
       "player_added_id": "13414",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 22.5,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 7.5,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -177,12 +177,12 @@
     {
       "week_added": 1,
       "roster_id": 6,
-      "team_name": "Geoff Collins Suvivor",
+      "team_name": "Long Live King Henry ",
       "player_added": "Devaughn Vele",
       "player_added_id": "11834",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 52.199999999999996,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 17.4,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -194,8 +194,8 @@
       "player_added": "Isiah Pacheco",
       "player_added_id": "8205",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 0,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -207,8 +207,8 @@
       "player_added": "Ja'Kobi Lane",
       "player_added_id": "13293",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 4.800000000000001,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 1.6,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -220,8 +220,8 @@
       "player_added": "Jacob Saylors",
       "player_added_id": "11237",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 0,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -234,7 +234,7 @@
       "player_added_id": "10213",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -246,8 +246,8 @@
       "player_added": "Michael Mayer",
       "player_added_id": "9482",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 18.6,
-      "weeks_tracked": 3,
+      "cumulative_points_since_add": 6.2,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -259,8 +259,8 @@
       "player_added": "Tank Dell",
       "player_added_id": "9502",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3,
+      "cumulative_points_since_add": 0,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
@@ -273,7 +273,7 @@
       "player_added_id": "11559",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 3,
+      "weeks_tracked": 1,
       "weeks_counted": [
         1
       ]
