@@ -1271,6 +1271,18 @@ const CONFIG = {
 
   // Draft date (Sat Aug 22 2026 2:00 PM EDT = 18:00 UTC)
   DRAFT_START_UTC: '2026-08-22T18:00:00Z',
+
+  // Michael Salfino's weekly market-share report (The Athletic), separate
+  // published Google Sheet from the board workbook above. He adds two new
+  // tabs each Tuesday — "WR targets Week N" (WR AND TE together, split by
+  // the Pos. column — there is no separate TE tab) and "RB Touches Week N"
+  // (RB only) — and leaves every prior week's tabs live, so the sheet is
+  // its own season archive. Confirmed Sept 2026: only "Week 1" exists so
+  // far, published the Tuesday after Week 1's games.
+  SALFINO_SHEET_ID: '1WCFPsyYuHmPJV3SsnXUZOMaRGtg_AOWym0C2xIzA09c',
+  // Safety cap on how many weeks the season-long pull will probe forward —
+  // an 18-week regular season is the real ceiling.
+  SALFINO_MAX_WEEKS_BACK: 18,
 };
 
 /* ============================================================
@@ -1353,8 +1365,12 @@ const state = {
   waiverPlayersLoading: false,
   waiverRosters: null,     // live current-season rosters (owned player_id sets) — refetched every time the tab opens, unlike the player dump, since roster contents change with every claim
   waiverIndex: null,       // normalized-name -> [{id, full_name, pos, team}] built once from waiverPlayers
-  waiversFilter: { pos: 'ALL', search: '' },
+  waiversFilter: { pos: 'ALL', search: '', sort: 'vorp' }, // sort: 'vorp' | 'urgency'
   waiversCache: null,      // { freeAgents, owned, unmatched, ownedCount, computedAt } — recomputed each tab open (rosters change constantly), not on every filter keystroke
+  salfinoWeeks: null,      // { wr: {N: [...]}, rb: {N: [...]} } — raw per-week rows, season-accumulated, localStorage-cached (past weeks are immutable)
+  salfinoIndex: null,      // normalized-name -> { pos, series: [{week, share}] }, built once from salfinoWeeks
+  salfinoLoading: false,
+  salfinoError: null,      // non-fatal — Waivers tab still renders VORP-only on failure
   sleeperLeague: null,
   sleeperError: null,
   filter: { pos: 'ALL', search: '' },
@@ -1441,6 +1457,51 @@ async function fetchSheet(sheetName) {
   return objects;
 }
 
+/* ============================================================
+   Generic multi-spreadsheet CSV fetch — same gviz pattern as
+   fetchSheet/sheetCsvUrl above, but parameterized by sheet ID so it
+   can pull from Salfino's separate workbook (see loadSalfinoSeason)
+   without touching CONFIG.SHEET_ID or the board's fetchSheet path.
+   Returns rawText too, since Salfino week-detection needs to compare
+   full CSV bodies (see loadSalfinoSeason) — the gviz endpoint quietly
+   serves the workbook's FIRST tab for an unknown sheet name, the same
+   silent-fallback behavior servedWrongTab() already guards against
+   for the board workbook.
+   ============================================================ */
+function sheetCsvUrlFor(sheetId, sheetName) {
+  const encoded = encodeURIComponent(sheetName);
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encoded}`;
+}
+
+async function fetchSheetFrom(sheetId, sheetName, traceKey) {
+  const url = sheetCsvUrlFor(sheetId, sheetName);
+  const resp = await fetch(url, { cache: 'no-store' });
+
+  const trace = { sheetName, url, status: resp.status, statusText: resp.statusText,
+    contentType: resp.headers.get('content-type') || '(none)', headers: null, objectCount: null };
+  state.fetchTraces = state.fetchTraces || {};
+  state.fetchTraces[traceKey || sheetName] = trace;
+
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
+  let text = await resp.text();
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const trimmed = text.trim();
+  if (trimmed.startsWith('<')) {
+    throw new Error(`Got HTML instead of CSV \u2014 the sheet is likely not shared as "Anyone with the link", or the sheet ID is wrong.`);
+  }
+  if (trimmed.startsWith('/*O_o*/') || trimmed.startsWith(')]}')) {
+    throw new Error(`Got JSON error wrapper instead of CSV.`);
+  }
+
+  const rows = parseCSV(text);
+  trace.parsedRowCount = rows.length;
+  trace.headers = rows[0] || [];
+  const objects = csvToObjects(rows);
+  trace.objectCount = objects.length;
+
+  return { objects, rawText: text };
+}
+
 async function fetchSleeperLeague() {
   const resp = await fetch(`${CONFIG.SLEEPER_API}/league/${CONFIG.LEAGUE_ID}`);
   if (!resp.ok) throw new Error(`Sleeper league fetch failed (${resp.status})`);
@@ -1512,6 +1573,185 @@ async function fetchAllPlayers() {
     localStorage.setItem(WAIVER_PLAYERS_CACHE_KEY, JSON.stringify({ fetchedAt, data }));
   } catch (e) { /* quota exceeded or storage disabled — fine, just won't cache this session */ }
   return { data, source: 'network', fetchedAt };
+}
+
+/* ============================================================
+   Salfino market-share data — season-long, localStorage-cached
+   Past weeks are immutable once published, so only the newest
+   un-cached week(s) get fetched over the network each session;
+   everything already confirmed lives in localStorage indefinitely
+   (small — a season of these two tabs is nowhere near the ~5MB
+   player-dump budget that drove the TTL on that cache).
+
+   Week-existence detection: Google's gviz endpoint does not error on
+   an unknown sheet name — it silently serves the workbook's FIRST
+   tab (same behavior servedWrongTab() guards against for the board
+   workbook). Since both stat columns and player order are identical
+   across weeks, comparing HEADERS isn't enough to catch this here —
+   only a full raw-text compare against a known-real Week 1 fetch is:
+   if a "Week N" request comes back byte-identical to Week 1 and N is
+   not 1, that tab doesn't exist yet.
+   ============================================================ */
+const SALFINO_CACHE_KEY = 'ffl_salfino_weeks_v1';
+
+function loadSalfinoCache() {
+  try {
+    const raw = localStorage.getItem(SALFINO_CACHE_KEY);
+    if (!raw) return { wr: {}, rb: {} };
+    const parsed = JSON.parse(raw);
+    return { wr: parsed.wr || {}, rb: parsed.rb || {} };
+  } catch (e) { return { wr: {}, rb: {} }; }
+}
+function saveSalfinoCache(weeks) {
+  try { localStorage.setItem(SALFINO_CACHE_KEY, JSON.stringify(weeks)); }
+  catch (e) { /* quota exceeded or storage disabled — fine, just won't persist this session */ }
+}
+
+async function fetchSalfinoWeek(kind, week) {
+  // kind: 'wr' (targets tab — WR and TE together, split by Pos. at parse
+  // time) or 'rb' (touches tab — RB only, no Pos. column at all)
+  const label = kind === 'wr' ? 'WR targets' : 'RB Touches';
+  const name = `${label} Week ${week}`;
+  return fetchSheetFrom(CONFIG.SALFINO_SHEET_ID, name, `salfino:${kind}:${week}`);
+}
+
+async function loadSalfinoSeason() {
+  const cached = loadSalfinoCache();
+
+  // Week 1 is always fetched fresh (cheap — one pair of small tabs) since
+  // it doubles as the fallback-detection reference for every other week.
+  const [week1Wr, week1Rb] = await Promise.all([fetchSalfinoWeek('wr', 1), fetchSalfinoWeek('rb', 1)]);
+  cached.wr[1] = week1Wr.objects;
+  cached.rb[1] = week1Rb.objects;
+
+  const knownWeeks = [1, ...Object.keys(cached.wr).map(Number), ...Object.keys(cached.rb).map(Number)];
+  let week = Math.max(2, Math.max(...knownWeeks)); // re-probe the latest known week too, in case only one of its two tabs had posted last session
+  let stop = false;
+  while (!stop && week <= CONFIG.SALFINO_MAX_WEEKS_BACK) {
+    const [wr, rb] = await Promise.all([fetchSalfinoWeek('wr', week), fetchSalfinoWeek('rb', week)]);
+    const wrExists = wr.rawText !== week1Wr.rawText;
+    const rbExists = rb.rawText !== week1Rb.rawText;
+    if (wrExists) cached.wr[week] = wr.objects; else delete cached.wr[week];
+    if (rbExists) cached.rb[week] = rb.objects; else delete cached.rb[week];
+    if (!wrExists && !rbExists) stop = true;
+    week++;
+  }
+
+  saveSalfinoCache(cached);
+  return cached;
+}
+
+// Splits the two per-week tab dumps into one lookup table keyed by
+// normalized player name, each holding that player's whole share history.
+// Reuses draftNormName (suffix-stripping, lowercase) rather than a second
+// normalizer, so a name matches the same way it would against the board.
+function buildSalfinoIndex(weeks) {
+  const index = {};
+  function ingest(rowsByWeek, hardcodedPos) {
+    Object.keys(rowsByWeek || {}).forEach(weekStr => {
+      const week = Number(weekStr);
+      (rowsByWeek[weekStr] || []).forEach(r => {
+        const name = fieldOf(r, SALFINO_ALIASES.name);
+        if (!name) return;
+        const norm = draftNormName(name);
+        if (!norm) return;
+        const shareRaw = fieldOf(r, SALFINO_ALIASES.share).replace('%', '').trim();
+        const share = parseFloat(shareRaw) / 100;
+        if (Number.isNaN(share)) return;
+        const posRaw = hardcodedPos || fieldOf(r, SALFINO_ALIASES.pos).toUpperCase().trim();
+        const pos = posRaw === 'RB' ? 'RB' : (posRaw === 'TE' ? 'TE' : 'WR');
+        (index[norm] = index[norm] || { pos, series: [] });
+        index[norm].pos = pos;
+        index[norm].series.push({ week, share });
+      });
+    });
+  }
+  ingest(weeks.wr, null);   // targets tab carries its own Pos. per row (WR or TE)
+  ingest(weeks.rb, 'RB');   // touches tab is RB-only, no Pos. column to read
+  return index;
+}
+
+function salfinoLookup(index, name) {
+  if (!index || !name) return null;
+  const entry = index[draftNormName(name)];
+  return entry ? entry.series : null;
+}
+
+// Salfino's own thresholds, taken from his Week 1 column (Sept 15, 2026):
+// he treats ~15% share as the rough floor for "worth a roster spot," and
+// suggests weekly waiver bids at (share \u00f7 2) — except RBs above the 15%
+// floor, where he doubles that back to the full share as the bid. His
+// stated method is explicitly NOT smoothed week to week ("yearly stats
+// just smoothes everything out to a more meaningless middle" \u2014 he
+// publishes weekly on purpose to "respond quickly to present trends"), so
+// the decline flag below compares the two most recent weeks directly
+// rather than against a rolling average.
+const SALFINO_ROSTERABLE_FLOOR = 0.15;
+
+function salfinoUrgency(share, pos) {
+  if (share == null) return null;
+  if (pos === 'RB' && share > SALFINO_ROSTERABLE_FLOOR) return share;
+  return share / 2;
+}
+
+// Attaches the most recent share reading (plus week-over-week trend and
+// urgency score) onto a board-row object in place. Non-fatal by design —
+// a player with no Salfino match (didn't qualify that week, name mismatch,
+// etc.) just gets p.salfino = null and still shows up VORP-only.
+function attachSalfino(p, salfinoIndex) {
+  const series = salfinoLookup(salfinoIndex, p.name);
+  if (!series || !series.length) { p.salfino = null; return; }
+  const sorted = series.slice().sort((a, b) => a.week - b.week);
+  const latest = sorted[sorted.length - 1];
+  const prior = sorted.length > 1 ? sorted[sorted.length - 2] : null;
+  p.salfino = {
+    latestShare: latest.share,
+    latestWeek: latest.week,
+    priorShare: prior ? prior.share : null,
+    trend: prior ? (latest.share > prior.share ? 'up' : latest.share < prior.share ? 'down' : 'flat') : null,
+    urgency: salfinoUrgency(latest.share, p.pos),
+  };
+}
+
+// Week-over-week decline check for Joe's OWN rostered skill players only
+// (the "evaluation of my team" half of this feature — free-agent ranking
+// above covers the waiver-watch half). Flags a drop only when the prior
+// week's share was already above the rosterable floor — a decline from
+// "6% to 2%" isn't news, it was never a real role — and only compares the
+// two most recent weeks directly, matching Salfino's own anti-smoothing
+// stance rather than a rolling average.
+const SALFINO_DECLINE_DROP_PTS = 0.08;   // 8 percentage points, e.g. 25% -> 17%
+const SALFINO_DECLINE_DROP_REL = 0.35;   // or a 35% relative drop, whichever fires first
+
+function checkSalfinoDecline(series) {
+  if (!series || series.length < 2) return null;
+  const sorted = series.slice().sort((a, b) => a.week - b.week);
+  const latest = sorted[sorted.length - 1];
+  const prior = sorted[sorted.length - 2];
+  const drop = prior.share - latest.share;
+  const relDrop = prior.share > 0 ? drop / prior.share : 0;
+  const flagged = prior.share >= SALFINO_ROSTERABLE_FLOOR &&
+    (drop >= SALFINO_DECLINE_DROP_PTS || relDrop >= SALFINO_DECLINE_DROP_REL);
+  return { latest, prior, drop, relDrop, flagged };
+}
+
+// Cross-references Joe's own roster (not the full 12-team field — trades
+// are out of scope for this feature) against the Salfino index, for the
+// decline-flag section of the Waivers tab.
+function computeMyRosterSalfino(board, myRoster, waiverIndex, salfinoIndex) {
+  if (!myRoster || !salfinoIndex) return [];
+  const myIds = new Set(myRoster.players || []);
+  const rows = [];
+  (board || []).forEach(p => {
+    if (p.pos !== 'RB' && p.pos !== 'WR' && p.pos !== 'TE') return; // no share data exists for QB/DEF
+    const sid = resolveBoardPlayerToSleeperId(p, waiverIndex);
+    if (!sid || !myIds.has(sid)) return;
+    const series = salfinoLookup(salfinoIndex, p.name);
+    if (!series || !series.length) return;
+    const decline = checkSalfinoDecline(series);
+    rows.push({ name: p.name, pos: p.pos, team: p.team, series, decline });
+  });
+  return rows;
 }
 
 // normalized-name -> [{id, full_name, pos, team}]. A name can collide
@@ -2504,6 +2744,19 @@ const DISAGREE_ALIASES = {
   flag: ['Flag', 'Status', 'Severity'],
   gap:  ['Gap (Ciely - FP)', 'Gap (Ciely-FP)', 'Gap', 'Delta', 'Diff', 'Rank Gap'],
   lean: ['Lean', 'Direction', 'Side', 'Recommendation'],
+};
+// Salfino's own headers, confirmed Sept 2026 — the two tabs use DIFFERENT
+// column names for the same underlying stat: targets tab is Rk/Player/Tgt/
+// Team/Y-Tgt/Pos./Attempts/Share; touches tab is Rk/Player/Touch/Team/Plays/
+// Rate, with no Pos. column at all (the tab is RB-only by construction, so
+// pos is hardcoded per-tab in ingestSalfinoRows rather than read from a
+// column). Share/Rate are the same "share of team volume" percentage under
+// different names — one alias entry covers both.
+const SALFINO_ALIASES = {
+  name:  ['Player', 'Name'],
+  pos:   ['Pos.', 'Pos', 'Position'],
+  team:  ['Team'],
+  share: ['Share', 'Rate'],
 };
 
 function fieldOf(row, aliases) {
@@ -4335,6 +4588,22 @@ async function renderWaiversTab() {
     return;
   }
 
+  // Salfino market-share data — one-time-per-session load (localStorage
+  // caches confirmed past weeks; see loadSalfinoSeason). Non-fatal on
+  // failure: the tab still renders VORP-only, just without share/urgency
+  // columns or the decline-flag section.
+  if (!state.salfinoWeeks && !state.salfinoLoading) {
+    state.salfinoLoading = true;
+    try {
+      state.salfinoWeeks = await loadSalfinoSeason();
+      state.salfinoIndex = buildSalfinoIndex(state.salfinoWeeks);
+    } catch (e) {
+      state.salfinoError = e.message;
+      state.errors.push('Salfino market share: ' + e.message);
+    }
+    state.salfinoLoading = false;
+  }
+
   // Live rosters — always fresh (not cached), since the whole point of this
   // tab is "who's actually available right now."
   try {
@@ -4347,6 +4616,7 @@ async function renderWaiversTab() {
   }
 
   const { freeAgents, unmatched, ownedCount } = computeFreeAgents(state.board, state.waiverRosters, state.waiverIndex);
+  freeAgents.forEach(p => attachSalfino(p, state.salfinoIndex));
   state.waiversCache = { freeAgents, unmatched, ownedCount, computedAt: Date.now() };
 
   // My current waiver priority, if the field's present — degrades to
@@ -4359,14 +4629,42 @@ async function renderWaiversTab() {
     ? ` \u00b7 Your waiver priority: <strong style="color:var(--fg);">${myPriority}</strong> of ${(state.waiverRosters || []).length}`
     : '';
 
+  const salfinoWeekCount = state.salfinoIndex
+    ? new Set(Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week))).size : 0;
+  const salfinoNote = state.salfinoError
+    ? ` \u00b7 <span style="color:var(--warn);">Salfino share data didn't load (${escapeHtml(state.salfinoError)})</span>`
+    : salfinoWeekCount
+      ? ` \u00b7 Salfino market share through Week ${Math.max(...Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week)))}`
+      : '';
+
+  const myRosterShare = computeMyRosterSalfino(state.board, myRoster, state.waiverIndex, state.salfinoIndex);
+  const declines = myRosterShare.filter(r => r.decline && r.decline.flagged);
+
   host.innerHTML = `
     <div id="waiversBanner" class="hist-note" style="margin-bottom:10px; font-size:11px;">
       VORP here is your board's <strong>preseason, full-season</strong> projection \u2014 not recalculated week to week for
-      games already played, injuries, or role changes. Read it as "who's talented and available," not "who's hot right now."${priorityNote}
+      games already played, injuries, or role changes. Read it as "who's talented and available," not "who's hot right now."${priorityNote}${salfinoNote}
       ${unmatched.length ? ` \u00b7 <span style="color:var(--warn);">${unmatched.length} board player${unmatched.length !== 1 ? 's' : ''} couldn't be matched to a Sleeper ID</span> (name-mismatch, not necessarily rostered \u2014 check Debug)` : ''}
+    </div>
+    ${declines.length ? `
+    <div class="hist-note" style="margin-bottom:10px; font-size:11px; border-color:color-mix(in srgb, var(--down) 40%, var(--line));">
+      <strong style="color:var(--down);">Declining role \u2014 your roster:</strong>
+      ${declines.map(r => `<span style="margin-left:8px;"><span class="pos-tag pos-${r.pos}">${r.pos}</span> ${escapeHtml(r.name)}: ${(r.decline.prior.share*100).toFixed(0)}% \u2192 ${(r.decline.latest.share*100).toFixed(0)}% (Wk ${r.decline.prior.week}\u2192${r.decline.latest.week})</span>`).join('')}
+    </div>` : ''}
+    <div class="controls" style="margin-bottom:10px;">
+      <div class="chips" id="waiversSortFilter">
+        <button class="chip ${state.waiversFilter.sort === 'vorp' ? 'active' : ''}" data-sort="vorp">Sort: VORP</button>
+        <button class="chip ${state.waiversFilter.sort === 'urgency' ? 'active' : ''}" data-sort="urgency">Sort: Mkt Urgency</button>
+      </div>
     </div>
     <div id="waiversTableWrap"></div>
   `;
+  document.getElementById('waiversSortFilter').addEventListener('click', e => {
+    const btn = e.target.closest('.chip'); if (!btn) return;
+    document.querySelectorAll('#waiversSortFilter .chip').forEach(c => c.classList.toggle('active', c === btn));
+    state.waiversFilter.sort = btn.dataset.sort;
+    renderWaiversTable();
+  });
   renderWaiversTable();
 }
 
@@ -4376,16 +4674,32 @@ function renderWaiversTable() {
   const { freeAgents } = state.waiversCache;
 
   const s = state.waiversFilter.search.toLowerCase().trim();
-  const rows = freeAgents.filter(p => {
+  let rows = freeAgents.filter(p => {
     if (state.waiversFilter.pos !== 'ALL' && p.pos !== state.waiversFilter.pos) return false;
     if (s && !(p.name.toLowerCase().includes(s) || (p.team || '').toLowerCase().includes(s))) return false;
     return true;
   });
 
+  if (state.waiversFilter.sort === 'urgency') {
+    // Players with no Salfino match (didn't qualify, name mismatch) sort
+    // to the bottom rather than dropping out of the list entirely.
+    rows = rows.slice().sort((a, b) => {
+      const au = a.salfino && a.salfino.urgency != null ? a.salfino.urgency : -1;
+      const bu = b.salfino && b.salfino.urgency != null ? b.salfino.urgency : -1;
+      return bu - au;
+    });
+  }
+
   const countEl = document.getElementById('waiversResultCount');
   if (countEl) countEl.textContent = `${rows.length} free agents`;
 
-  const body = rows.slice(0, 200).map(p => `
+  const trendArrow = (t) => t === 'up' ? `<span class="diff-up">\u25b2</span>` : t === 'down' ? `<span class="diff-down">\u25bc</span>` : t === 'flat' ? '\u2013' : '';
+
+  const body = rows.slice(0, 200).map(p => {
+    const sf = p.salfino;
+    const shareCell = sf ? `${(sf.latestShare*100).toFixed(0)}% ${trendArrow(sf.trend)} <span style="color:var(--fg-dim); font-size:10px;">Wk${sf.latestWeek}</span>` : '<span style="color:var(--fg-dim);">\u2014</span>';
+    const urgencyCell = sf && sf.urgency != null ? (sf.urgency*100).toFixed(0) : '\u2014';
+    return `
     <tr>
       <td class="num">${p.ovr ?? ''}</td>
       <td><span class="pos-tag pos-${p.pos}">${p.pos}</span></td>
@@ -4394,14 +4708,20 @@ function renderWaiversTable() {
       <td class="num">${p.bye ?? ''}</td>
       <td class="num">${p.tier ?? ''}</td>
       <td class="num" style="font-weight:600;">${p.vorp != null ? p.vorp.toFixed(1) : ''}</td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center; color:var(--fg-dim); padding:20px;">No free agents match this filter.</td></tr>';
+      <td class="num">${shareCell}</td>
+      <td class="num">${urgencyCell}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" style="text-align:center; color:var(--fg-dim); padding:20px;">No free agents match this filter.</td></tr>';
 
   wrap.innerHTML = `
     <table class="hist-table">
-      <thead><tr><th class="num">RK</th><th>POS</th><th>PLAYER</th><th>TEAM</th><th class="num">BYE</th><th class="num">TIER</th><th class="num">VORP</th></tr></thead>
+      <thead><tr><th class="num">RK</th><th>POS</th><th>PLAYER</th><th>TEAM</th><th class="num">BYE</th><th class="num">TIER</th><th class="num">VORP</th><th class="num">MKT SHARE</th><th class="num">URGENCY</th></tr></thead>
       <tbody>${body}</tbody>
     </table>
-    ${rows.length > 200 ? `<p style="font-size:11px; color:var(--fg-dim); margin-top:8px;">Showing top 200 of ${rows.length} \u2014 narrow with the position filter or search to see further down.</p>` : ''}
+    <p style="font-size:10.5px; color:var(--fg-dim); margin-top:8px;">
+      Mkt Share = Salfino's most recent target share (WR/TE) or touch share (RB), with trend vs. the prior week he's published. Urgency = his own suggested-bid formula (share \u00f7 2, except RBs over 15% share which get the full share) \u2014 informational only, this league has no FAAB.
+      ${rows.length > 200 ? ` Showing top 200 of ${rows.length} \u2014 narrow with the position filter or search to see further down.` : ''}
+    </p>
   `;
 }
 
@@ -5424,6 +5744,21 @@ function renderDebug() {
       ${Object.keys(traces).filter(n => servedWrongTab(n)).map(n =>
         `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">\u26A0 "${escapeHtml(n)}" returned the Overall Board's headers \u2014 that tab does not exist.</div>`).join('')}
       <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Workbook tabs: Overall Board, QB/RB/WR/TE/DEF Ranks, ADP Mispricings, Sleeper Targets, Bye Week Map, Round Plan, Draft Day Plan, Methodology &amp; Assumptions.</div>
+    </div>`);
+  }
+
+  {
+    const weeksWr = state.salfinoWeeks ? Object.keys(state.salfinoWeeks.wr || {}).map(Number).sort((a,b)=>a-b) : [];
+    const weeksRb = state.salfinoWeeks ? Object.keys(state.salfinoWeeks.rb || {}).map(Number).sort((a,b)=>a-b) : [];
+    const playersIndexed = state.salfinoIndex ? Object.keys(state.salfinoIndex).length : 0;
+    cards.push(`<div class="debug-card">
+      <h4>Salfino market share</h4>
+      <div class="kv"><span class="kv-k">sheet ID</span><span class="kv-v">${CONFIG.SALFINO_SHEET_ID.slice(0,20)}\u2026</span></div>
+      <div class="kv"><span class="kv-k">WR targets weeks cached</span><span class="kv-v">${weeksWr.length ? weeksWr.join(', ') : 'none'}</span></div>
+      <div class="kv"><span class="kv-k">RB Touches weeks cached</span><span class="kv-v">${weeksRb.length ? weeksRb.join(', ') : 'none'}</span></div>
+      <div class="kv"><span class="kv-k">players indexed</span><span class="kv-v">${playersIndexed}</span></div>
+      ${state.salfinoError ? `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">error: ${escapeHtml(state.salfinoError)}</div>` : ''}
+      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Week-existence is detected by comparing each "Week N" fetch's raw CSV against Week 1's \u2014 gviz silently serves Week 1 (the workbook's first tab) for any tab name that doesn't exist yet, so an identical body means that week hasn't posted.</div>
     </div>`);
   }
 
