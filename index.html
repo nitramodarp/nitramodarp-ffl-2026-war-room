@@ -1791,18 +1791,28 @@ function buildSalfinoIndex(weeks) {
         if (!name) return;
         const norm = draftNormName(name);
         if (!norm) return;
+        const posRaw = hardcodedPos || fieldOf(r, SALFINO_ALIASES.pos).toUpperCase().trim();
+        // The targets tab isn't WR-only despite its name \u2014 pass-catching
+        // RBs (McCaffrey, Stevenson, Kenneth Walker, etc.) show up there too
+        // once they clear the target threshold, carrying their TARGET share.
+        // Skip those rows entirely: an RB's authoritative share metric is
+        // touch share (the touches tab), and indexing both under the same
+        // series produced a false trend \u2014 target% read as "prior week" vs
+        // touch% as "latest," a single real week misread as two. Confirmed
+        // live Sept 2026 (exactly those three RBs showed a fake single-week
+        // arrow this way).
+        if (!hardcodedPos && posRaw === 'RB') return;
         const shareRaw = fieldOf(r, SALFINO_ALIASES.share);
         const share = parseSalfinoShare(shareRaw);
         if (Number.isNaN(share)) return;
-        const posRaw = hardcodedPos || fieldOf(r, SALFINO_ALIASES.pos).toUpperCase().trim();
-        const pos = posRaw === 'RB' ? 'RB' : (posRaw === 'TE' ? 'TE' : 'WR');
+        const pos = posRaw === 'TE' ? 'TE' : (posRaw === 'RB' ? 'RB' : 'WR');
         (index[norm] = index[norm] || { pos, series: [] });
         index[norm].pos = pos;
         index[norm].series.push({ week, share });
       });
     });
   }
-  ingest(weeks.wr, null);   // targets tab carries its own Pos. per row (WR or TE)
+  ingest(weeks.wr, null);   // targets tab \u2014 WR/TE only now (RB rows skipped, see above)
   ingest(weeks.rb, 'RB');   // touches tab is RB-only, no Pos. column to read
   return index;
 }
