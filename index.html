@@ -1371,6 +1371,8 @@ const state = {
   salfinoIndex: null,      // normalized-name -> { pos, series: [{week, share}] }, built once from salfinoWeeks
   salfinoLoading: false,
   salfinoError: null,      // non-fatal — Waivers tab still renders VORP-only on failure
+  salfinoTabListError: null, // set when the worksheets-feed existence check fails — app falls back to Week 1 only rather than guess
+  salfinoTabTitles: null,  // raw tab titles from the worksheets feed, for the Debug tab
   sleeperLeague: null,
   sleeperError: null,
   filter: { pos: 'ALL', search: '' },
@@ -1577,20 +1579,28 @@ async function fetchAllPlayers() {
 
 /* ============================================================
    Salfino market-share data — season-long, localStorage-cached
-   Past weeks are immutable once published, so only the newest
-   un-cached week(s) get fetched over the network each session;
-   everything already confirmed lives in localStorage indefinitely
-   (small — a season of these two tabs is nowhere near the ~5MB
-   player-dump budget that drove the TTL on that cache).
+   Past weeks are immutable once published, so only newly-confirmed
+   week(s) get fetched over the network each session; everything
+   already confirmed lives in localStorage indefinitely (small — a
+   season of these two tabs is nowhere near the ~5MB player-dump
+   budget that drove the TTL on that cache).
 
-   Week-existence detection: Google's gviz endpoint does not error on
-   an unknown sheet name — it silently serves the workbook's FIRST
-   tab (same behavior servedWrongTab() guards against for the board
-   workbook). Since both stat columns and player order are identical
-   across weeks, comparing HEADERS isn't enough to catch this here —
-   only a full raw-text compare against a known-real Week 1 fetch is:
-   if a "Week N" request comes back byte-identical to Week 1 and N is
-   not 1, that tab doesn't exist yet.
+   Week-existence detection, v2: the original approach probed "Week
+   N" tab names and compared raw CSV text against a known Week 1
+   fetch, on the theory that Google's gviz endpoint silently serves
+   the workbook's first tab for an unknown sheet name (confirmed true
+   for the board workbook via servedWrongTab()). In production that
+   comparison never matched even for tabs that don't exist — some
+   incidental difference between separate requests broke exact-text
+   equality — so every probed week up to the cap got wrongly treated
+   as real, re-ingesting Week 1's numbers under fake week labels.
+   Replaced with a real existence check: Google's classic public
+   worksheets feed lists a public sheet's actual tab titles directly,
+   no content-diffing or guessing required. If that feed itself fails
+   (deprecated API, network hiccup, CORS) this refuses to guess and
+   loads ONLY Week 1 — already confirmed real by direct inspection —
+   rather than repeat the previous failure mode of showing wrong data
+   confidently. See the Waivers banner / Debug tab for which path ran.
    ============================================================ */
 const SALFINO_CACHE_KEY = 'ffl_salfino_weeks_v1';
 
@@ -1615,27 +1625,68 @@ async function fetchSalfinoWeek(kind, week) {
   return fetchSheetFrom(CONFIG.SALFINO_SHEET_ID, name, `salfino:${kind}:${week}`);
 }
 
+// Real tab list for the Salfino spreadsheet via the classic (pre-v4, still
+// live for public sheets) Sheets "worksheets" feed — returns every actual
+// tab title, so "does Week N exist" becomes a lookup instead of a guess.
+async function fetchSalfinoTabTitles() {
+  const url = `https://spreadsheets.google.com/feeds/worksheets/${CONFIG.SALFINO_SHEET_ID}/public/basic?alt=json`;
+  const resp = await fetch(url, { cache: 'no-store' });
+  if (!resp.ok) throw new Error(`Worksheet feed fetch failed (${resp.status})`);
+  const data = await resp.json();
+  const entries = (data.feed && data.feed.entry) || [];
+  return entries.map(e => (e.title && e.title.$t) || '').filter(Boolean);
+}
+
+function parseSalfinoWeekTabs(titles) {
+  const wr = new Set(), rb = new Set();
+  (titles || []).forEach(t => {
+    let m = t.match(/^WR targets Week (\d+)$/i);
+    if (m && Number(m[1]) <= CONFIG.SALFINO_MAX_WEEKS_BACK) wr.add(Number(m[1]));
+    m = t.match(/^RB Touches Week (\d+)$/i);
+    if (m && Number(m[1]) <= CONFIG.SALFINO_MAX_WEEKS_BACK) rb.add(Number(m[1]));
+  });
+  return { wr, rb };
+}
+
 async function loadSalfinoSeason() {
   const cached = loadSalfinoCache();
 
-  // Week 1 is always fetched fresh (cheap — one pair of small tabs) since
-  // it doubles as the fallback-detection reference for every other week.
-  const [week1Wr, week1Rb] = await Promise.all([fetchSalfinoWeek('wr', 1), fetchSalfinoWeek('rb', 1)]);
-  cached.wr[1] = week1Wr.objects;
-  cached.rb[1] = week1Rb.objects;
-
-  const knownWeeks = [1, ...Object.keys(cached.wr).map(Number), ...Object.keys(cached.rb).map(Number)];
-  let week = Math.max(2, Math.max(...knownWeeks)); // re-probe the latest known week too, in case only one of its two tabs had posted last session
-  let stop = false;
-  while (!stop && week <= CONFIG.SALFINO_MAX_WEEKS_BACK) {
-    const [wr, rb] = await Promise.all([fetchSalfinoWeek('wr', week), fetchSalfinoWeek('rb', week)]);
-    const wrExists = wr.rawText !== week1Wr.rawText;
-    const rbExists = rb.rawText !== week1Rb.rawText;
-    if (wrExists) cached.wr[week] = wr.objects; else delete cached.wr[week];
-    if (rbExists) cached.rb[week] = rb.objects; else delete cached.rb[week];
-    if (!wrExists && !rbExists) stop = true;
-    week++;
+  let tabTitles = null;
+  try {
+    tabTitles = await fetchSalfinoTabTitles();
+    state.salfinoTabListError = null;
+  } catch (e) {
+    state.salfinoTabListError = e.message;
   }
+
+  if (!tabTitles) {
+    // Can't confirm which weeks are real right now — refuse to guess.
+    // Load ONLY Week 1 (proven to exist by direct inspection) and
+    // overwrite the cache with it, which also self-heals any bad weeks
+    // the old raw-text-diff heuristic wrote before this fix existed.
+    const [week1Wr, week1Rb] = await Promise.all([fetchSalfinoWeek('wr', 1), fetchSalfinoWeek('rb', 1)]);
+    const clean = { wr: { 1: week1Wr.objects }, rb: { 1: week1Rb.objects } };
+    saveSalfinoCache(clean);
+    return clean;
+  }
+
+  const { wr: wrWeeks, rb: rbWeeks } = parseSalfinoWeekTabs(tabTitles);
+  state.salfinoTabTitles = tabTitles;
+
+  // Fetch only weeks the tab list actually confirms exist, and only ones
+  // not already cached (past weeks are immutable once published).
+  for (const w of wrWeeks) {
+    if (cached.wr[w] === undefined) cached.wr[w] = (await fetchSalfinoWeek('wr', w)).objects;
+  }
+  for (const w of rbWeeks) {
+    if (cached.rb[w] === undefined) cached.rb[w] = (await fetchSalfinoWeek('rb', w)).objects;
+  }
+
+  // Drop any cached week the tab list no longer confirms — self-heals a
+  // cache poisoned by the old heuristic (fake Week 2\u201318 entries) the
+  // first time this runs against a real tab list.
+  Object.keys(cached.wr).map(Number).forEach(w => { if (!wrWeeks.has(w)) delete cached.wr[w]; });
+  Object.keys(cached.rb).map(Number).forEach(w => { if (!rbWeeks.has(w)) delete cached.rb[w]; });
 
   saveSalfinoCache(cached);
   return cached;
@@ -4633,9 +4684,11 @@ async function renderWaiversTab() {
     ? new Set(Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week))).size : 0;
   const salfinoNote = state.salfinoError
     ? ` \u00b7 <span style="color:var(--warn);">Salfino share data didn't load (${escapeHtml(state.salfinoError)})</span>`
-    : salfinoWeekCount
-      ? ` \u00b7 Salfino market share through Week ${Math.max(...Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week)))}`
-      : '';
+    : state.salfinoTabListError
+      ? ` \u00b7 <span style="color:var(--warn);">Couldn't confirm which Salfino weeks are published (${escapeHtml(state.salfinoTabListError)}) \u2014 showing Week 1 only until this resolves</span>`
+      : salfinoWeekCount
+        ? ` \u00b7 Salfino market share through Week ${Math.max(...Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week)))}`
+        : '';
 
   const myRosterShare = computeMyRosterSalfino(state.board, myRoster, state.waiverIndex, state.salfinoIndex);
   const declines = myRosterShare.filter(r => r.decline && r.decline.flagged);
@@ -5754,11 +5807,14 @@ function renderDebug() {
     cards.push(`<div class="debug-card">
       <h4>Salfino market share</h4>
       <div class="kv"><span class="kv-k">sheet ID</span><span class="kv-v">${CONFIG.SALFINO_SHEET_ID.slice(0,20)}\u2026</span></div>
+      <div class="kv"><span class="kv-k">tab-list method</span><span class="kv-v" style="color:${state.salfinoTabListError ? 'var(--down)' : 'var(--fg-mute)'};">${state.salfinoTabListError ? 'FAILED \u2014 fell back to Week 1 only' : 'OK'}</span></div>
+      ${state.salfinoTabListError ? `<div style="color:var(--down); font-size:11px; margin-top:4px; font-family:var(--font-mono);">${escapeHtml(state.salfinoTabListError)}</div>` : ''}
+      <div class="kv"><span class="kv-k">confirmed tabs (raw feed)</span><span class="kv-v" style="font-size:10.5px;">${state.salfinoTabTitles ? escapeHtml(state.salfinoTabTitles.join(' \u00b7 ')) : '\u2014'}</span></div>
       <div class="kv"><span class="kv-k">WR targets weeks cached</span><span class="kv-v">${weeksWr.length ? weeksWr.join(', ') : 'none'}</span></div>
       <div class="kv"><span class="kv-k">RB Touches weeks cached</span><span class="kv-v">${weeksRb.length ? weeksRb.join(', ') : 'none'}</span></div>
       <div class="kv"><span class="kv-k">players indexed</span><span class="kv-v">${playersIndexed}</span></div>
       ${state.salfinoError ? `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">error: ${escapeHtml(state.salfinoError)}</div>` : ''}
-      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Week-existence is detected by comparing each "Week N" fetch's raw CSV against Week 1's \u2014 gviz silently serves Week 1 (the workbook's first tab) for any tab name that doesn't exist yet, so an identical body means that week hasn't posted.</div>
+      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Week existence comes from Google's public worksheets feed (real tab titles), not content-guessing \u2014 a prior version compared raw CSV text against Week 1 and produced false positives out to Week 18. If the feed method ever fails, this deliberately shows Week 1 only rather than repeat that.</div>
     </div>`);
   }
 
