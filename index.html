@@ -5827,10 +5827,16 @@ function renderDebug() {
   </div>`);
 
   const traces = state.fetchTraces || {};
-  if (Object.keys(traces).length) {
+  // Exclude salfino:* traces here — that workbook fetch is a single binary
+  // .xlsx download with no per-tab CSV headers/objectCount to show, so this
+  // generic card would otherwise print a false-looking "? rows (none
+  // parsed)" in red for a fetch that actually succeeded. The dedicated
+  // "Salfino market share" card covers its real status.
+  const csvTraces = Object.keys(traces).filter(name => !name.startsWith('salfino:'));
+  if (csvTraces.length) {
     cards.push(`<div class="debug-card">
       <h4>Raw headers by sheet</h4>
-      ${Object.keys(traces).map(name => {
+      ${csvTraces.map(name => {
         const t = traces[name];
         const hdrs = t.headers && t.headers.length ? escapeHtml(t.headers.join(' | ')) : '(none parsed)';
         return `<div style="margin-bottom:10px;">
@@ -5838,7 +5844,7 @@ function renderDebug() {
           <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-dim); word-break:break-word;">${hdrs}</div>
         </div>`;
       }).join('')}
-      ${Object.keys(traces).filter(n => servedWrongTab(n)).map(n =>
+      ${csvTraces.filter(n => servedWrongTab(n)).map(n =>
         `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">\u26A0 "${escapeHtml(n)}" returned the Overall Board's headers \u2014 that tab does not exist.</div>`).join('')}
       <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Workbook tabs: Overall Board, QB/RB/WR/TE/DEF Ranks, ADP Mispricings, Sleeper Targets, Bye Week Map, Round Plan, Draft Day Plan, Methodology &amp; Assumptions.</div>
     </div>`);
