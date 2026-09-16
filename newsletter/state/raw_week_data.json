@@ -3334,6 +3334,7 @@
       "player_dropped": "Michael Penix",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3347,6 +3348,7 @@
       "player_dropped": null,
       "used_waiver_priority": false,
       "waiver_priority_before_move": 10,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": "Brock Bowers",
       "confirmed_homer_transaction": false
     },
@@ -3360,6 +3362,7 @@
       "player_dropped": "T.J. Hockenson",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 10,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3373,6 +3376,7 @@
       "player_dropped": "Ted Hurst",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3386,6 +3390,7 @@
       "player_dropped": "Tre Tucker",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 9,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3399,6 +3404,7 @@
       "player_dropped": "Denzel Boston",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 3,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3412,6 +3418,7 @@
       "player_dropped": null,
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3425,6 +3432,7 @@
       "player_dropped": "Las Vegas Raiders",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3438,6 +3446,7 @@
       "player_dropped": "Dylan Sampson",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 8,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3451,6 +3460,7 @@
       "player_dropped": "Malik Davis",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 12,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": "Jahmyr Gibbs",
       "confirmed_homer_transaction": false
     },
@@ -3464,6 +3474,7 @@
       "player_dropped": "Jalen Nailor",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 9,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3477,6 +3488,7 @@
       "player_dropped": "Oronde Gadsden",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3490,6 +3502,7 @@
       "player_dropped": "Detroit Lions",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3503,6 +3516,7 @@
       "player_dropped": "Kimani Vidal",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 9,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3516,6 +3530,7 @@
       "player_dropped": "Kaelon Black",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 6,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3529,6 +3544,7 @@
       "player_dropped": "Hunter Henry",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 6,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3542,6 +3558,7 @@
       "player_dropped": "Tre Tucker",
       "used_waiver_priority": true,
       "waiver_priority_before_move": 12,
+      "priority_cost_description": "was already near the back of the priority order (#12 of 12) \u2014 burning it cost next to nothing",
       "possible_handcuff_of": "Javonte Williams",
       "confirmed_homer_transaction": false
     },
@@ -3555,6 +3572,7 @@
       "player_dropped": "Ted Hurst",
       "used_waiver_priority": true,
       "waiver_priority_before_move": 11,
+      "priority_cost_description": "was already near the back of the priority order (#11 of 12) \u2014 burning it cost next to nothing",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3568,6 +3586,7 @@
       "player_dropped": "Jalen McMillan",
       "used_waiver_priority": false,
       "waiver_priority_before_move": 11,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3581,6 +3600,7 @@
       "player_dropped": null,
       "used_waiver_priority": false,
       "waiver_priority_before_move": 5,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3594,6 +3614,7 @@
       "player_dropped": null,
       "used_waiver_priority": false,
       "waiver_priority_before_move": 5,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     }

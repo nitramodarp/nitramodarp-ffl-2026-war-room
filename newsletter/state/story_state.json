@@ -2,16 +2,16 @@
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
   "last_week_updated": 1,
   "running_jokes": [
-    "Waffle House started Baker Mayfield over a 34.2-point Lamar Jackson performance sitting on the bench \u2014 an early contender for worst bench call of the season.",
-    "Pukachu Chews You started Bo Nix over a 32.35-point Jordan Love sitting on the bench \u2014 a rival for that same title.",
-    "Chuba Bucky Doo has now scored top-three in the league in back-to-back framing and still owns the league's most infamous loss of the year so far \u2014 and still projects into a playoff spot on points alone despite being 0-1.",
-    "Long Live King Henry's Devaughn Vele pickup is now two-for-two as the league's best value transaction.",
-    "Waffle House and Pukachu Chews You are running neck-and-neck for worst bench decision of the season, both benching a 30-plus scorer at quarterback.",
-    "Broke Dak Mountain's Week 1 waiver stash (Najee Harris, Xavier Hutchinson) remains scoreless.",
     "Mikelanta's roster churn (seven transactions in one week) produced no bench points of note but the team still led the league anyway.",
     "Long Live King Henry's free pickup of Devaughn Vele (17.4 points, zero cost) is the best value add in the league so far, two weeks running.",
     "Waffle House and Pukachu Chews You are locked in a season-long race for worst bench decision, both benching 30-plus-point quarterbacks in Week 1.",
-    "Joe Mama Angie Daddy burned their number-one waiver priority on Malik Davis and got nothing for it in Week 1."
+    "Joe Mama Angie Daddy burned their number-one waiver priority on Malik Davis and got nothing for it in Week 1.",
+    "Long Live King Henry's free Devaughn Vele pickup is now a two-week-running heist \u2014 17.4 points from a zero-cost stash.",
+    "Chuba Bucky Doo is 0-1 with the sixth-best point total in the league, good enough for the points-based playoff spot despite the loss.",
+    "Waffle House and Pukachu Chews You both benched 30-plus-point quarterbacks in Week 1 \u2014 Waffle House won anyway, Pukachu Chews You did not.",
+    "Joe Mama Angie Daddy started the Texans defense over their own bench Seahawks defense and lost by less than the margin that decision cost them.",
+    "Dak to the Future won while sitting a 38.3-point Tyler Shough game on the bench.",
+    "Broke Dak Mountain got a 47-point Josh Allen game in a loss \u2014 the rest of the roster did nothing."
   ],
   "streaks": {
     "Saturn75": "1-game 'winning' streak (0.0-0.0)",
@@ -21,10 +21,11 @@
     "Meredith's Fan Club": "1-0 by a 0.3-point margin, the tightest game in the league",
     "Screaming Eagles": "0-1 by that same 0.3-point margin on the losing end",
     "Broke Dak Mountain": "0-1 despite a 47-point week from Josh Allen",
-    "Long Live King Henry ": "1-0, riding a Jalen Hurts/Derrick Henry combo worth 73.55 points",
+    "Long Live King Henry ": "1-0, riding a Jalen Hurts/Derrick Henry combo worth 73.55 points, plus a two-week-running free-agent heist in Devaughn Vele",
     "Waffle House": "0-1 after benching a 34.2-point Lamar Jackson performance",
     "Pukachu Chews You": "0-1 after benching a 32.35-point Jordan Love performance",
-    "Dak to the Future": "1-0 despite benching a 38.3-point Tyler Shough performance"
+    "Dak to the Future": "1-0 despite benching a 38.3-point Tyler Shough performance",
+    "Joe Mama Angie Daddy": "0-1 after an 18-point defense-swap bench error"
   },
   "notable_quotes": [],
   "season_awards_tracker": {
