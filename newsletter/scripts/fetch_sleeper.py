@@ -90,14 +90,36 @@ def roster_id_to_team_info(rosters, users):
     return out
 
 
-def build_standings(rosters, roster_names):
+def get_division_names(league):
+    """Sleeper stores division display names in the league object's
+    metadata, typically as metadata.division_1 / division_2 / division_3.
+    This can't be verified against a live call from this environment — if
+    the printed names look wrong or missing on the first real run, the
+    league's actual metadata shape differs from this assumption and needs
+    adjusting. Falls back to 'Division N' if nothing is found there."""
+    metadata = league.get("metadata") or {}
+    names = {}
+    for n in (1, 2, 3):
+        names[n] = metadata.get(f"division_{n}") or f"Division {n}"
+    return names
+
+
+def build_standings(rosters, roster_names, division_names):
     standings = []
     for r in rosters:
         s = r.get("settings", {})
+        # Division number location isn't independently verifiable from this
+        # environment (no direct Sleeper API access) — trying the most
+        # likely spot (settings.division) first, falling back to a
+        # roster-level field. print_division_diagnostics() in main() will
+        # make it obvious on the first real run if neither guess is right.
+        division_num = s.get("division") or r.get("division")
         standings.append({
             "roster_id": r["roster_id"],
             "team_name": roster_names[r["roster_id"]]["team_name"],
             "is_commissioner": roster_names[r["roster_id"]]["is_commissioner"],
+            "division": division_num,
+            "division_name": division_names.get(division_num, f"Division {division_num}") if division_num else None,
             "wins": s.get("wins", 0),
             "losses": s.get("losses", 0),
             "ties": s.get("ties", 0),
@@ -109,24 +131,61 @@ def build_standings(rosters, roster_names):
 
 
 def compute_playoff_picture(standings):
-    """This league's playoff format is NOT standard top-6-by-record: the
-    top 5 teams by record get in normally, but the 6th and final spot goes
-    to whichever of the REMAINING 7 teams has the highest total points
-    scored on the season — not the next-best record. Confirmed directly by
-    the commissioner. Computed here rather than left to the model, since
-    an unusual rule like this is exactly the kind of thing that's easy to
-    silently get wrong by defaulting to the standard assumption."""
-    top_5 = standings[:5]
-    remaining = sorted(standings[5:], key=lambda x: -x["fpts"])
-    sixth_seed = remaining[0] if remaining else None
-    on_the_bubble = remaining[1] if len(remaining) > 1 else None
+    """Real league format, confirmed directly:
+    - The 3 division winners make the playoffs automatically, seeded 1-3
+      by overall win-loss-tie record (regardless of division).
+    - Seeds 4 and 5 go to the next-best records among everyone who did NOT
+      win their division.
+    - Seed 6 (the final spot) goes to whichever of the STILL-remaining
+      teams has the highest total points scored on the season — not the
+      next-best record.
+    Computed here rather than left to the model — this a multi-step,
+    unusual rule that's exactly the kind of thing easy to silently get
+    wrong by defaulting to a standard top-6-by-record assumption."""
+    if not standings or standings[0].get("division") is None:
+        # Division data didn't resolve — fall back to the old flat
+        # points-wildcard-only version rather than producing a picture
+        # that's wrong in a different way. See get_division_names /
+        # build_standings diagnostics for why this might be happening.
+        top_5 = standings[:5]
+        remaining = sorted(standings[5:], key=lambda x: -x["fpts"])
+        return {
+            "note": "DIVISION DATA UNAVAILABLE — falling back to top-5-by-record "
+                    "plus points-based 6th seed, NOT the real 3-division-winners "
+                    "format. This means the division lookup failed; needs a code fix.",
+            "top_5_by_record": top_5,
+            "sixth_seed_by_points": remaining[0] if remaining else None,
+            "on_the_bubble_by_points": remaining[1] if len(remaining) > 1 else None,
+            "teams_outside_playoff_picture": remaining[2:],
+        }
+
+    divisions = {}
+    for team in standings:
+        divisions.setdefault(team["division"], []).append(team)
+
+    division_winners = []
+    for div_teams in divisions.values():
+        winner = min(div_teams, key=lambda t: standings.index(t))  # standings already sorted by record
+        division_winners.append(winner)
+    division_winners.sort(key=lambda t: (-t["wins"], -t["fpts"]))
+
+    winner_roster_ids = {t["roster_id"] for t in division_winners}
+    non_winners = [t for t in standings if t["roster_id"] not in winner_roster_ids]  # already sorted by record
+
+    seeds_4_5 = non_winners[:2]
+    still_remaining = sorted(non_winners[2:], key=lambda t: -t["fpts"])
+    sixth_seed = still_remaining[0] if still_remaining else None
+    on_the_bubble = still_remaining[1] if len(still_remaining) > 1 else None
+
     return {
-        "note": "6th and final playoff spot goes to the highest-scoring team "
-                "among those NOT in the top 5 by record — not the next-best record.",
-        "top_5_by_record": top_5,
+        "note": "Playoffs: 3 division winners (seeded 1-3 by record) + next-2-best "
+                "records (seeds 4-5) + 1 points-based wildcard (seed 6, highest "
+                "season points among everyone else) = 6 teams.",
+        "division_winners_seeds_1_to_3": division_winners,
+        "next_best_record_seeds_4_to_5": seeds_4_5,
         "sixth_seed_by_points": sixth_seed,
         "on_the_bubble_by_points": on_the_bubble,
-        "teams_outside_playoff_picture": remaining[2:],
+        "teams_outside_playoff_picture": still_remaining[2:],
     }
 
 
@@ -371,11 +430,18 @@ def main():
     users = get_users()
     roster_names = roster_id_to_team_info(rosters, users)
     players_db = get_players_cached()
+    league = get_league()
+    division_names = get_division_names(league)
 
     matchups_recap = get_matchups(week_to_recap)
     matchups_preview = get_matchups(week_to_preview)
     raw_transactions = get_transactions(week_to_recap)
-    standings = build_standings(rosters, roster_names)
+    standings = build_standings(rosters, roster_names, division_names)
+
+    resolved_divisions = sum(1 for t in standings if t["division"] is not None)
+    print(f"Division resolution: {resolved_divisions}/{len(standings)} teams have a division number. "
+          f"If this is 0, the division field assumption (settings.division / roster.division) is wrong "
+          f"and needs a fix — playoff_picture will fall back to the non-divisional format until then.")
 
     with open(PATHS["story_state"]) as f:
         story_state = json.load(f)

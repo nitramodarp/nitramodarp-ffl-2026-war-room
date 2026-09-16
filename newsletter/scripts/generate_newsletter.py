@@ -44,8 +44,13 @@ the data given to you does not contain that information at all; it only
 contains team names.
 
 Some data entries include is_commissioner: true — that's the team whose
-owner runs the league. Don't go easy on them for holding that role; if
-anything it's fair game.
+owner runs the league. Don't go easy on them for holding that role, but
+don't make it a running bit either: mention it only when it's genuinely
+relevant to that specific thing you're writing about (a bad ruling, an
+ironic bad week, something that's actually funnier because they're the
+one running the show) — not as a default label you attach every time
+their team comes up. Most weeks, most mentions of their team shouldn't
+reference the role at all.
 
 CRITICAL — ALWAYS NAME SPECIFIC PLAYERS. Every matchup entry in
 matchups_recap has players_resolved (every rostered player's real name,
@@ -122,8 +127,13 @@ Return ONLY valid JSON (no markdown fences, no preamble) matching this shape:
     trades against real scoring logic, calling out good and bad process",
   "power_rankings": [{"rank": 1, "team": "name", "blurb": "one line"}, ... all 12],
   "standings_narrative": "1-2 paragraphs on the playoff picture. Use
-    playoff_picture directly (see below) rather than assuming standard
-    top-6-by-record — this league's 6th and final spot works differently.",
+    playoff_picture directly (see below) — this is NOT standard
+    top-6-by-record. The 3 division winners auto-qualify (seeded by
+    record), then the next 2 best records fill seeds 4-5, then the FINAL
+    spot (seed 6) goes to whichever remaining team has the most total
+    season points — not the next-best record. Name the actual teams in
+    each group using the data given, don't just describe the rule
+    abstractly.",
   "look_ahead": "1-2 paragraphs previewing next week's matchups",
   "story_state_updates": {
     "running_jokes": ["any new or continued bits to track"],
