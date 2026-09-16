@@ -113,6 +113,93 @@ def determine_weeks(nfl_state):
     return max(current - 1, 1), current
 
 
+FLEX_ELIGIBLE = {"RB", "WR", "TE"}
+
+
+def enrich_matchup_players(matchups, players_db):
+    """Resolve raw player_id -> name/position for every rostered player in
+    each matchup entry (Sleeper's players_points is only {player_id:
+    points}, no names at all), then precompute the two facts the
+    newsletter actually needs names for: this roster's single top scorer,
+    and any bench player who outscored a starter they could plausibly have
+    swapped for. Without this the model could only ever write vague lines
+    like "by 47.95 from one starter" — it genuinely had no name to use.
+
+    The bench-mistake check is a reasonable approximation, not a full
+    optimal-lineup solver: QB and DEF have exactly one dedicated slot, so
+    a bench player there outscoring the starter is a clean, certain
+    mistake. RB/WR/TE share 2 dedicated RB, 2 dedicated WR, 1 dedicated
+    TE, and 2 position-agnostic FLEX slots — comparing the best bench
+    RB/WR/TE against the worst starting RB/WR/TE usually, but not always,
+    reflects a real available swap (a rare edge case: needing to keep 2
+    dedicated RBs could occasionally block it). Documented here rather
+    than silently assumed perfect."""
+    for m in matchups:
+        players_points = m.get("players_points") or {}
+        starters = set(m.get("starters") or [])
+
+        resolved = []
+        for pid, pts in players_points.items():
+            player = players_db.get(str(pid), {})
+            resolved.append({
+                "player_id": pid,
+                "name": player.get("full_name", f"Player {pid}"),
+                "position": player.get("position", "UNK"),
+                "points": pts or 0,
+                "started": pid in starters,
+            })
+
+        starter_entries = [p for p in resolved if p["started"]]
+        bench_entries = [p for p in resolved if not p["started"]]
+        top_scorer = max(resolved, key=lambda p: p["points"], default=None)
+
+        bench_mistake = None
+        for pos in ("QB", "DEF"):
+            starter_at_pos = next((p for p in starter_entries if p["position"] == pos), None)
+            bench_at_pos = [p for p in bench_entries if p["position"] == pos]
+            if starter_at_pos and bench_at_pos:
+                best_bench = max(bench_at_pos, key=lambda p: p["points"])
+                if best_bench["points"] > starter_at_pos["points"]:
+                    margin = best_bench["points"] - starter_at_pos["points"]
+                    if not bench_mistake or margin > bench_mistake["margin"]:
+                        bench_mistake = {
+                            "benched_player": best_bench["name"], "benched_points": best_bench["points"],
+                            "started_instead": starter_at_pos["name"], "started_points": starter_at_pos["points"],
+                            "margin": round(margin, 2),
+                        }
+
+        starter_flex = [p for p in starter_entries if p["position"] in FLEX_ELIGIBLE]
+        bench_flex = [p for p in bench_entries if p["position"] in FLEX_ELIGIBLE]
+        if starter_flex and bench_flex:
+            worst_starter = min(starter_flex, key=lambda p: p["points"])
+            best_bench = max(bench_flex, key=lambda p: p["points"])
+            if best_bench["points"] > worst_starter["points"]:
+                margin = best_bench["points"] - worst_starter["points"]
+                if not bench_mistake or margin > bench_mistake["margin"]:
+                    bench_mistake = {
+                        "benched_player": best_bench["name"], "benched_points": best_bench["points"],
+                        "started_instead": worst_starter["name"], "started_points": worst_starter["points"],
+                        "margin": round(margin, 2),
+                    }
+
+        m["players_resolved"] = resolved
+        m["top_scorer_on_roster"] = top_scorer
+        m["bench_mistake"] = bench_mistake  # null if no valid swap found
+    return matchups
+
+
+def compute_league_top_scorer(matchups):
+    """Single highest-scoring STARTER across the whole league this week —
+    restricted to starters since a huge outlier sitting on a bench is
+    already covered by bench_mistake, not "the" story on its own."""
+    best = None
+    for m in matchups:
+        for p in m.get("players_resolved", []):
+            if p["started"] and (best is None or p["points"] > best["points"]):
+                best = {**p, "team_name": m.get("team_name")}
+    return best
+
+
 def roster_position_counts(roster, players_db):
     """How many players at each position a roster carried BEFORE this
     week's moves — used to judge whether an add addressed a real need or
@@ -135,11 +222,22 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
     player badly enough to claim him. We track waiver_position week over
     week in story_state so we can say "spent his #1 priority slot on a
     guy who's since done nothing" rather than a dollar amount.
+
+    CRITICAL: only status == "complete" transactions are processed. Sleeper's
+    transactions endpoint also returns FAILED waiver claims (e.g. all 4
+    teams that bid on a player, not just the winner) — including those
+    made it look like 4 teams each burned priority on the same player,
+    when really 3 of them just... didn't get him. Only the winning claim
+    actually happened and only it burns priority.
     """
     prev_priority = story_state.get("last_known_waiver_priority", {})
     enriched = []
+    skipped_incomplete = 0
     for t in transactions:
         if t.get("type") not in ("waiver", "free_agent", "trade"):
+            continue
+        if t.get("status") != "complete":
+            skipped_incomplete += 1
             continue
         adds = t.get("adds") or {}
         drops = t.get("drops") or {}
@@ -165,7 +263,7 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
                 "waiver_priority_before_move": prev_priority.get(str(roster_id)),
                 "confirmed_homer_transaction": bool(note and note.get("homer_team") == player.get("team")),
             })
-    return enriched
+    return enriched, skipped_incomplete
 
 
 def track_waiver_priority(story_state, rosters):
@@ -236,9 +334,9 @@ def main():
     with open(PATHS["story_state"]) as f:
         story_state = json.load(f)
 
-    enriched_tx = enrich_transactions(raw_transactions, players_db, roster_names, rosters_by_id, story_state)
+    enriched_tx, skipped_incomplete = enrich_transactions(raw_transactions, players_db, roster_names, rosters_by_id, story_state)
     update_transaction_tracking(story_state, enriched_tx, week_to_recap)
-    tracked_results = refresh_tracked_points(story_state, matchups_recap, week_to_recap)
+    tracked_results = refresh_tracked_points(story_state, matchups_recap, week_to_recap)  # needs raw players_points — must run BEFORE enrich_matchup_players
     track_waiver_priority(story_state, rosters)  # snapshot AFTER this week's claims for next week's diff
 
     with open(PATHS["story_state"], "w") as f:
@@ -249,13 +347,19 @@ def main():
             m["team_name"] = roster_names.get(m["roster_id"], {}).get("team_name", "Unknown")
         return matchups
 
+    annotate(matchups_recap)
+    enrich_matchup_players(matchups_recap, players_db)  # adds named players_resolved/top_scorer_on_roster/bench_mistake
+    league_top_scorer = compute_league_top_scorer(matchups_recap)
+    annotate(matchups_preview)  # preview has no scores yet — names not useful there, skip enrichment
+
     data = {
         "season": nfl_state["season"],
         "week_recapped": week_to_recap,
         "week_upcoming": week_to_preview,
         "standings": standings,
-        "matchups_recap": annotate(matchups_recap),
-        "matchups_preview": annotate(matchups_preview),
+        "matchups_recap": matchups_recap,
+        "matchups_preview": matchups_preview,
+        "league_top_scorer": league_top_scorer,
         "transactions_this_week": enriched_tx,
         "transaction_tracking_all_active": tracked_results,
     }
@@ -264,7 +368,8 @@ def main():
         json.dump(data, f, indent=2)
 
     print(f"Fetched week {week_to_recap} recap + week {week_to_preview} preview. "
-          f"{len(enriched_tx)} new transactions, {len(tracked_results)} adds under active tracking.")
+          f"{len(enriched_tx)} completed transactions ({skipped_incomplete} failed/incomplete claims filtered out), "
+          f"{len(tracked_results)} adds under active tracking.")
 
 
 if __name__ == "__main__":
