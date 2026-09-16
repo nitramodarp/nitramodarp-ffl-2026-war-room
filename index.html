@@ -1217,6 +1217,14 @@
   </section>
 </main>
 
+<!-- SheetJS — parses the Salfino workbook's xlsx export client-side. Loaded
+     synchronously (no defer/async) so it's guaranteed available before the
+     inline script below runs. See loadSalfinoSeason for why this replaced
+     both the raw-CSV-diff heuristic and the (dead, 404s on this sheet)
+     legacy worksheets feed as the "which weeks actually exist" source of
+     truth — the xlsx export carries the real tab list AND all the data in
+     one request, no per-tab guessing needed. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ============================================================
    CONFIG
@@ -1372,7 +1380,7 @@ const state = {
   salfinoLoading: false,
   salfinoError: null,      // non-fatal — Waivers tab still renders VORP-only on failure
   salfinoTabListError: null, // set when the worksheets-feed existence check fails — app falls back to Week 1 only rather than guess
-  salfinoTabTitles: null,  // raw tab titles from the worksheets feed, for the Debug tab
+  salfinoTabTitles: null,  // real tab titles from the xlsx workbook export, for the Debug tab
   sleeperLeague: null,
   sleeperError: null,
   filter: { pos: 'ALL', search: '' },
@@ -1579,30 +1587,36 @@ async function fetchAllPlayers() {
 
 /* ============================================================
    Salfino market-share data — season-long, localStorage-cached
-   Past weeks are immutable once published, so only newly-confirmed
-   week(s) get fetched over the network each session; everything
-   already confirmed lives in localStorage indefinitely (small — a
-   season of these two tabs is nowhere near the ~5MB player-dump
-   budget that drove the TTL on that cache).
+   Past weeks are immutable once published, but the fetch below pulls
+   the WHOLE workbook in one request regardless of how many weeks
+   exist, so there's no incremental-fetch logic to get wrong anymore —
+   the cache below exists purely so the tab has something to paint
+   instantly from on repeat opens, not to avoid re-downloading.
 
-   Week-existence detection, v2: the original approach probed "Week
-   N" tab names and compared raw CSV text against a known Week 1
-   fetch, on the theory that Google's gviz endpoint silently serves
-   the workbook's first tab for an unknown sheet name (confirmed true
-   for the board workbook via servedWrongTab()). In production that
-   comparison never matched even for tabs that don't exist — some
-   incidental difference between separate requests broke exact-text
-   equality — so every probed week up to the cap got wrongly treated
-   as real, re-ingesting Week 1's numbers under fake week labels.
-   Replaced with a real existence check: Google's classic public
-   worksheets feed lists a public sheet's actual tab titles directly,
-   no content-diffing or guessing required. If that feed itself fails
-   (deprecated API, network hiccup, CORS) this refuses to guess and
-   loads ONLY Week 1 — already confirmed real by direct inspection —
-   rather than repeat the previous failure mode of showing wrong data
-   confidently. See the Waivers banner / Debug tab for which path ran.
+   Week-existence detection, v3: v1 probed "Week N" tab names and
+   diffed raw CSV text against Week 1, on the theory that Google's
+   gviz endpoint silently serves the workbook's first tab for an
+   unknown sheet name (confirmed true for the board workbook via
+   servedWrongTab()). In production that comparison never matched
+   even for tabs that don't exist, so every probed week up to the cap
+   got wrongly treated as real. v2 replaced it with Google's classic
+   "worksheets" feed (a real tab-title list, no guessing) — which
+   turned out to be dead for this sheet (404, confirmed live Sept
+   2026), correctly triggering the Week-1-only fallback rather than
+   showing wrong data again.
+   v3: fetch the whole spreadsheet as an .xlsx export and parse it
+   client-side with SheetJS. workbook.SheetNames IS the real tab list
+   — same authoritative source the worksheets feed was trying to be,
+   but via Google's still-current "download as" export endpoint
+   instead of the deprecated v3 API — and the same request already
+   carries every tab's data, so one fetch replaces the whole
+   per-week-CSV dance entirely. If this fetch/parse fails for any
+   reason (network, CORS, Google changing the export path), same
+   refuse-to-guess fallback as before: load ONLY Week 1 via the plain
+   CSV path (fetchSalfinoWeek, kept below for exactly this reason)
+   and surface the failure rather than show wrong weeks.
    ============================================================ */
-const SALFINO_CACHE_KEY = 'ffl_salfino_weeks_v1';
+const SALFINO_CACHE_KEY = 'ffl_salfino_weeks_v2'; // v2 key — v1's shape/semantics changed enough not to reuse the old cache
 
 function loadSalfinoCache() {
   try {
@@ -1617,24 +1631,30 @@ function saveSalfinoCache(weeks) {
   catch (e) { /* quota exceeded or storage disabled — fine, just won't persist this session */ }
 }
 
+// Kept as the fallback-only path (Week 1 via plain CSV) when the xlsx
+// export fails entirely — deliberately NOT used for any other week, since
+// per-tab CSV fetches are exactly what made week-existence unreliable
+// before. Week 1 is safe here because it's the one tab name we've
+// confirmed real by direct inspection, not by probing.
 async function fetchSalfinoWeek(kind, week) {
-  // kind: 'wr' (targets tab — WR and TE together, split by Pos. at parse
-  // time) or 'rb' (touches tab — RB only, no Pos. column at all)
   const label = kind === 'wr' ? 'WR targets' : 'RB Touches';
   const name = `${label} Week ${week}`;
   return fetchSheetFrom(CONFIG.SALFINO_SHEET_ID, name, `salfino:${kind}:${week}`);
 }
 
-// Real tab list for the Salfino spreadsheet via the classic (pre-v4, still
-// live for public sheets) Sheets "worksheets" feed — returns every actual
-// tab title, so "does Week N exist" becomes a lookup instead of a guess.
-async function fetchSalfinoTabTitles() {
-  const url = `https://spreadsheets.google.com/feeds/worksheets/${CONFIG.SALFINO_SHEET_ID}/public/basic?alt=json`;
+async function fetchSalfinoWorkbook() {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SALFINO_SHEET_ID}/export?format=xlsx`;
   const resp = await fetch(url, { cache: 'no-store' });
-  if (!resp.ok) throw new Error(`Worksheet feed fetch failed (${resp.status})`);
-  const data = await resp.json();
-  const entries = (data.feed && data.feed.entry) || [];
-  return entries.map(e => (e.title && e.title.$t) || '').filter(Boolean);
+  const trace = { sheetName: '(whole workbook \u2014 xlsx export)', url, status: resp.status, statusText: resp.statusText };
+  state.fetchTraces = state.fetchTraces || {};
+  state.fetchTraces['salfino:workbook'] = trace;
+  if (!resp.ok) throw new Error(`Workbook export fetch failed (${resp.status})`);
+  const buf = await resp.arrayBuffer();
+  trace.byteLength = buf.byteLength;
+  if (typeof XLSX === 'undefined') throw new Error('SheetJS (XLSX) didn\'t load \u2014 check the CDN <script> tag');
+  const workbook = XLSX.read(buf, { type: 'array' });
+  trace.sheetNames = workbook.SheetNames;
+  return workbook;
 }
 
 function parseSalfinoWeekTabs(titles) {
@@ -1648,48 +1668,72 @@ function parseSalfinoWeekTabs(titles) {
   return { wr, rb };
 }
 
-async function loadSalfinoSeason() {
-  const cached = loadSalfinoCache();
+// Converts one worksheet to the same [{header: value}, ...] row shape
+// csvToObjects produces, reusing findHeaderRow for the same reason it
+// exists there — some tabs may carry a title row above the real headers.
+// Deliberately keeps native cell types (numbers stay numbers) rather than
+// stringifying everything the way the CSV path does, since XLSX hands
+// back %-formatted cells as raw fractions (e.g. 0.4583, not "45.83%") —
+// see parseSalfinoShare for why that matters.
+function sheetToSalfinoRows(workbook, sheetName) {
+  const ws = workbook.Sheets[sheetName];
+  if (!ws) return [];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: true });
+  const stringRows = rows.map(r => r.map(c => String(c ?? '')));
+  const hIdx = findHeaderRow(stringRows);
+  const dataRows = hIdx > 0 ? rows.slice(hIdx) : rows;
+  if (dataRows.length < 2) return [];
+  const headers = dataRows[0].map(h => String(h ?? '').trim());
+  return dataRows.slice(1)
+    .filter(r => r.some(v => v !== '' && v != null))
+    .map(r => {
+      const o = {};
+      headers.forEach((h, i) => o[h] = r[i] === undefined ? '' : r[i]);
+      return o;
+    });
+}
 
-  let tabTitles = null;
+async function loadSalfinoSeason() {
+  let workbook = null;
   try {
-    tabTitles = await fetchSalfinoTabTitles();
+    workbook = await fetchSalfinoWorkbook();
     state.salfinoTabListError = null;
   } catch (e) {
     state.salfinoTabListError = e.message;
   }
 
-  if (!tabTitles) {
-    // Can't confirm which weeks are real right now — refuse to guess.
-    // Load ONLY Week 1 (proven to exist by direct inspection) and
-    // overwrite the cache with it, which also self-heals any bad weeks
-    // the old raw-text-diff heuristic wrote before this fix existed.
+  if (!workbook) {
+    // Can't confirm real tabs right now — refuse to guess. Load ONLY
+    // Week 1 (proven real by direct inspection) via the plain CSV path,
+    // which also self-heals any stale/bad cache from a prior version.
     const [week1Wr, week1Rb] = await Promise.all([fetchSalfinoWeek('wr', 1), fetchSalfinoWeek('rb', 1)]);
     const clean = { wr: { 1: week1Wr.objects }, rb: { 1: week1Rb.objects } };
     saveSalfinoCache(clean);
     return clean;
   }
 
-  const { wr: wrWeeks, rb: rbWeeks } = parseSalfinoWeekTabs(tabTitles);
-  state.salfinoTabTitles = tabTitles;
+  const { wr: wrWeeks, rb: rbWeeks } = parseSalfinoWeekTabs(workbook.SheetNames);
+  state.salfinoTabTitles = workbook.SheetNames;
 
-  // Fetch only weeks the tab list actually confirms exist, and only ones
-  // not already cached (past weeks are immutable once published).
-  for (const w of wrWeeks) {
-    if (cached.wr[w] === undefined) cached.wr[w] = (await fetchSalfinoWeek('wr', w)).objects;
-  }
-  for (const w of rbWeeks) {
-    if (cached.rb[w] === undefined) cached.rb[w] = (await fetchSalfinoWeek('rb', w)).objects;
-  }
+  const fresh = { wr: {}, rb: {} };
+  wrWeeks.forEach(w => { fresh.wr[w] = sheetToSalfinoRows(workbook, `WR targets Week ${w}`); });
+  rbWeeks.forEach(w => { fresh.rb[w] = sheetToSalfinoRows(workbook, `RB Touches Week ${w}`); });
 
-  // Drop any cached week the tab list no longer confirms — self-heals a
-  // cache poisoned by the old heuristic (fake Week 2\u201318 entries) the
-  // first time this runs against a real tab list.
-  Object.keys(cached.wr).map(Number).forEach(w => { if (!wrWeeks.has(w)) delete cached.wr[w]; });
-  Object.keys(cached.rb).map(Number).forEach(w => { if (!rbWeeks.has(w)) delete cached.rb[w]; });
+  saveSalfinoCache(fresh);
+  return fresh;
+}
 
-  saveSalfinoCache(cached);
-  return cached;
+// Handles both cell-value shapes seen from Salfino's sheet: a raw fraction
+// from XLSX (e.g. 0.4583 for a %-formatted cell) or a percent-style string
+// from the CSV fallback path ("45.83" or "45.83%"). Anything already
+// \u2264 1 is treated as a fraction as-is; anything larger is assumed to be
+// a percent value and divided down.
+function parseSalfinoShare(raw) {
+  if (raw == null || raw === '') return NaN;
+  const s = String(raw).replace('%', '').trim();
+  const n = parseFloat(s);
+  if (Number.isNaN(n)) return NaN;
+  return Math.abs(n) <= 1 ? n : n / 100;
 }
 
 // Splits the two per-week tab dumps into one lookup table keyed by
@@ -1706,8 +1750,8 @@ function buildSalfinoIndex(weeks) {
         if (!name) return;
         const norm = draftNormName(name);
         if (!norm) return;
-        const shareRaw = fieldOf(r, SALFINO_ALIASES.share).replace('%', '').trim();
-        const share = parseFloat(shareRaw) / 100;
+        const shareRaw = fieldOf(r, SALFINO_ALIASES.share);
+        const share = parseSalfinoShare(shareRaw);
         if (Number.isNaN(share)) return;
         const posRaw = hardcodedPos || fieldOf(r, SALFINO_ALIASES.pos).toUpperCase().trim();
         const pos = posRaw === 'RB' ? 'RB' : (posRaw === 'TE' ? 'TE' : 'WR');
@@ -5807,14 +5851,14 @@ function renderDebug() {
     cards.push(`<div class="debug-card">
       <h4>Salfino market share</h4>
       <div class="kv"><span class="kv-k">sheet ID</span><span class="kv-v">${CONFIG.SALFINO_SHEET_ID.slice(0,20)}\u2026</span></div>
-      <div class="kv"><span class="kv-k">tab-list method</span><span class="kv-v" style="color:${state.salfinoTabListError ? 'var(--down)' : 'var(--fg-mute)'};">${state.salfinoTabListError ? 'FAILED \u2014 fell back to Week 1 only' : 'OK'}</span></div>
+      <div class="kv"><span class="kv-k">tab-list method</span><span class="kv-v" style="color:${state.salfinoTabListError ? 'var(--down)' : 'var(--fg-mute)'};">${state.salfinoTabListError ? 'FAILED \u2014 fell back to Week 1 only' : 'OK (xlsx export)'}</span></div>
       ${state.salfinoTabListError ? `<div style="color:var(--down); font-size:11px; margin-top:4px; font-family:var(--font-mono);">${escapeHtml(state.salfinoTabListError)}</div>` : ''}
       <div class="kv"><span class="kv-k">confirmed tabs (raw feed)</span><span class="kv-v" style="font-size:10.5px;">${state.salfinoTabTitles ? escapeHtml(state.salfinoTabTitles.join(' \u00b7 ')) : '\u2014'}</span></div>
       <div class="kv"><span class="kv-k">WR targets weeks cached</span><span class="kv-v">${weeksWr.length ? weeksWr.join(', ') : 'none'}</span></div>
       <div class="kv"><span class="kv-k">RB Touches weeks cached</span><span class="kv-v">${weeksRb.length ? weeksRb.join(', ') : 'none'}</span></div>
       <div class="kv"><span class="kv-k">players indexed</span><span class="kv-v">${playersIndexed}</span></div>
       ${state.salfinoError ? `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">error: ${escapeHtml(state.salfinoError)}</div>` : ''}
-      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Week existence comes from Google's public worksheets feed (real tab titles), not content-guessing \u2014 a prior version compared raw CSV text against Week 1 and produced false positives out to Week 18. If the feed method ever fails, this deliberately shows Week 1 only rather than repeat that.</div>
+      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Week existence comes from parsing the sheet's real .xlsx export client-side (SheetJS) \u2014 workbook.SheetNames is the actual tab list, no content-guessing. Two earlier approaches failed first: raw-CSV-diffing against Week 1 (false positives out to Week 18) and the legacy worksheets feed (404s on this sheet). If the xlsx export ever fails too, this deliberately shows Week 1 only rather than repeat either failure.</div>
     </div>`);
   }
 
