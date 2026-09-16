@@ -1291,6 +1291,31 @@ const CONFIG = {
   // Safety cap on how many weeks the season-long pull will probe forward —
   // an 18-week regular season is the real ceiling.
   SALFINO_MAX_WEEKS_BACK: 18,
+
+  // If the Salfino workbook's latest confirmed week lags the real current
+  // NFL week (from Sleeper's /state/nfl) by more than this, something's
+  // off — most likely SALFINO_SHEET_ID still points at a prior season's
+  // now-frozen sheet (Joe confirmed Salfino opens a new sheet each season)
+  // rather than this week's data just being late. Surfaced as a loud
+  // warning, not silently trusted either way.
+  SALFINO_STALENESS_WEEKS: 2,
+
+  // Live VORP — blends each player's actual points-to-date (under the
+  // league's OWN live scoring_settings from Sleeper, not a hand-ported
+  // copy of \u00a73) against their Ciely preseason pace, shrinking toward
+  // actual as more games accumulate. Weight = games / (games + k), so
+  // smaller k trusts actual data sooner. DEF gets a much larger k since a
+  // single tiered-cliff week (shutout, or a blowout loss) swings its score
+  // far more than one game should move a season-long read. Assumed 17
+  // games per season (standard NFL slate) for converting a full-season
+  // Ciely projection into a per-game pace to blend against.
+  LIVE_VORP_K: { QB: 3, RB: 4, WR: 4, TE: 4, DEF: 8 },
+  LIVE_VORP_GAMES_IN_SEASON: 17,
+  // Same replacement ranks as the board's own preseason VORP (Methodology
+  // & Assumptions tab, confirmed against Draft Day Plan's Position
+  // Importance table) — re-applied to the BLENDED board so live VORP
+  // compares like to like, not a live number against a frozen baseline.
+  LIVE_VORP_REPLACEMENT_RANK: { QB: 15, RB: 34, WR: 40, TE: 13, DEF: 13 },
 };
 
 /* ============================================================
@@ -1381,6 +1406,10 @@ const state = {
   salfinoError: null,      // non-fatal — Waivers tab still renders VORP-only on failure
   salfinoTabListError: null, // set when the worksheets-feed existence check fails — app falls back to Week 1 only rather than guess
   salfinoTabTitles: null,  // real tab titles from the xlsx workbook export, for the Debug tab
+  nflState: null,          // Sleeper /state/nfl — { week, season, season_type, ... }, ground truth for "how many weeks are actually complete" and the Salfino staleness check
+  liveVorpData: null,      // { liveVorpByName, gamesByName, replacementByPos, scoringKeysUsed, weeksLoaded } — see computeLiveVorp
+  liveVorpLoading: false,
+  liveVorpError: null,     // non-fatal — Waivers tab still renders without the Live VORP column on failure
   sleeperLeague: null,
   sleeperError: null,
   filter: { pos: 'ALL', search: '' },
@@ -1847,6 +1876,173 @@ function computeMyRosterSalfino(board, myRoster, waiverIndex, salfinoIndex) {
     rows.push({ name: p.name, pos: p.pos, team: p.team, series, decline });
   });
   return rows;
+}
+
+/* ============================================================
+   Live VORP — actual-to-date performance blended against Ciely's
+   preseason pace, shrinking toward actual as games accumulate. See
+   CONFIG.LIVE_VORP_K / LIVE_VORP_REPLACEMENT_RANK for the tunable
+   parameters and the reasoning behind them.
+
+   Deliberately reuses the league's OWN live scoring_settings from
+   Sleeper (fetched once at boot into state.sleeperLeague) rather than
+   hand-porting \u00a73's rules a second time into JS \u2014 those settings
+   are quite literally where \u00a73 was configured in the first place
+   (the same tiered DST brackets, 7-point TDs, etc. visible in the
+   League Settings screenshots), and every stat category Sleeper
+   returns per player per week uses the SAME key names as
+   scoring_settings, so a raw stat line scores itself by direct
+   lookup. This also means if Joe ever tweaks a scoring setting
+   mid-season, live VORP picks it up automatically with no code
+   change \u2014 impossible to keep a hand-copied ruleset in sync that
+   cleanly.
+
+   Additive only: this never touches state.board's own VORP column
+   (that stays 100% Ciely-sourced, feeding Draft Mode untouched) \u2014
+   live VORP is a second, separate number attached to Waivers rows.
+   ============================================================ */
+async function fetchNflState() {
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/state/nfl`);
+  if (!resp.ok) throw new Error(`NFL state fetch failed (${resp.status})`);
+  return resp.json();
+}
+
+const LIVE_STATS_CACHE_KEY = 'ffl_live_stats_v1';
+
+function loadLiveStatsCache() {
+  try {
+    const raw = localStorage.getItem(LIVE_STATS_CACHE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) || {};
+  } catch (e) { return {}; }
+}
+function saveLiveStatsCache(cache) {
+  try { localStorage.setItem(LIVE_STATS_CACHE_KEY, JSON.stringify(cache)); }
+  catch (e) { /* quota exceeded or storage disabled — fine, just won't persist this session */ }
+}
+
+// A completed week's stats are final and immutable, so once cached under
+// a season+week key they're never re-fetched. Cache is keyed by season so
+// a new Sleeper league ID next year (see CONFIG.LEAGUE_ID's own yearly
+// repoint) naturally starts writing fresh entries rather than reading
+// stale ones \u2014 nothing to manually clear.
+async function fetchWeekStatsCached(season, week) {
+  const cache = loadLiveStatsCache();
+  const key = `${season}:${week}`;
+  if (cache[key]) return cache[key];
+  const resp = await fetch(`${CONFIG.SLEEPER_API}/stats/nfl/regular/${season}/${week}`);
+  if (!resp.ok) throw new Error(`Week ${week} stats fetch failed (${resp.status})`);
+  const data = await resp.json();
+  cache[key] = data;
+  saveLiveStatsCache(cache);
+  return data;
+}
+
+// Scores one player-week by direct lookup against the league's live
+// scoring_settings \u2014 no hand-ported \u00a73 rules table. Unknown/unweighted
+// keys in the stat line are ignored rather than guessed at.
+function scoreStatLine(statLine, scoringSettings) {
+  if (!statLine || !scoringSettings) return 0;
+  let pts = 0;
+  Object.keys(statLine).forEach(key => {
+    const weight = scoringSettings[key];
+    if (weight == null) return;
+    pts += (statLine[key] || 0) * weight;
+  });
+  return pts;
+}
+
+// Sums every completed week (1 through throughWeek) into a per-player
+// { total, games } map. "Games played" is a presence check (the player
+// has ANY recorded stat line that week) rather than a fixed week count,
+// so a bye week correctly doesn't count against them.
+async function aggregateActuals(season, throughWeek, scoringSettings) {
+  const weeks = [];
+  for (let w = 1; w <= throughWeek; w++) weeks.push(w);
+  const weekly = await Promise.all(weeks.map(w => fetchWeekStatsCached(season, w)));
+  const totals = {};
+  weekly.forEach(weekData => {
+    Object.keys(weekData || {}).forEach(pid => {
+      const statLine = weekData[pid];
+      if (!statLine || !Object.keys(statLine).length) return;
+      const pts = scoreStatLine(statLine, scoringSettings);
+      const rec = (totals[pid] = totals[pid] || { total: 0, games: 0 });
+      rec.total += pts;
+      rec.games += 1;
+    });
+  });
+  return totals;
+}
+
+// weight = games / (games + k): 0 games \u2192 100% Ciely (exactly the draft-
+// day state, nothing to reset season to season), more games \u2192 shifts
+// toward actual per-game pace at a rate k controls. Both sides are
+// converted to a per-game rate before blending, then rescaled back to a
+// full-season total so the result stays comparable to the board's own
+// VORP units.
+function blendedSeasonPace(actualTotal, gamesPlayed, projSeasonTotal, k) {
+  const gamesInSeason = CONFIG.LIVE_VORP_GAMES_IN_SEASON;
+  const projPerGame = gamesInSeason > 0 ? (projSeasonTotal || 0) / gamesInSeason : 0;
+  const actualPerGame = gamesPlayed > 0 ? actualTotal / gamesPlayed : 0;
+  const weight = gamesPlayed / (gamesPlayed + k);
+  const blendedPerGame = weight * actualPerGame + (1 - weight) * projPerGame;
+  return blendedPerGame * gamesInSeason;
+}
+
+// Re-derives replacement level from the BLENDED board rather than reusing
+// the board's own frozen preseason replacement value \u2014 comparing a live
+// number to a dead baseline would be new math wearing an old label. Same
+// replacement ranks as the preseason board (CONFIG.LIVE_VORP_REPLACEMENT_RANK).
+function computeLiveVorp(board, actualsById, waiverIndex) {
+  const rows = [];
+  (board || []).forEach(p => {
+    const k = CONFIG.LIVE_VORP_K[p.pos];
+    if (!k) return; // position has no live-VORP treatment (shouldn't happen for QB/RB/WR/TE/DEF)
+    const sid = resolveBoardPlayerToSleeperId(p, waiverIndex);
+    const actual = sid ? actualsById[sid] : null;
+    const games = actual ? actual.games : 0;
+    const total = actual ? actual.total : 0;
+    const blended = blendedSeasonPace(total, games, p.fps, k);
+    rows.push({ name: p.name, pos: p.pos, blended, games });
+  });
+
+  const replacementByPos = {};
+  Object.keys(CONFIG.LIVE_VORP_REPLACEMENT_RANK).forEach(pos => {
+    const sorted = rows.filter(r => r.pos === pos).map(r => r.blended).sort((a, b) => b - a);
+    const rank = CONFIG.LIVE_VORP_REPLACEMENT_RANK[pos];
+    replacementByPos[pos] = sorted.length ? sorted[Math.min(rank, sorted.length) - 1] : 0;
+  });
+
+  const liveVorpByName = {};
+  const gamesByName = {};
+  rows.forEach(r => {
+    liveVorpByName[r.name] = r.blended - (replacementByPos[r.pos] || 0);
+    gamesByName[r.name] = r.games;
+  });
+  return { liveVorpByName, gamesByName, replacementByPos };
+}
+
+async function loadLiveVorp(board, waiverIndex) {
+  const nflState = await fetchNflState();
+  state.nflState = nflState;
+  const scoringSettings = state.sleeperLeague && state.sleeperLeague.scoring_settings;
+  if (!scoringSettings) throw new Error('League scoring_settings not available yet (Sleeper league fetch may not have completed)');
+
+  // Only weeks strictly BEFORE the current one are treated as complete —
+  // Sleeper's /state/nfl "week" is the in-progress/upcoming week, so
+  // mid-Sunday live stats for the current week are deliberately excluded
+  // rather than blended in half-finished.
+  const throughWeek = Math.max(0, (nflState.week || 1) - 1);
+  const season = state.sleeperLeague && state.sleeperLeague.season || nflState.season;
+
+  const actualsById = throughWeek > 0
+    ? await aggregateActuals(season, throughWeek, scoringSettings)
+    : {};
+
+  const result = computeLiveVorp(board, actualsById, waiverIndex);
+  result.weeksLoaded = throughWeek;
+  result.scoringKeysUsed = Object.keys(scoringSettings).length;
+  return result;
 }
 
 // normalized-name -> [{id, full_name, pos, team}]. A name can collide
@@ -4699,6 +4895,22 @@ async function renderWaiversTab() {
     state.salfinoLoading = false;
   }
 
+  // Live VORP — one-time-per-session load (completed weeks' stats are
+  // localStorage-cached; see aggregateActuals/fetchWeekStatsCached).
+  // Needs state.board for Ciely's preseason pace and state.waiverPlayers
+  // (already loaded above) to resolve board names to Sleeper IDs. Non-
+  // fatal on failure: the tab still renders without the Live VORP column.
+  if (!state.liveVorpData && !state.liveVorpLoading) {
+    state.liveVorpLoading = true;
+    try {
+      state.liveVorpData = await loadLiveVorp(state.board, state.waiverIndex);
+    } catch (e) {
+      state.liveVorpError = e.message;
+      state.errors.push('Live VORP: ' + e.message);
+    }
+    state.liveVorpLoading = false;
+  }
+
   // Live rosters — always fresh (not cached), since the whole point of this
   // tab is "who's actually available right now."
   try {
@@ -4711,7 +4923,13 @@ async function renderWaiversTab() {
   }
 
   const { freeAgents, unmatched, ownedCount } = computeFreeAgents(state.board, state.waiverRosters, state.waiverIndex);
-  freeAgents.forEach(p => attachSalfino(p, state.salfinoIndex));
+  freeAgents.forEach(p => {
+    attachSalfino(p, state.salfinoIndex);
+    if (state.liveVorpData) {
+      p.liveVorp = state.liveVorpData.liveVorpByName[p.name];
+      p.liveVorpGames = state.liveVorpData.gamesByName[p.name] || 0;
+    }
+  });
   state.waiversCache = { freeAgents, unmatched, ownedCount, computedAt: Date.now() };
 
   // My current waiver priority, if the field's present — degrades to
@@ -4724,15 +4942,30 @@ async function renderWaiversTab() {
     ? ` \u00b7 Your waiver priority: <strong style="color:var(--fg);">${myPriority}</strong> of ${(state.waiverRosters || []).length}`
     : '';
 
-  const salfinoWeekCount = state.salfinoIndex
-    ? new Set(Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week))).size : 0;
+  const salfinoMaxWeek = state.salfinoIndex
+    ? Math.max(0, ...Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week))) : 0;
+  const nflCompletedWeek = state.nflState ? Math.max(0, (state.nflState.week || 1) - 1) : null;
+  // Loud staleness check: if Salfino's latest confirmed week lags the real
+  // completed-week count by more than the threshold, this is more likely
+  // SALFINO_SHEET_ID pointing at a prior season's frozen sheet (Joe
+  // confirmed Salfino opens a new one each year) than him just being late.
+  const salfinoStale = nflCompletedWeek != null && salfinoMaxWeek > 0 &&
+    (nflCompletedWeek - salfinoMaxWeek) > CONFIG.SALFINO_STALENESS_WEEKS;
   const salfinoNote = state.salfinoError
     ? ` \u00b7 <span style="color:var(--warn);">Salfino share data didn't load (${escapeHtml(state.salfinoError)})</span>`
     : state.salfinoTabListError
       ? ` \u00b7 <span style="color:var(--warn);">Couldn't confirm which Salfino weeks are published (${escapeHtml(state.salfinoTabListError)}) \u2014 showing Week 1 only until this resolves</span>`
-      : salfinoWeekCount
-        ? ` \u00b7 Salfino market share through Week ${Math.max(...Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week)))}`
-        : '';
+      : salfinoStale
+        ? ` \u00b7 <span style="color:var(--down);">\u26A0 Salfino data is only through Week ${salfinoMaxWeek} but the real season is through Week ${nflCompletedWeek} \u2014 check whether SALFINO_SHEET_ID still points at a prior season's sheet</span>`
+        : salfinoMaxWeek
+          ? ` \u00b7 Salfino market share through Week ${salfinoMaxWeek}`
+          : '';
+
+  const liveVorpNote = state.liveVorpError
+    ? ` \u00b7 <span style="color:var(--warn);">Live VORP didn't load (${escapeHtml(state.liveVorpError)})</span>`
+    : state.liveVorpData
+      ? ` \u00b7 Live VORP through Week ${state.liveVorpData.weeksLoaded}${state.liveVorpData.weeksLoaded === 0 ? ' (preseason \u2014 100% Ciely, no games yet)' : ''}`
+      : '';
 
   const myRosterShare = computeMyRosterSalfino(state.board, myRoster, state.waiverIndex, state.salfinoIndex);
   const declines = myRosterShare.filter(r => r.decline && r.decline.flagged);
@@ -4740,7 +4973,7 @@ async function renderWaiversTab() {
   host.innerHTML = `
     <div id="waiversBanner" class="hist-note" style="margin-bottom:10px; font-size:11px;">
       VORP here is your board's <strong>preseason, full-season</strong> projection \u2014 not recalculated week to week for
-      games already played, injuries, or role changes. Read it as "who's talented and available," not "who's hot right now."${priorityNote}${salfinoNote}
+      games already played, injuries, or role changes. Read it as "who's talented and available," not "who's hot right now."${priorityNote}${salfinoNote}${liveVorpNote}
       ${unmatched.length ? ` \u00b7 <span style="color:var(--warn);">${unmatched.length} board player${unmatched.length !== 1 ? 's' : ''} couldn't be matched to a Sleeper ID</span> (name-mismatch, not necessarily rostered \u2014 check Debug)` : ''}
     </div>
     ${declines.length ? `
@@ -4752,6 +4985,7 @@ async function renderWaiversTab() {
       <div class="chips" id="waiversSortFilter">
         <button class="chip ${state.waiversFilter.sort === 'vorp' ? 'active' : ''}" data-sort="vorp">Sort: VORP</button>
         <button class="chip ${state.waiversFilter.sort === 'urgency' ? 'active' : ''}" data-sort="urgency">Sort: Mkt Urgency</button>
+        <button class="chip ${state.waiversFilter.sort === 'live' ? 'active' : ''}" data-sort="live">Sort: Live VORP</button>
       </div>
     </div>
     <div id="waiversTableWrap"></div>
@@ -4785,6 +5019,8 @@ function renderWaiversTable() {
       const bu = b.salfino && b.salfino.urgency != null ? b.salfino.urgency : -1;
       return bu - au;
     });
+  } else if (state.waiversFilter.sort === 'live') {
+    rows = rows.slice().sort((a, b) => (b.liveVorp ?? -Infinity) - (a.liveVorp ?? -Infinity));
   }
 
   const countEl = document.getElementById('waiversResultCount');
@@ -4796,6 +5032,9 @@ function renderWaiversTable() {
     const sf = p.salfino;
     const shareCell = sf ? `${(sf.latestShare*100).toFixed(0)}% ${trendArrow(sf.trend)} <span style="color:var(--fg-dim); font-size:10px;">Wk${sf.latestWeek}</span>` : '<span style="color:var(--fg-dim);">\u2014</span>';
     const urgencyCell = sf && sf.urgency != null ? (sf.urgency*100).toFixed(0) : '\u2014';
+    const liveCell = p.liveVorp != null
+      ? `${p.liveVorp.toFixed(1)} <span style="color:var(--fg-dim); font-size:10px;">${p.liveVorpGames || 0}gm</span>`
+      : '<span style="color:var(--fg-dim);">\u2014</span>';
     return `
     <tr>
       <td class="num">${p.ovr ?? ''}</td>
@@ -4805,17 +5044,19 @@ function renderWaiversTable() {
       <td class="num">${p.bye ?? ''}</td>
       <td class="num">${p.tier ?? ''}</td>
       <td class="num" style="font-weight:600;">${p.vorp != null ? p.vorp.toFixed(1) : ''}</td>
+      <td class="num">${liveCell}</td>
       <td class="num">${shareCell}</td>
       <td class="num">${urgencyCell}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="9" style="text-align:center; color:var(--fg-dim); padding:20px;">No free agents match this filter.</td></tr>';
+  }).join('') || '<tr><td colspan="10" style="text-align:center; color:var(--fg-dim); padding:20px;">No free agents match this filter.</td></tr>';
 
   wrap.innerHTML = `
     <table class="hist-table">
-      <thead><tr><th class="num">RK</th><th>POS</th><th>PLAYER</th><th>TEAM</th><th class="num">BYE</th><th class="num">TIER</th><th class="num">VORP</th><th class="num">MKT SHARE</th><th class="num">URGENCY</th></tr></thead>
+      <thead><tr><th class="num">RK</th><th>POS</th><th>PLAYER</th><th>TEAM</th><th class="num">BYE</th><th class="num">TIER</th><th class="num">VORP</th><th class="num">LIVE VORP</th><th class="num">MKT SHARE</th><th class="num">URGENCY</th></tr></thead>
       <tbody>${body}</tbody>
     </table>
     <p style="font-size:10.5px; color:var(--fg-dim); margin-top:8px;">
+      Live VORP blends actual points-to-date (under this league's own live scoring rules) against Ciely's preseason pace, shrinking toward actual as more games accumulate (see the Debug tab for the weighting). "0gm" means no completed games yet \u2014 it reads as pure Ciely, same as the VORP column, until real data exists to blend in.
       Mkt Share = Salfino's most recent target share (WR/TE) or touch share (RB), with trend vs. the prior week he's published. Urgency = his own suggested-bid formula (share \u00f7 2, except RBs over 15% share which get the full share) \u2014 informational only, this league has no FAAB.
       ${rows.length > 200 ? ` Showing top 200 of ${rows.length} \u2014 narrow with the position filter or search to see further down.` : ''}
     </p>
@@ -5865,6 +6106,26 @@ function renderDebug() {
       <div class="kv"><span class="kv-k">players indexed</span><span class="kv-v">${playersIndexed}</span></div>
       ${state.salfinoError ? `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">error: ${escapeHtml(state.salfinoError)}</div>` : ''}
       <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Week existence comes from parsing the sheet's real .xlsx export client-side (SheetJS) \u2014 workbook.SheetNames is the actual tab list, no content-guessing. Two earlier approaches failed first: raw-CSV-diffing against Week 1 (false positives out to Week 18) and the legacy worksheets feed (404s on this sheet). If the xlsx export ever fails too, this deliberately shows Week 1 only rather than repeat either failure.</div>
+    </div>`);
+  }
+
+  {
+    const lv = state.liveVorpData;
+    const kRows = Object.keys(CONFIG.LIVE_VORP_K).map(pos =>
+      `<div class="kv"><span class="kv-k">k (${pos})</span><span class="kv-v">${CONFIG.LIVE_VORP_K[pos]}</span></div>`).join('');
+    const replRows = lv && lv.replacementByPos
+      ? Object.keys(lv.replacementByPos).map(pos =>
+          `<div class="kv"><span class="kv-k">replacement (${pos}, blended)</span><span class="kv-v">${lv.replacementByPos[pos].toFixed(1)}</span></div>`).join('')
+      : '';
+    cards.push(`<div class="debug-card">
+      <h4>Live VORP</h4>
+      <div class="kv"><span class="kv-k">NFL state</span><span class="kv-v">${state.nflState ? `season ${escapeHtml(String(state.nflState.season))}, week ${state.nflState.week} (${escapeHtml(state.nflState.season_type || '')})` : '\u2014'}</span></div>
+      <div class="kv"><span class="kv-k">completed weeks blended</span><span class="kv-v">${lv ? lv.weeksLoaded : '\u2014'}</span></div>
+      <div class="kv"><span class="kv-k">scoring_settings keys found</span><span class="kv-v">${lv ? lv.scoringKeysUsed : '\u2014'}</span></div>
+      ${state.liveVorpError ? `<div style="color:var(--down); font-size:11px; margin-top:4px; font-family:var(--font-mono);">error: ${escapeHtml(state.liveVorpError)}</div>` : ''}
+      ${kRows}
+      ${replRows}
+      <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Scores every completed week's raw stat lines by direct lookup against state.sleeperLeague.scoring_settings \u2014 the league's own live \u00a73 rules \u2014 rather than a hand-ported copy, so a mid-season scoring tweak in Sleeper is picked up automatically. Blend weight = games \u00f7 (games + k); 0 completed weeks always reads as 100% Ciely, matching draft day exactly. Replacement level above is re-derived from the BLENDED board, not reused from the preseason board, so live VORP never compares a live number to a frozen baseline.</div>
     </div>`);
   }
 
