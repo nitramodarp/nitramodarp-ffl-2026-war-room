@@ -1061,6 +1061,7 @@
   <button class="tab" data-tab="draft">Live Draft</button>
   <button class="tab" data-tab="waivers">Waivers</button>
   <button class="tab" data-tab="roster">Roster Needs</button>
+  <button class="tab" data-tab="trends">Trends</button>
   <button class="tab" data-tab="history">History</button>
   <button class="tab" data-tab="debug">Debug</button>
 </nav>
@@ -1200,6 +1201,15 @@
     <div class="state">
       <h3>Roster Needs</h3>
       <p>Fills in as your Sleeper roster changes. Empty until draft starts.</p>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-trends">
+    <div id="trendsHost">
+      <div class="state">
+        <h3>Trends</h3>
+        <p>Biggest league-wide movers, RB/WR/TE, blended actual performance vs. preseason projection. Loads on first open.</p>
+      </div>
     </div>
   </section>
 
@@ -1400,6 +1410,8 @@ const state = {
   waiverIndex: null,       // normalized-name -> [{id, full_name, pos, team}] built once from waiverPlayers
   waiversFilter: { pos: 'ALL', search: '', sort: 'vorp' }, // sort: 'vorp' | 'urgency'
   waiversCache: null,      // { freeAgents, owned, unmatched, ownedCount, computedAt } — recomputed each tab open (rosters change constantly), not on every filter keystroke
+  waiverRostersLoading: false,
+  waiverRostersError: null,
   salfinoWeeks: null,      // { wr: {N: [...]}, rb: {N: [...]} } — raw per-week rows, season-accumulated, localStorage-cached (past weeks are immutable)
   salfinoIndex: null,      // normalized-name -> { pos, series: [{week, share}] }, built once from salfinoWeeks
   salfinoLoading: false,
@@ -1859,24 +1871,6 @@ function checkSalfinoDecline(series) {
   return { latest, prior, drop, relDrop, flagged };
 }
 
-// Cross-references Joe's own roster (not the full 12-team field — trades
-// are out of scope for this feature) against the Salfino index, for the
-// decline-flag section of the Waivers tab.
-function computeMyRosterSalfino(board, myRoster, waiverIndex, salfinoIndex) {
-  if (!myRoster || !salfinoIndex) return [];
-  const myIds = new Set(myRoster.players || []);
-  const rows = [];
-  (board || []).forEach(p => {
-    if (p.pos !== 'RB' && p.pos !== 'WR' && p.pos !== 'TE') return; // no share data exists for QB/DEF
-    const sid = resolveBoardPlayerToSleeperId(p, waiverIndex);
-    if (!sid || !myIds.has(sid)) return;
-    const series = salfinoLookup(salfinoIndex, p.name);
-    if (!series || !series.length) return;
-    const decline = checkSalfinoDecline(series);
-    rows.push({ name: p.name, pos: p.pos, team: p.team, series, decline });
-  });
-  return rows;
-}
 
 /* ============================================================
    Live VORP — actual-to-date performance blended against Ciely's
@@ -2043,6 +2037,87 @@ async function loadLiveVorp(board, waiverIndex) {
   result.weeksLoaded = throughWeek;
   result.scoringKeysUsed = Object.keys(scoringSettings).length;
   return result;
+}
+
+// Shared banner fragments — identical logic was starting to duplicate
+// across Waivers, Roster Needs (in-season), and Trends, so it lives here
+// once and each tab's render function just calls these.
+function buildSalfinoNote() {
+  const salfinoMaxWeek = state.salfinoIndex
+    ? Math.max(0, ...Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week))) : 0;
+  const nflCompletedWeek = state.nflState ? Math.max(0, (state.nflState.week || 1) - 1) : null;
+  // Loud staleness check: if Salfino's latest confirmed week lags the real
+  // completed-week count by more than the threshold, this is more likely
+  // SALFINO_SHEET_ID pointing at a prior season's frozen sheet (Joe
+  // confirmed Salfino opens a new one each year) than him just being late.
+  const salfinoStale = nflCompletedWeek != null && salfinoMaxWeek > 0 &&
+    (nflCompletedWeek - salfinoMaxWeek) > CONFIG.SALFINO_STALENESS_WEEKS;
+  return state.salfinoError
+    ? ` \u00b7 <span style="color:var(--warn);">Salfino share data didn't load (${escapeHtml(state.salfinoError)})</span>`
+    : state.salfinoTabListError
+      ? ` \u00b7 <span style="color:var(--warn);">Couldn't confirm which Salfino weeks are published (${escapeHtml(state.salfinoTabListError)}) \u2014 showing Week 1 only until this resolves</span>`
+      : salfinoStale
+        ? ` \u00b7 <span style="color:var(--down);">\u26A0 Salfino data is only through Week ${salfinoMaxWeek} but the real season is through Week ${nflCompletedWeek} \u2014 check whether SALFINO_SHEET_ID still points at a prior season's sheet</span>`
+        : salfinoMaxWeek
+          ? ` \u00b7 Salfino market share through Week ${salfinoMaxWeek}`
+          : '';
+}
+
+function buildLiveVorpNote() {
+  return state.liveVorpError
+    ? ` \u00b7 <span style="color:var(--warn);">Live VORP didn't load (${escapeHtml(state.liveVorpError)})</span>`
+    : state.liveVorpData
+      ? ` \u00b7 Live VORP through Week ${state.liveVorpData.weeksLoaded}${state.liveVorpData.weeksLoaded === 0 ? ' (preseason \u2014 100% Ciely, no games yet)' : ''}`
+      : '';
+}
+
+// Board-row lookup keyed by Sleeper player_id — the reverse direction of
+// resolveBoardPlayerToSleeperId, built once per render rather than
+// re-scanning the whole board for every roster slot. Shared by the My
+// Roster view and Trends (both need "given this Sleeper ID, which board
+// row is it").
+function buildSleeperIdToBoardMap(board, waiverIndex) {
+  const map = {};
+  (board || []).forEach(p => {
+    const sid = resolveBoardPlayerToSleeperId(p, waiverIndex);
+    if (sid) map[sid] = p;
+  });
+  return map;
+}
+
+function teamNameForOwner(ownerId) {
+  const user = (state.waiverUsers || []).find(u => u.user_id === ownerId);
+  if (!user) return null;
+  return (user.metadata && user.metadata.team_name) || user.display_name || null;
+}
+
+// Builds one display row per Sleeper player_id, board-matched where
+// possible (VORP/Live VORP/Salfino share all attach here) and falling
+// back to the raw Sleeper player-dump name for anyone who didn't match
+// the board (rare — see the "couldn't be matched" count elsewhere).
+function buildRosterRow(pid, sleeperIdToBoard) {
+  const board = sleeperIdToBoard[pid];
+  const raw = state.waiverPlayers ? state.waiverPlayers[pid] : null;
+  const isDef = raw && (raw.position === 'DEF' || NFL_TEAM_ABBRS.has(pid));
+  const rawName = isDef ? (raw.full_name || raw.team || pid) : (raw ? (raw.full_name || `${raw.first_name || ''} ${raw.last_name || ''}`.trim()) : pid);
+  const row = {
+    id: pid,
+    name: board ? board.name : rawName,
+    pos: board ? board.pos : (isDef ? 'DEF' : (raw ? raw.position : '')),
+    team: board ? board.team : (raw ? (raw.team || '') : ''),
+    bye: board ? board.bye : null,
+    vorp: board ? board.vorp : null,
+    matched: !!board,
+  };
+  if (board) {
+    attachSalfino(row, state.salfinoIndex);
+    row.decline = checkSalfinoDecline(salfinoLookup(state.salfinoIndex, board.name));
+    if (state.liveVorpData) {
+      row.liveVorp = state.liveVorpData.liveVorpByName[board.name];
+      row.liveVorpGames = state.liveVorpData.gamesByName[board.name] || 0;
+    }
+  }
+  return row;
 }
 
 // normalized-name -> [{id, full_name, pos, team}]. A name can collide
@@ -4735,18 +4810,17 @@ async function pollDraft() {
 }
 
 /* ============================================================
-   Draft Plan (Roster Needs tab, pre-draft mode)
-   Before a live draft connects there's no roster to track, but the
-   slot is known well in advance (commissioner's lottery, Aug 9) — so
-   this renders the full 15-pick sequence for CONFIG.MY_DRAFT_SLOT
-   against the Round Plan sheet, with turn picks called out. Once a
-   live draft connects and you have actual roster counts, that detail
-   lives in the Live Draft tab's Composition Check instead — this tab
-   stays the static pre-draft reference either way.
+   Roster Needs tab — two modes.
+   Pre-draft: renders the full 15-pick sequence for CONFIG.MY_DRAFT_SLOT
+   against the Round Plan sheet (unchanged from before — still the
+   right reference next August, before there's a roster to track).
+   In-season: once your roster actually has players in it, switches to
+   a live view of your 15 rostered players — VORP, Live VORP, Salfino
+   share/trend, and the declining-role flag (moved here from Waivers,
+   since this is specifically about players you already have, not
+   players you might add).
    ============================================================ */
-function renderRosterTab() {
-  const host = document.getElementById('tab-roster');
-  if (!host) return;
+function renderDraftPlanView(host) {
   const teams = 12;
   const slot = CONFIG.MY_DRAFT_SLOT;
   const seq = computeMyPickSequence(slot, teams, 15);
@@ -4775,8 +4849,8 @@ function renderRosterTab() {
       <p style="font-size:12px; color:var(--fg-mute);">
         Set by the commissioner's lottery (Aug 9, 2026). Your full pick sequence below, mapped to the
         <code>Round Plan</code> strategy for each round. <strong>Turn picks</strong> (highlighted) are back-to-back —
-        the two picks that land before anyone else picks once. Once the live draft connects (Live Draft tab),
-        this tab will switch to tracking your actual roster fill against these targets instead.
+        the two picks that land before anyone else picks once. This view automatically switches to your live
+        roster once the draft is over and Sleeper shows players actually on your team.
       </p>
     </div>
     <table class="hist-table">
@@ -4784,6 +4858,193 @@ function renderRosterTab() {
       <tbody>${rows}</tbody>
     </table>
     <p style="font-size:10.5px; color:var(--fg-dim); margin-top:8px; font-family:var(--font-mono);">${escapeHtml(state.roundPlanSource || '')}</p>
+  `;
+}
+
+function rosterRowHtml(row) {
+  const trendArrow = (t) => t === 'up' ? `<span class="diff-up">\u25b2</span>` : t === 'down' ? `<span class="diff-down">\u25bc</span>` : t === 'flat' ? '\u2013' : '';
+  const sf = row.salfino;
+  const shareCell = sf ? `${(sf.latestShare*100).toFixed(0)}% ${trendArrow(sf.trend)} <span style="color:var(--fg-dim); font-size:10px;">Wk${sf.latestWeek}</span>` : '<span style="color:var(--fg-dim);">\u2014</span>';
+  const liveCell = row.liveVorp != null
+    ? `${row.liveVorp.toFixed(1)} <span style="color:var(--fg-dim); font-size:10px;">${row.liveVorpGames || 0}gm</span>`
+    : '<span style="color:var(--fg-dim);">\u2014</span>';
+  const declineFlag = row.decline && row.decline.flagged
+    ? `<span style="color:var(--down); font-size:10px; margin-left:6px;" title="Share dropped ${(row.decline.prior.share*100).toFixed(0)}% \u2192 ${(row.decline.latest.share*100).toFixed(0)}% (Wk ${row.decline.prior.week}\u2192${row.decline.latest.week})">\u25bc declining</span>`
+    : '';
+  return `<tr>
+    <td><span class="pos-tag pos-${row.pos}">${row.pos || ''}</span></td>
+    <td>${escapeHtml(row.name)}${row.matched ? disagreementBadge(row.name) : ' <span style="color:var(--warn); font-size:10px;">(unmatched to board)</span>'}${declineFlag}</td>
+    <td>${escapeHtml(row.team || '')}</td>
+    <td class="num">${row.bye ?? ''}</td>
+    <td class="num" style="font-weight:600;">${row.vorp != null ? row.vorp.toFixed(1) : ''}</td>
+    <td class="num">${liveCell}</td>
+    <td class="num">${shareCell}</td>
+  </tr>`;
+}
+
+function rosterSectionHtml(title, rows) {
+  if (!rows.length) return '';
+  return `
+    <h4 style="margin:14px 0 6px; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-mute);">${escapeHtml(title)} <span style="font-family:var(--font-mono); font-weight:400;">(${rows.length})</span></h4>
+    <table class="hist-table">
+      <thead><tr><th>POS</th><th>PLAYER</th><th>TEAM</th><th class="num">BYE</th><th class="num">VORP</th><th class="num">LIVE VORP</th><th class="num">MKT SHARE</th></tr></thead>
+      <tbody>${rows.map(rosterRowHtml).join('')}</tbody>
+    </table>`;
+}
+
+function renderMyRosterView(host, myRoster) {
+  const sleeperIdToBoard = buildSleeperIdToBoardMap(state.board, state.waiverIndex);
+  const starterIds = (myRoster.starters || []).filter(id => id && id !== '0');
+  const reserveIds = myRoster.reserve || [];
+  const allIds = myRoster.players || [];
+  const benchIds = allIds.filter(id => !starterIds.includes(id) && !reserveIds.includes(id));
+
+  const starters = starterIds.map(id => buildRosterRow(id, sleeperIdToBoard));
+  const bench = benchIds.map(id => buildRosterRow(id, sleeperIdToBoard));
+  const reserve = reserveIds.map(id => buildRosterRow(id, sleeperIdToBoard));
+
+  const allRows = [...starters, ...bench, ...reserve];
+  const declines = allRows.filter(r => r.decline && r.decline.flagged);
+  const salfinoNote = buildSalfinoNote();
+  const liveVorpNote = buildLiveVorpNote();
+
+  const myPriority = myRoster.settings && myRoster.settings.waiver_position != null ? myRoster.settings.waiver_position : null;
+  const priorityNote = myPriority != null
+    ? ` \u00b7 Waiver priority: <strong style="color:var(--fg);">${myPriority}</strong> of ${(state.waiverRosters || []).length}`
+    : '';
+
+  host.innerHTML = `
+    <div class="hist-note" style="margin-bottom:10px; font-size:11px;">
+      Your roster, cross-referenced against the board's preseason VORP, Live VORP (blended with actual performance),
+      and Salfino's market share where it applies (RB/WR/TE only).${priorityNote}${salfinoNote}${liveVorpNote}
+    </div>
+    ${declines.length ? `
+    <div class="hist-note" style="margin-bottom:10px; font-size:11px; border-color:color-mix(in srgb, var(--down) 40%, var(--line));">
+      <strong style="color:var(--down);">Declining role:</strong>
+      ${declines.map(r => `<span style="margin-left:8px;"><span class="pos-tag pos-${r.pos}">${r.pos}</span> ${escapeHtml(r.name)}: ${(r.decline.prior.share*100).toFixed(0)}% \u2192 ${(r.decline.latest.share*100).toFixed(0)}% (Wk ${r.decline.prior.week}\u2192${r.decline.latest.week})</span>`).join('')}
+    </div>` : ''}
+    ${rosterSectionHtml('Starters', starters)}
+    ${rosterSectionHtml('Bench', bench)}
+    ${rosterSectionHtml('Injured Reserve', reserve)}
+  `;
+}
+
+async function renderRosterTab() {
+  const host = document.getElementById('tab-roster');
+  if (!host) return;
+
+  // Live draft in progress: the Live Draft tab's own Composition Check
+  // already covers roster-fill tracking mid-draft, so this tab stays out
+  // of the way until it disconnects.
+  if (draftState.connected) return;
+
+  await ensureLeagueDataLoaded();
+
+  // Pre-draft (or data not ready yet): fall back to the static plan. This
+  // also covers "data failed to load" gracefully — the plan view has no
+  // dependency on any of the league-data fetches, so it's always safe.
+  const myRoster = (state.waiverRosters || []).find(r => r.owner_id === CONFIG.MY_OWNER_ID);
+  const hasRosteredPlayers = myRoster && Array.isArray(myRoster.players) && myRoster.players.length > 0;
+
+  if (!hasRosteredPlayers) {
+    renderDraftPlanView(host);
+    return;
+  }
+
+  if (renderLeagueDataStatus(host, 'renderRosterTab')) return;
+  renderMyRosterView(host, myRoster);
+}
+
+/* ============================================================
+   Trends tab — biggest league-wide RB/WR/TE movers (actual-to-date
+   vs. preseason), across all 12 rosters and free agents. Scoped to
+   general league awareness, not trade evaluation (Joe doesn't expect
+   to trade much in this redraft league) — so this is a leaderboard to
+   glance at, not a lookup tool; anyone wanting the full sortable board
+   already has the Board and Waivers tabs for that.
+   ============================================================ */
+function computeTrendsMovers(board, waiverIndex, waiverRosters) {
+  const ownerBySleeperId = {};
+  (waiverRosters || []).forEach(r => {
+    (r.players || []).forEach(pid => { ownerBySleeperId[pid] = r.owner_id; });
+  });
+
+  const movers = [];
+  (board || []).forEach(p => {
+    if (p.pos !== 'RB' && p.pos !== 'WR' && p.pos !== 'TE') return;
+    if (!state.liveVorpData || p.vorp == null) return;
+    const live = state.liveVorpData.liveVorpByName[p.name];
+    if (live == null) return;
+    const games = state.liveVorpData.gamesByName[p.name] || 0;
+    if (games === 0) return; // no actual data yet — any movement here is pure replacement-level drift, not a real signal worth surfacing
+    const sid = resolveBoardPlayerToSleeperId(p, waiverIndex);
+    const ownerId = sid ? ownerBySleeperId[sid] : null;
+    const isMine = ownerId === CONFIG.MY_OWNER_ID;
+    const ownerLabel = isMine ? 'You' : (ownerId ? (teamNameForOwner(ownerId) || 'Unknown owner') : 'Free Agent');
+    const row = { name: p.name, pos: p.pos, team: p.team, vorp: p.vorp, liveVorp: live, games, ownerLabel, isMine, isFA: !ownerId };
+    attachSalfino(row, state.salfinoIndex);
+    row.movement = live - p.vorp;
+    movers.push(row);
+  });
+
+  const risers = movers.slice().sort((a, b) => b.movement - a.movement).slice(0, 20);
+  const fallers = movers.slice().sort((a, b) => a.movement - b.movement).slice(0, 20);
+  return { risers, fallers, totalConsidered: movers.length };
+}
+
+function trendsRowHtml(row) {
+  const trendArrow = (t) => t === 'up' ? `<span class="diff-up">\u25b2</span>` : t === 'down' ? `<span class="diff-down">\u25bc</span>` : t === 'flat' ? '\u2013' : '';
+  const sf = row.salfino;
+  const shareCell = sf ? `${(sf.latestShare*100).toFixed(0)}% ${trendArrow(sf.trend)}` : '<span style="color:var(--fg-dim);">\u2014</span>';
+  const moveClass = row.movement >= 0 ? 'diff-up' : 'diff-down';
+  const ownerColor = (row.isMine || row.isFA) ? 'var(--accent)' : 'var(--fg-mute)';
+  return `<tr${row.isMine ? ' style="background:color-mix(in srgb, var(--accent) 6%, transparent);"' : ''}>
+    <td><span class="pos-tag pos-${row.pos}">${row.pos}</span></td>
+    <td>${escapeHtml(row.name)}</td>
+    <td>${escapeHtml(row.team || '')}</td>
+    <td style="font-size:11px; color:${ownerColor};">${escapeHtml(row.ownerLabel)}</td>
+    <td class="num">${row.vorp.toFixed(1)}</td>
+    <td class="num" style="font-weight:600;">${row.liveVorp.toFixed(1)}</td>
+    <td class="num ${moveClass}" style="font-weight:600;">${row.movement >= 0 ? '+' : ''}${row.movement.toFixed(1)}</td>
+    <td class="num">${shareCell}</td>
+  </tr>`;
+}
+
+function trendsTableHtml(title, rows) {
+  const header = `<h4 style="margin:14px 0 6px; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-mute);">${escapeHtml(title)}</h4>`;
+  if (!rows.length) return `${header}<p style="color:var(--fg-dim); font-size:12px;">No movers yet.</p>`;
+  return `${header}
+    <table class="hist-table">
+      <thead><tr><th>POS</th><th>PLAYER</th><th>TEAM</th><th>OWNER</th><th class="num">VORP</th><th class="num">LIVE VORP</th><th class="num">MOVEMENT</th><th class="num">MKT SHARE</th></tr></thead>
+      <tbody>${rows.map(trendsRowHtml).join('')}</tbody>
+    </table>`;
+}
+
+async function renderTrendsTab() {
+  const host = document.getElementById('trendsHost');
+  if (!host) return;
+
+  await ensureLeagueDataLoaded();
+  if (renderLeagueDataStatus(host, 'renderTrendsTab')) return;
+
+  if (!state.liveVorpData) {
+    host.innerHTML = `<div class="state"><p style="color:var(--fg-dim); font-size:12px;">Live VORP hasn't loaded yet${state.liveVorpError ? ` (${escapeHtml(state.liveVorpError)})` : ''} \u2014 Trends needs it to measure movement.</p></div>`;
+    return;
+  }
+
+  const { risers, fallers, totalConsidered } = computeTrendsMovers(state.board, state.waiverIndex, state.waiverRosters);
+  const salfinoNote = buildSalfinoNote();
+  const liveVorpNote = buildLiveVorpNote();
+
+  host.innerHTML = `
+    <div class="hist-note" style="margin-bottom:10px; font-size:11px;">
+      Biggest gaps between Live VORP and preseason VORP, RB/WR/TE only, across all 12 rosters and free agents \u2014
+      "movement" is how far actual performance has shifted a player from where Ciely had them, not a ranking by
+      itself. Your own players are highlighted.${liveVorpNote}${salfinoNote}
+      ${totalConsidered === 0 ? ' \u00b7 <span style="color:var(--warn);">No RB/WR/TE with a completed game yet.</span>' : ''}
+    </div>
+    ${trendsTableHtml('Risers \u2014 top 20', risers)}
+    ${trendsTableHtml('Fallers \u2014 top 20', fallers)}
   `;
 }
 
@@ -4845,44 +5106,38 @@ function renderOwnerTendenciesPanel() {
 /* ============================================================
    Waivers tab
    ============================================================ */
-async function renderWaiversTab() {
-  const host = document.getElementById('waiversHost');
-  if (!host) return;
-
-  if (!state.board) {
-    host.innerHTML = '<div class="state"><p style="color:var(--fg-dim); font-size:12px;">Board hasn\'t loaded yet — free agents are cross-referenced against it, so this needs the Board tab\'s data first. Should fill in automatically once it loads.</p></div>';
-    return;
-  }
+/* ============================================================
+   Shared cross-tab data loader — Waivers, Roster Needs (in-season
+   view), and Trends all need the same player-db + Salfino + Live
+   VORP + live-roster stack, so this is centralized here instead of
+   tripled across three render functions. This function's only job is
+   to populate state fields; it never touches the DOM. Each tab's own
+   render function calls renderLeagueDataStatus() right after to
+   decide whether it's safe to proceed or needs to show a loading/
+   error state in its own host element first.
+   ============================================================ */
+async function ensureLeagueDataLoaded() {
+  if (!state.board) return; // nothing to resolve players against yet — Board tab still loading
 
   // One-time-per-session player database load (~5MB, localStorage-cached
-  // across sessions — see fetchAllPlayers). Live rosters are cheap and
-  // change constantly with waiver activity, so those refetch every time
-  // this tab is opened rather than being cached at all.
+  // across sessions — see fetchAllPlayers).
   if (!state.waiverPlayers && !state.waiverPlayersLoading) {
     state.waiverPlayersLoading = true;
-    host.innerHTML = `<div class="state"><div class="spinner"></div><p style="margin-top:12px">Loading Sleeper's player database\u2026</p><p style="font-size:11px; color:var(--fg-dim); margin-top:6px;">~5MB, first time only \u2014 cached in this browser for about a day after.</p></div>`;
     try {
       const { data, source } = await fetchAllPlayers();
       state.waiverPlayers = data;
       state.waiverPlayersSource = source;
       state.waiverIndex = buildWaiverIndex(data);
-      state.waiverPlayersLoading = false;
     } catch (e) {
-      state.waiverPlayersLoading = false;
       state.waiverPlayersError = e.message;
       state.errors.push('Waivers (player db): ' + e.message);
     }
+    state.waiverPlayersLoading = false;
   }
-  if (state.waiverPlayersLoading) return; // will re-render on completion
-  if (state.waiverPlayersError) {
-    host.innerHTML = `<div class="state"><h3>Couldn't load the player database</h3><p style="color:var(--down); font-family:var(--font-mono); font-size:12px;">${escapeHtml(state.waiverPlayersError)}</p><button onclick="state.waiverPlayersError=null; renderWaiversTab();">Retry</button></div>`;
-    return;
-  }
+  if (state.waiverPlayersLoading || state.waiverPlayersError || !state.waiverPlayers) return;
 
-  // Salfino market-share data — one-time-per-session load (localStorage
-  // caches confirmed past weeks; see loadSalfinoSeason). Non-fatal on
-  // failure: the tab still renders VORP-only, just without share/urgency
-  // columns or the decline-flag section.
+  // Salfino market-share data — one-time-per-session load. Non-fatal:
+  // callers degrade to VORP-only display on failure.
   if (!state.salfinoWeeks && !state.salfinoLoading) {
     state.salfinoLoading = true;
     try {
@@ -4895,11 +5150,8 @@ async function renderWaiversTab() {
     state.salfinoLoading = false;
   }
 
-  // Live VORP — one-time-per-session load (completed weeks' stats are
-  // localStorage-cached; see aggregateActuals/fetchWeekStatsCached).
-  // Needs state.board for Ciely's preseason pace and state.waiverPlayers
-  // (already loaded above) to resolve board names to Sleeper IDs. Non-
-  // fatal on failure: the tab still renders without the Live VORP column.
+  // Live VORP — one-time-per-session load. Non-fatal: callers degrade to
+  // no Live VORP column/leaderboard entry on failure.
   if (!state.liveVorpData && !state.liveVorpLoading) {
     state.liveVorpLoading = true;
     try {
@@ -4911,16 +5163,59 @@ async function renderWaiversTab() {
     state.liveVorpLoading = false;
   }
 
-  // Live rosters — always fresh (not cached), since the whole point of this
-  // tab is "who's actually available right now."
-  try {
-    const [rosters, users] = await Promise.all([fetchLeagueRosters(), fetchLeagueUsers()]);
-    state.waiverRosters = rosters;
-    state.waiverUsers = users;
-  } catch (e) {
-    host.innerHTML = `<div class="state"><h3>Couldn't load current rosters</h3><p style="color:var(--down); font-family:var(--font-mono); font-size:12px;">${escapeHtml(e.message)}</p><button onclick="renderWaiversTab();">Retry</button></div>`;
-    return;
+  // Live rosters — always fresh (not cached), since every one of these
+  // tabs' whole point depends on who owns whom right now.
+  if (!state.waiverRostersLoading) {
+    state.waiverRostersLoading = true;
+    try {
+      const [rosters, users] = await Promise.all([fetchLeagueRosters(), fetchLeagueUsers()]);
+      state.waiverRosters = rosters;
+      state.waiverUsers = users;
+      state.waiverRostersError = null;
+    } catch (e) {
+      state.waiverRostersError = e.message;
+    }
+    state.waiverRostersLoading = false;
   }
+}
+
+// Renders a loading/blocked/error state into `host` for the two HARD
+// blockers every league-data tab shares (player db, live rosters) and
+// returns true if it did — the caller should stop and let a future
+// re-render pick up where this left off. Returns false once both are
+// ready, meaning it's safe to proceed with tab-specific rendering.
+// `retryFnName` is the global function name to re-invoke on a Retry click
+// (matches this app's existing inline-onclick convention throughout).
+function renderLeagueDataStatus(host, retryFnName) {
+  if (!state.board) {
+    host.innerHTML = '<div class="state"><p style="color:var(--fg-dim); font-size:12px;">Board hasn\'t loaded yet — this needs the Board tab\'s data first. Should fill in automatically once it loads.</p></div>';
+    return true;
+  }
+  if (state.waiverPlayersLoading || (!state.waiverPlayers && !state.waiverPlayersError)) {
+    host.innerHTML = `<div class="state"><div class="spinner"></div><p style="margin-top:12px">Loading Sleeper's player database\u2026</p><p style="font-size:11px; color:var(--fg-dim); margin-top:6px;">~5MB, first time only \u2014 cached in this browser for about a day after.</p></div>`;
+    return true;
+  }
+  if (state.waiverPlayersError) {
+    host.innerHTML = `<div class="state"><h3>Couldn't load the player database</h3><p style="color:var(--down); font-family:var(--font-mono); font-size:12px;">${escapeHtml(state.waiverPlayersError)}</p><button onclick="state.waiverPlayersError=null; ${retryFnName}();">Retry</button></div>`;
+    return true;
+  }
+  if (state.waiverRostersLoading || (!state.waiverRosters && !state.waiverRostersError)) {
+    host.innerHTML = `<div class="state"><div class="spinner"></div><p style="margin-top:12px">Loading current rosters\u2026</p></div>`;
+    return true;
+  }
+  if (!state.waiverRosters && state.waiverRostersError) {
+    host.innerHTML = `<div class="state"><h3>Couldn't load current rosters</h3><p style="color:var(--down); font-family:var(--font-mono); font-size:12px;">${escapeHtml(state.waiverRostersError)}</p><button onclick="${retryFnName}();">Retry</button></div>`;
+    return true;
+  }
+  return false;
+}
+
+async function renderWaiversTab() {
+  const host = document.getElementById('waiversHost');
+  if (!host) return;
+
+  await ensureLeagueDataLoaded();
+  if (renderLeagueDataStatus(host, 'renderWaiversTab')) return;
 
   const { freeAgents, unmatched, ownedCount } = computeFreeAgents(state.board, state.waiverRosters, state.waiverIndex);
   freeAgents.forEach(p => {
@@ -4942,33 +5237,8 @@ async function renderWaiversTab() {
     ? ` \u00b7 Your waiver priority: <strong style="color:var(--fg);">${myPriority}</strong> of ${(state.waiverRosters || []).length}`
     : '';
 
-  const salfinoMaxWeek = state.salfinoIndex
-    ? Math.max(0, ...Object.values(state.salfinoIndex).flatMap(e => e.series.map(s => s.week))) : 0;
-  const nflCompletedWeek = state.nflState ? Math.max(0, (state.nflState.week || 1) - 1) : null;
-  // Loud staleness check: if Salfino's latest confirmed week lags the real
-  // completed-week count by more than the threshold, this is more likely
-  // SALFINO_SHEET_ID pointing at a prior season's frozen sheet (Joe
-  // confirmed Salfino opens a new one each year) than him just being late.
-  const salfinoStale = nflCompletedWeek != null && salfinoMaxWeek > 0 &&
-    (nflCompletedWeek - salfinoMaxWeek) > CONFIG.SALFINO_STALENESS_WEEKS;
-  const salfinoNote = state.salfinoError
-    ? ` \u00b7 <span style="color:var(--warn);">Salfino share data didn't load (${escapeHtml(state.salfinoError)})</span>`
-    : state.salfinoTabListError
-      ? ` \u00b7 <span style="color:var(--warn);">Couldn't confirm which Salfino weeks are published (${escapeHtml(state.salfinoTabListError)}) \u2014 showing Week 1 only until this resolves</span>`
-      : salfinoStale
-        ? ` \u00b7 <span style="color:var(--down);">\u26A0 Salfino data is only through Week ${salfinoMaxWeek} but the real season is through Week ${nflCompletedWeek} \u2014 check whether SALFINO_SHEET_ID still points at a prior season's sheet</span>`
-        : salfinoMaxWeek
-          ? ` \u00b7 Salfino market share through Week ${salfinoMaxWeek}`
-          : '';
-
-  const liveVorpNote = state.liveVorpError
-    ? ` \u00b7 <span style="color:var(--warn);">Live VORP didn't load (${escapeHtml(state.liveVorpError)})</span>`
-    : state.liveVorpData
-      ? ` \u00b7 Live VORP through Week ${state.liveVorpData.weeksLoaded}${state.liveVorpData.weeksLoaded === 0 ? ' (preseason \u2014 100% Ciely, no games yet)' : ''}`
-      : '';
-
-  const myRosterShare = computeMyRosterSalfino(state.board, myRoster, state.waiverIndex, state.salfinoIndex);
-  const declines = myRosterShare.filter(r => r.decline && r.decline.flagged);
+  const salfinoNote = buildSalfinoNote();
+  const liveVorpNote = buildLiveVorpNote();
 
   host.innerHTML = `
     <div id="waiversBanner" class="hist-note" style="margin-bottom:10px; font-size:11px;">
@@ -4976,11 +5246,6 @@ async function renderWaiversTab() {
       games already played, injuries, or role changes. Read it as "who's talented and available," not "who's hot right now."${priorityNote}${salfinoNote}${liveVorpNote}
       ${unmatched.length ? ` \u00b7 <span style="color:var(--warn);">${unmatched.length} board player${unmatched.length !== 1 ? 's' : ''} couldn't be matched to a Sleeper ID</span> (name-mismatch, not necessarily rostered \u2014 check Debug)` : ''}
     </div>
-    ${declines.length ? `
-    <div class="hist-note" style="margin-bottom:10px; font-size:11px; border-color:color-mix(in srgb, var(--down) 40%, var(--line));">
-      <strong style="color:var(--down);">Declining role \u2014 your roster:</strong>
-      ${declines.map(r => `<span style="margin-left:8px;"><span class="pos-tag pos-${r.pos}">${r.pos}</span> ${escapeHtml(r.name)}: ${(r.decline.prior.share*100).toFixed(0)}% \u2192 ${(r.decline.latest.share*100).toFixed(0)}% (Wk ${r.decline.prior.week}\u2192${r.decline.latest.week})</span>`).join('')}
-    </div>` : ''}
     <div class="controls" style="margin-bottom:10px;">
       <div class="chips" id="waiversSortFilter">
         <button class="chip ${state.waiversFilter.sort === 'vorp' ? 'active' : ''}" data-sort="vorp">Sort: VORP</button>
@@ -6409,6 +6674,7 @@ document.getElementById('tabs').addEventListener('click', e => {
   if (target === 'history') renderHistory();
   if (target === 'roster' && !draftState.connected) renderRosterTab();
   if (target === 'waivers') renderWaiversTab();
+  if (target === 'trends') renderTrendsTab();
 });
 
 document.getElementById('waiversPosFilter').addEventListener('click', e => {
