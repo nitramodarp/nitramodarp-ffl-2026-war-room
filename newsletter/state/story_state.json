@@ -2,30 +2,31 @@
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
   "last_week_updated": 2,
   "running_jokes": [
-    "Screaming Eagles have benched a 40-plus-point quarterback in back-to-back weeks \u2014 Stafford this week following the Week 1 pattern \u2014 and are 0-2.",
-    "Broke Dak Mountain finally converted a league-best individual score (Josh Allen, 54.3) into an actual win after doing the opposite in Week 1.",
-    "demon44 keeps building a competitive roster entirely off zero-cost waiver adds and is 2-0 to show for it.",
-    "Dak to the Future has led the league in points scored both weeks and still benched a near-30-point quarterback performance in Week 2.",
-    "Chuba Bucky Doo remains the model case for the points-based sixth seed, now doing it from 1-1 instead of 0-1.",
     "Long Live King Henry has now benched two separate 40-plus-point performances in two weeks \u2014 Vele's stat line wasn't the issue, Goff sitting for a 1.2-point loss was.",
     "Screaming Eagles have benched a 40-plus-point quarterback in back-to-back weeks and are 0-2 to show for it.",
     "demon44 remains undefeated on a roster built entirely from uncontested waiver claims.",
     "Broke Dak Mountain has produced the league's top individual scorer in consecutive weeks and finally converted it into a blowout win.",
-    "mikelanta's record doesn't match its point total \u2014 currently second in the league in points scored at 1-1."
+    "mikelanta's record doesn't match its point total \u2014 currently second in the league in points scored at 1-1.",
+    "Screaming Eagles have now benched a 40-plus-point quarterback in back-to-back weeks (Stafford Week 2, following the Week 1 pattern) and sit 0-2.",
+    "The Chuba Bucky Doo / Long Live King Henry matchup has been decided by roughly a point two weeks running, both times traced directly to a bench decision.",
+    "demon44 remains undefeated on a roster built almost entirely from zero-cost waiver claims.",
+    "Dak to the Future has led the league in points scored in both weeks played.",
+    "Broke Dak Mountain has now produced the league's top individual scorer in back-to-back weeks (Josh Allen twice) and finally converted one into a blowout."
   ],
   "streaks": {
-    "Chuba Bucky Doo": "1-1, won the closest game of the season so far by 1.2",
+    "Chuba Bucky Doo": "2-0 in one-possession finishes against Long Live King Henry, won this one by 1.2",
     "mikelanta": "1-1, has the second-highest point total in the league",
     "Meredith's Fan Club": "1-1, lost by nearly 32 with a scoreless Puka Nacua in the lineup",
     "Screaming Eagles": "0-2, both losses compounded by benching a 40-plus-point quarterback",
     "Broke Dak Mountain": "1-1, has had the league's top individual scorer in back-to-back weeks and cashed one into a 48-point win",
-    "Long Live King Henry ": "1-1, has now benched two separate 40-plus-point performances across two weeks",
+    "Long Live King Henry ": "1-1, has benched two separate 40-plus-point performances across two weeks",
     "Waffle House": "1-1, on the playoff bubble by points",
     "Pukachu Chews You": "0-2, last in total points scored, lost by 48.05 this week",
     "Dak to the Future": "2-0, has led the league in points scored both weeks",
     "Joe Mama Angie Daddy": "1-1, currently holds the points-based sixth playoff seed",
-    "demon44": "2-0, built entirely on free-agent value, division locked down early",
-    "Silverbacks": "1-1, lost after benching a second straight double-digit bench mistake"
+    "demon44": "2-0, built entirely on free-agent value",
+    "Silverbacks": "1-1, lost after benching a 35.95-point Bryce Young in favor of Justin Herbert",
+    "Meredith\u2019s Fan Club": "1-1, lost by nearly 32 despite a 41.8-point day from Patrick Mahomes"
   },
   "notable_quotes": [],
   "season_awards_tracker": {
