@@ -197,6 +197,43 @@ def determine_weeks(nfl_state):
 FLEX_ELIGIBLE = {"RB", "WR", "TE"}
 
 
+def compute_matchup_results(matchups):
+    """Precomputed W/L/T, opponent, and margin for every team — added
+    after a confirmed real error: the model inverted an actual result
+    (called a decisive win a loss) rather than correctly grouping 12 flat
+    matchup entries by matchup_id and comparing points itself. That's
+    exactly the kind of multi-step inference that's failed repeatedly in
+    this pipeline; the fix every other time has been the same: stop
+    asking the model to derive the fact, hand over the finished one."""
+    by_matchup_id = {}
+    for m in matchups:
+        by_matchup_id.setdefault(m.get("matchup_id"), []).append(m)
+
+    for mid, pair in by_matchup_id.items():
+        if len(pair) != 2:
+            # Bye week, or a matchup_id Sleeper didn't pair as expected —
+            # leave result fields unset rather than guess.
+            for m in pair:
+                m["opponent_team_name"] = None
+                m["opponent_points"] = None
+                m["result"] = None
+                m["margin"] = None
+            continue
+        a, b = pair
+        a_pts, b_pts = a.get("points", 0) or 0, b.get("points", 0) or 0
+        for team, opp, team_pts, opp_pts in ((a, b, a_pts, b_pts), (b, a, b_pts, a_pts)):
+            team["opponent_team_name"] = opp["team_name"]
+            team["opponent_points"] = opp_pts
+            team["margin"] = round(team_pts - opp_pts, 2)
+            if team_pts > opp_pts:
+                team["result"] = "W"
+            elif team_pts < opp_pts:
+                team["result"] = "L"
+            else:
+                team["result"] = "T"
+    return matchups
+
+
 def enrich_matchup_players(matchups, players_db):
     """Resolve raw player_id -> name/position for every rostered player in
     each matchup entry (Sleeper's players_points is only {player_id:
@@ -521,6 +558,7 @@ def main():
         return matchups
 
     annotate(matchups_recap)
+    compute_matchup_results(matchups_recap)  # adds result (W/L/T), opponent_team_name, opponent_points, margin
     enrich_matchup_players(matchups_recap, players_db)  # adds named players_resolved/top_scorer_on_roster/bench_mistake
     league_top_scorer = compute_league_top_scorer(matchups_recap)
     annotate(matchups_preview)  # preview has no scores yet — names not useful there, skip enrichment

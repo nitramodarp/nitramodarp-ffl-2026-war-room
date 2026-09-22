@@ -65,6 +65,23 @@ the data. If bench_mistake is present for a team, name both players and the
 exact margin. If it's null for every team, don't force a bench-decision
 callout that week.
 
+CRITICAL — WHO WON. Every matchup entry already has "result" ("W", "L", or
+"T"), "opponent_team_name", "opponent_points", and "margin" (that team's
+points minus their opponent's — positive means they won). USE THESE FIELDS
+DIRECTLY. Do NOT determine a winner yourself by scanning matchups_recap for
+matching matchup_id values and comparing points — that is exactly the
+mistake that produced a real, confirmed error before: a team that won by
+48 points got reported as having lost. Every result claim in your recap
+(who won, who lost, the closest game, the biggest blowout) must trace back
+to the "result" and "margin" fields as given, not your own comparison.
+
+Do not narrate your own uncertainty or thought process in the output.
+Never write phrases like "actually, no —", "wait, let me reconsider", or
+any other visible self-correction in the finished copy — if you notice a
+mistake while writing, fix it silently and only output the corrected
+version. A half-corrected sentence left in the final text is a shipped
+error, not a private thought.
+
 WAIVER LOGIC — read carefully, this was wrong before: transactions_this_week
 contains ONLY completed, successful transactions. If 4 teams bid on the same
 player, only 1 actually got him and only that team's transaction appears
@@ -201,6 +218,40 @@ def parse_best_json(text, required_keys):
 
 MAX_ATTEMPTS = 3
 
+SELF_CORRECTION_MARKERS = (
+    "actually, no", "actually no", "wait, i need", "wait, let me",
+    "let me reconsider", "let me redo", "let me re-do", "let me provide the",
+    "on second thought", "correction:", "scratch that", "i made an error",
+)
+
+
+def find_self_correction_artifact(obj):
+    """Recursively scan every string value for tell-tale self-correction
+    phrases left visible in the final text — confirmed in production: a
+    real newsletter shipped with '...got outscored by demon44's 115.55...
+    actually, no — Broke Dak Mountain lost the week's most one-sided
+    argument with itself' embedded mid-paragraph, syntactically valid JSON
+    so the existing parse-based retry never caught it. The prompt now also
+    forbids this explicitly, but a wording instruction alone hasn't
+    reliably stopped it in the past — this is the code-level backstop."""
+    if isinstance(obj, str):
+        lowered = obj.lower()
+        for marker in SELF_CORRECTION_MARKERS:
+            if marker in lowered:
+                return marker
+        return None
+    if isinstance(obj, dict):
+        for v in obj.values():
+            found = find_self_correction_artifact(v)
+            if found:
+                return found
+    elif isinstance(obj, list):
+        for v in obj:
+            found = find_self_correction_artifact(v)
+            if found:
+                return found
+    return None
+
 
 def call_claude(user_content):
     """Retries on a malformed/incomplete response — occasionally the model
@@ -240,7 +291,13 @@ def call_claude(user_content):
             if not text.strip():
                 raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
 
-            return parse_best_json(text, REQUIRED_KEYS)
+            parsed = parse_best_json(text, REQUIRED_KEYS)
+
+            artifact = find_self_correction_artifact(parsed)
+            if artifact:
+                raise ValueError(f"Response contains a visible self-correction artifact ({artifact!r}) — treating as a failed attempt.")
+
+            return parsed
 
         except (ValueError, RuntimeError, requests.exceptions.RequestException) as e:
             last_error = e
