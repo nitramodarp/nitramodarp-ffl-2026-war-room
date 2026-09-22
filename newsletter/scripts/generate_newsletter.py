@@ -82,6 +82,14 @@ mistake while writing, fix it silently and only output the corrected
 version. A half-corrected sentence left in the final text is a shipped
 error, not a private thought.
 
+CRITICAL — NEXT WEEK'S MATCHUPS. Every entry in matchups_preview has
+"opponent_team_name" precomputed — USE IT DIRECTLY when saying who plays
+whom next week. Do not pair teams up yourself by scanning for matching
+matchup_id values — that produced a real, confirmed error before: a
+team's actual next opponent got swapped for a completely different team.
+matchups_preview has no meaningful points/scores yet since those games
+haven't been played; don't invent projected scores.
+
 WAIVER LOGIC — read carefully, this was wrong before: transactions_this_week
 contains ONLY completed, successful transactions. If 4 teams bid on the same
 player, only 1 actually got him and only that team's transaction appears

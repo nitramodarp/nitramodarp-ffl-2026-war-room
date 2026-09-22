@@ -197,6 +197,30 @@ def determine_weeks(nfl_state):
 FLEX_ELIGIBLE = {"RB", "WR", "TE"}
 
 
+def attach_opponent_names(matchups):
+    """For PREVIEW matchups (not yet played) — pairs matchup_id groups and
+    attaches just the opponent's team name. Points/result would be
+    meaningless here since the games haven't happened, so this is
+    deliberately lighter than compute_matchup_results. Same root cause as
+    that function though, confirmed in production: the model had to group
+    a flat list of 12 entries by matchup_id itself to figure out who's
+    playing whom next week, and got a pairing wrong (attributed a team's
+    upcoming opponent incorrectly). Precomputing the pairing removes that
+    inference step entirely."""
+    by_matchup_id = {}
+    for m in matchups:
+        by_matchup_id.setdefault(m.get("matchup_id"), []).append(m)
+    for mid, pair in by_matchup_id.items():
+        if len(pair) != 2:
+            for m in pair:
+                m["opponent_team_name"] = None  # bye week, or unexpected pairing — don't guess
+            continue
+        a, b = pair
+        a["opponent_team_name"] = b["team_name"]
+        b["opponent_team_name"] = a["team_name"]
+    return matchups
+
+
 def compute_matchup_results(matchups):
     """Precomputed W/L/T, opponent, and margin for every team — added
     after a confirmed real error: the model inverted an actual result
@@ -562,6 +586,7 @@ def main():
     enrich_matchup_players(matchups_recap, players_db)  # adds named players_resolved/top_scorer_on_roster/bench_mistake
     league_top_scorer = compute_league_top_scorer(matchups_recap)
     annotate(matchups_preview)  # preview has no scores yet — names not useful there, skip enrichment
+    attach_opponent_names(matchups_preview)  # who's playing whom next week — see docstring for why this can't be left to inference
 
     data = {
         "season": nfl_state["season"],
