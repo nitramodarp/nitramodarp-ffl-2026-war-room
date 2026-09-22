@@ -1885,6 +1885,48 @@ function computeSalfinoMatchDiagnostics(board, salfinoIndex) {
   };
 }
 
+// Traces a small watchlist of names through the RAW parsed rows
+// (state.salfinoWeeks \u2014 i.e. sheetToSalfinoRows' output, BEFORE any of
+// buildSalfinoIndex's filtering gates run) rather than the finished index.
+// The previous diagnostic (computeSalfinoMatchDiagnostics) only sees
+// what SURVIVES into the index, so it was blind to a row being dropped
+// earlier than that \u2014 this one isn't. Zero matches for a name across
+// every cached week/tab means the row never made it out of the xlsx
+// parse at all; one or more matches shows exactly which validation gate
+// (empty name, empty share, RB-skip) it would pass or fail.
+const SALFINO_TRACE_WATCHLIST = ['Denzel Boston', 'Tre Tucker', 'Adonai Mitchell'];
+
+function traceSalfinoWatchlist(weeks, watchlist) {
+  return (watchlist || []).map(target => {
+    const targetNorm = draftNormName(target);
+    const targetLower = target.toLowerCase();
+    const found = [];
+    ['wr', 'rb'].forEach(kind => {
+      Object.keys((weeks && weeks[kind]) || {}).forEach(weekStr => {
+        (weeks[kind][weekStr] || []).forEach(r => {
+          const name = fieldOf(r, SALFINO_ALIASES.name);
+          if (!name) return;
+          const norm = draftNormName(name);
+          // Exact normalized match OR a loose substring match (case-
+          // insensitive) \u2014 the looser check catches a spelling variant
+          // that draftNormName alone wouldn't reconcile.
+          if (norm !== targetNorm && !String(name).toLowerCase().includes(targetLower)) return;
+          const posRaw = kind === 'rb' ? 'RB' : fieldOf(r, SALFINO_ALIASES.pos).toUpperCase().trim();
+          const shareRaw = fieldOf(r, SALFINO_ALIASES.share);
+          const share = parseSalfinoShare(shareRaw);
+          found.push({
+            kind, week: Number(weekStr), rawName: name, norm, posRaw, shareRaw,
+            shareParsed: share,
+            wouldSkipAsRb: kind === 'wr' && posRaw === 'RB',
+            wouldFailShare: Number.isNaN(share),
+          });
+        });
+      });
+    });
+    return { target, found };
+  });
+}
+
 // Salfino's own thresholds, taken from his Week 1 column (Sept 15, 2026):
 // he treats ~15% share as the rough floor for "worth a roster spot," and
 // suggests weekly waiver bids at (share \u00f7 2) — except RBs above the 15%
@@ -6476,6 +6518,43 @@ function renderDebug() {
       </div>`)}
       <div style="margin-top:10px; font-size:11px; color:var(--fg-mute);">Rows dropped by the RB-in-targets-tab skip rule (confirms/rules out a player being misread as RB in the targets tab):</div>
       ${rowsHtml(skipped, s => `<div style="font-family:var(--font-mono); font-size:10.5px; margin-top:4px; word-break:break-word;">${inspectString(s.name)} <span style="color:var(--fg-dim);">\u2014 week ${s.week}</span></div>`)}
+    </div>`);
+  }
+
+  {
+    // Raw-row trace for a specific watchlist of confirmed-mystery names
+    // (Sept 2026: Boston/Tucker/Mitchell reported present in Salfino's real
+    // sheet but absent even from the "unmatched" list above, meaning they
+    // never survived the xlsx-row-parse step in the first place \u2014 this
+    // traces the raw parsed rows directly, upstream of that filtering, to
+    // find where each one actually drops out).
+    const weeks = state.salfinoWeeks;
+    const rawCounts = [];
+    ['wr', 'rb'].forEach(kind => {
+      Object.keys((weeks && weeks[kind]) || {}).forEach(weekStr => {
+        rawCounts.push({ kind, week: Number(weekStr), count: (weeks[kind][weekStr] || []).length });
+      });
+    });
+    rawCounts.sort((a,b) => a.kind.localeCompare(b.kind) || a.week - b.week);
+
+    const trace = weeks ? traceSalfinoWatchlist(weeks, SALFINO_TRACE_WATCHLIST) : [];
+
+    cards.push(`<div class="debug-card">
+      <h4>Salfino raw-row trace</h4>
+      <div style="font-size:11px; color:var(--fg-mute); margin-bottom:6px;">Raw rows parsed per cached tab (straight from the xlsx, before any name/share validation):</div>
+      ${rawCounts.length ? rawCounts.map(c => `<div class="kv"><span class="kv-k">${c.kind.toUpperCase()} week ${c.week}</span><span class="kv-v">${c.count} rows</span></div>`).join('') : '<div style="color:var(--fg-mute); font-size:11px;">no cached weeks</div>'}
+      <div style="margin-top:10px; font-size:11px; color:var(--fg-mute);">Watchlist trace \u2014 searched directly in the raw parsed rows, not the finished index:</div>
+      ${trace.map(t => `
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--line);">
+          <div style="font-weight:600; font-size:12px;">${escapeHtml(t.target)} \u2014 ${t.found.length} raw row match${t.found.length === 1 ? '' : 'es'} found</div>
+          ${t.found.length === 0
+            ? `<div style="color:var(--down); font-size:11px; margin-top:2px;">Never appears in ANY cached week's raw parsed rows \u2014 the row is being dropped before it even reaches the index-building step. Points at the xlsx parse itself (sheetToSalfinoRows / findHeaderRow), not the name-matching logic.</div>`
+            : t.found.map(f => `<div style="font-family:var(--font-mono); font-size:10.5px; margin-top:4px; word-break:break-word;">
+                ${f.kind.toUpperCase()} wk${f.week}: name=${inspectString(f.rawName)}, pos=${inspectString(f.posRaw)}, share_raw=${inspectString(String(f.shareRaw))}, share_parsed=${Number.isNaN(f.shareParsed) ? 'NaN' : f.shareParsed}
+                ${f.wouldSkipAsRb ? '<span style="color:var(--warn);"> \u2014 WOULD BE SKIPPED (read as RB in targets tab)</span>' : ''}
+                ${f.wouldFailShare ? '<span style="color:var(--down);"> \u2014 WOULD BE DROPPED (share failed to parse)</span>' : ''}
+              </div>`).join('')}
+        </div>`).join('')}
     </div>`);
   }
 
