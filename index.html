@@ -1418,6 +1418,7 @@ const state = {
   salfinoError: null,      // non-fatal — Waivers tab still renders VORP-only on failure
   salfinoTabListError: null, // set when the worksheets-feed existence check fails — app falls back to Week 1 only rather than guess
   salfinoTabTitles: null,  // real tab titles from the xlsx workbook export, for the Debug tab
+  salfinoSkippedRbInTargets: null, // diagnostic: targets-tab rows dropped by the RB-skip rule (see buildSalfinoIndex)
   nflState: null,          // Sleeper /state/nfl — { week, season, season_type, ... }, ground truth for "how many weeks are actually complete" and the Salfino staleness check
   liveVorpData: null,      // { liveVorpByName, gamesByName, replacementByPos, scoringKeysUsed, weeksLoaded } — see computeLiveVorp
   liveVorpLoading: false,
@@ -1783,6 +1784,7 @@ function parseSalfinoShare(raw) {
 // normalizer, so a name matches the same way it would against the board.
 function buildSalfinoIndex(weeks) {
   const index = {};
+  const skippedRbInTargets = []; // diagnostic: rows dropped by the RB-in-targets-tab rule below
   function ingest(rowsByWeek, hardcodedPos) {
     Object.keys(rowsByWeek || {}).forEach(weekStr => {
       const week = Number(weekStr);
@@ -1801,26 +1803,86 @@ function buildSalfinoIndex(weeks) {
         // touch% as "latest," a single real week misread as two. Confirmed
         // live Sept 2026 (exactly those three RBs showed a fake single-week
         // arrow this way).
-        if (!hardcodedPos && posRaw === 'RB') return;
+        if (!hardcodedPos && posRaw === 'RB') {
+          skippedRbInTargets.push({ name, norm, week });
+          return;
+        }
         const shareRaw = fieldOf(r, SALFINO_ALIASES.share);
         const share = parseSalfinoShare(shareRaw);
         if (Number.isNaN(share)) return;
         const pos = posRaw === 'TE' ? 'TE' : (posRaw === 'RB' ? 'RB' : 'WR');
-        (index[norm] = index[norm] || { pos, series: [] });
+        (index[norm] = index[norm] || { pos, series: [], rawNames: new Set() });
         index[norm].pos = pos;
+        index[norm].rawNames.add(name);
         index[norm].series.push({ week, share });
       });
     });
   }
   ingest(weeks.wr, null);   // targets tab \u2014 WR/TE only now (RB rows skipped, see above)
   ingest(weeks.rb, 'RB');   // touches tab is RB-only, no Pos. column to read
-  return index;
+  return { index, skippedRbInTargets };
 }
 
 function salfinoLookup(index, name) {
   if (!index || !name) return null;
   const entry = index[draftNormName(name)];
   return entry ? entry.series : null;
+}
+
+// Makes invisible/lookalike characters visible for debugging \u2014 spaces
+// become a visible middle dot (reveals doubled, leading, or trailing
+// spaces that render identically to a normal one) and any non-ASCII
+// character gets its code point called out explicitly (catches a curly
+// apostrophe vs. a straight one, a non-breaking space, etc. \u2014 all of
+// which LOOK identical on screen but fail an exact-string match).
+function inspectString(s) {
+  if (s == null || s === '') return '(empty)';
+  const visible = String(s).replace(/ /g, '\u00b7');
+  const nonAscii = [...String(s)].filter(c => c.charCodeAt(0) > 127);
+  const nonAsciiNote = nonAscii.length
+    ? ` [non-ASCII: ${nonAscii.map(c => `'${c}'=U+${c.charCodeAt(0).toString(16).toUpperCase().padStart(4,'0')}`).join(', ')}]`
+    : '';
+  return escapeHtml(visible) + nonAsciiNote;
+}
+
+// Two-way diff between the board's RB/WR/TE names and Salfino's index \u2014
+// surfaces exactly which names on each side never found a match on the
+// other, with the raw text inspected for hidden characters. Built after a
+// live report (Sept 2026) of players confirmed present in Salfino's real
+// sheet but showing no share data in the app \u2014 the prior "9 unmatched"
+// note only covered board→Sleeper-ID matching, not this board↔Salfino
+// name match specifically, so there was no visibility into this failure
+// mode at all until this diagnostic existed.
+function computeSalfinoMatchDiagnostics(board, salfinoIndex) {
+  if (!salfinoIndex) return { unmatchedSalfino: [], unmatchedBoard: [] };
+  const boardNorms = new Map(); // norm -> {name, pos}
+  (board || []).forEach(p => {
+    if (p.pos !== 'RB' && p.pos !== 'WR' && p.pos !== 'TE') return;
+    const norm = draftNormName(p.name);
+    if (norm) boardNorms.set(norm, { name: p.name, pos: p.pos });
+  });
+
+  const unmatchedSalfino = [];
+  Object.keys(salfinoIndex).forEach(norm => {
+    if (boardNorms.has(norm)) return;
+    const entry = salfinoIndex[norm];
+    unmatchedSalfino.push({
+      norm,
+      pos: entry.pos,
+      rawNames: Array.from(entry.rawNames || []),
+      weeks: entry.series.map(s => s.week).join(', '),
+    });
+  });
+
+  const unmatchedBoard = [];
+  boardNorms.forEach((v, norm) => {
+    if (!salfinoIndex[norm]) unmatchedBoard.push({ norm, name: v.name, pos: v.pos });
+  });
+
+  return {
+    unmatchedSalfino: unmatchedSalfino.sort((a,b) => a.norm.localeCompare(b.norm)),
+    unmatchedBoard: unmatchedBoard.sort((a,b) => a.norm.localeCompare(b.norm)),
+  };
 }
 
 // Salfino's own thresholds, taken from his Week 1 column (Sept 15, 2026):
@@ -5152,7 +5214,9 @@ async function ensureLeagueDataLoaded() {
     state.salfinoLoading = true;
     try {
       state.salfinoWeeks = await loadSalfinoSeason();
-      state.salfinoIndex = buildSalfinoIndex(state.salfinoWeeks);
+      const built = buildSalfinoIndex(state.salfinoWeeks);
+      state.salfinoIndex = built.index;
+      state.salfinoSkippedRbInTargets = built.skippedRbInTargets;
     } catch (e) {
       state.salfinoError = e.message;
       state.errors.push('Salfino market share: ' + e.message);
@@ -6381,6 +6445,37 @@ function renderDebug() {
       <div class="kv"><span class="kv-k">players indexed</span><span class="kv-v">${playersIndexed}</span></div>
       ${state.salfinoError ? `<div style="color:var(--down); font-size:11px; margin-top:6px; font-family:var(--font-mono);">error: ${escapeHtml(state.salfinoError)}</div>` : ''}
       <div style="font-size:10.5px; color:var(--fg-dim); margin-top:6px;">Week existence comes from parsing the sheet's real .xlsx export client-side (SheetJS) \u2014 workbook.SheetNames is the actual tab list, no content-guessing. Two earlier approaches failed first: raw-CSV-diffing against Week 1 (false positives out to Week 18) and the legacy worksheets feed (404s on this sheet). If the xlsx export ever fails too, this deliberately shows Week 1 only rather than repeat either failure.</div>
+    </div>`);
+  }
+
+  {
+    // Two-way name-match diagnostic, built Sept 2026 after live reports of
+    // players confirmed present in Salfino's real sheet (Denzel Boston, Tre
+    // Tucker, Adonai Mitchell) but showing no share data in the app \u2014 the
+    // existing "9 board players couldn't be matched to a Sleeper ID" note
+    // covers a DIFFERENT match (board\u2192Sleeper), so it gave zero visibility
+    // into this one (board\u2194Salfino by name). This card is that visibility.
+    const diag = computeSalfinoMatchDiagnostics(state.board, state.salfinoIndex);
+    const skipped = state.salfinoSkippedRbInTargets || [];
+    const rowsHtml = (list, renderRow) => list.length
+      ? list.slice(0, 40).map(renderRow).join('') + (list.length > 40 ? `<div style="color:var(--fg-dim); font-size:10.5px; margin-top:4px;">\u2026and ${list.length - 40} more</div>` : '')
+      : '<div style="color:var(--fg-mute); font-size:11px;">none</div>';
+    cards.push(`<div class="debug-card">
+      <h4>Salfino \u2194 board name matching</h4>
+      <div class="kv"><span class="kv-k">Salfino entries with no board match</span><span class="kv-v" style="color:${diag.unmatchedSalfino.length ? 'var(--down)' : 'var(--fg-mute)'};">${diag.unmatchedSalfino.length}</span></div>
+      <div class="kv"><span class="kv-k">board RB/WR/TE with no Salfino match</span><span class="kv-v" style="color:${diag.unmatchedBoard.length ? 'var(--warn)' : 'var(--fg-mute)'};">${diag.unmatchedBoard.length}</span></div>
+      <div style="margin-top:8px; font-size:11px; color:var(--fg-mute);">In Salfino's sheet, not matched to any board player \u2014 raw text shown with spaces as \u00b7 and any non-ASCII character called out:</div>
+      ${rowsHtml(diag.unmatchedSalfino, u => `<div style="font-family:var(--font-mono); font-size:10.5px; margin-top:4px; word-break:break-word;">
+        <span class="pos-tag pos-${u.pos}">${u.pos}</span> ${u.rawNames.map(inspectString).join(' / ')}
+        <span style="color:var(--fg-dim);"> \u2014 normalized: "${escapeHtml(u.norm)}", weeks: ${escapeHtml(u.weeks)}</span>
+      </div>`)}
+      <div style="margin-top:10px; font-size:11px; color:var(--fg-mute);">On the board (RB/WR/TE), not matched to any Salfino entry:</div>
+      ${rowsHtml(diag.unmatchedBoard, u => `<div style="font-family:var(--font-mono); font-size:10.5px; margin-top:4px; word-break:break-word;">
+        <span class="pos-tag pos-${u.pos}">${u.pos}</span> ${inspectString(u.name)}
+        <span style="color:var(--fg-dim);"> \u2014 normalized: "${escapeHtml(u.norm)}"</span>
+      </div>`)}
+      <div style="margin-top:10px; font-size:11px; color:var(--fg-mute);">Rows dropped by the RB-in-targets-tab skip rule (confirms/rules out a player being misread as RB in the targets tab):</div>
+      ${rowsHtml(skipped, s => `<div style="font-family:var(--font-mono); font-size:10.5px; margin-top:4px; word-break:break-word;">${inspectString(s.name)} <span style="color:var(--fg-dim);">\u2014 week ${s.week}</span></div>`)}
     </div>`);
   }
 
