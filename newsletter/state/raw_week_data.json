@@ -414,6 +414,10 @@
         "TB": 5.0
       },
       "team_name": "Chuba Bucky Doo",
+      "opponent_team_name": "Long Live King Henry ",
+      "opponent_points": 127.2,
+      "margin": 1.2,
+      "result": "W",
       "players_resolved": [
         {
           "player_id": "10219",
@@ -592,6 +596,10 @@
         "SEA": 12.0
       },
       "team_name": "Joe Mama Angie Daddy",
+      "opponent_team_name": "Screaming Eagles",
+      "opponent_points": 113.1,
+      "margin": 20.45,
+      "result": "W",
       "players_resolved": [
         {
           "player_id": "11237",
@@ -776,6 +784,10 @@
         "PHI": 7.0
       },
       "team_name": "Broke Dak Mountain",
+      "opponent_team_name": "Pukachu Chews You",
+      "opponent_points": 74.45,
+      "margin": 48.05,
+      "result": "W",
       "players_resolved": [
         {
           "player_id": "10222",
@@ -960,6 +972,10 @@
         "JAX": 5.0
       },
       "team_name": "Waffle House",
+      "opponent_team_name": "mikelanta",
+      "opponent_points": 97.9,
+      "margin": 21.05,
+      "result": "W",
       "players_resolved": [
         {
           "player_id": "10236",
@@ -1144,6 +1160,10 @@
         "NE": 25.0
       },
       "team_name": "Silverbacks",
+      "opponent_team_name": "demon44",
+      "opponent_points": 115.55,
+      "margin": -16.95,
+      "result": "L",
       "players_resolved": [
         {
           "player_id": "12506",
@@ -1330,6 +1350,10 @@
         "MIN": 20.0
       },
       "team_name": "Long Live King Henry ",
+      "opponent_team_name": "Chuba Bucky Doo",
+      "opponent_points": 128.4,
+      "margin": -1.2,
+      "result": "L",
       "players_resolved": [
         {
           "player_id": "10229",
@@ -1521,6 +1545,10 @@
         "KC": 3.0
       },
       "team_name": "Meredith\u2019s Fan Club",
+      "opponent_team_name": "Dak to the Future",
+      "opponent_points": 138.45,
+      "margin": -31.75,
+      "result": "L",
       "players_resolved": [
         {
           "player_id": "10859",
@@ -1705,6 +1733,10 @@
         "BAL": 6.0
       },
       "team_name": "Dak to the Future",
+      "opponent_team_name": "Meredith\u2019s Fan Club",
+      "opponent_points": 106.7,
+      "margin": 31.75,
+      "result": "W",
       "players_resolved": [
         {
           "player_id": "12533",
@@ -1891,6 +1923,10 @@
         "SF": 11.0
       },
       "team_name": "mikelanta",
+      "opponent_team_name": "Waffle House",
+      "opponent_points": 118.95,
+      "margin": -21.05,
+      "result": "L",
       "players_resolved": [
         {
           "player_id": "11560",
@@ -2088,6 +2124,10 @@
         "PIT": 11.0
       },
       "team_name": "Pukachu Chews You",
+      "opponent_team_name": "Broke Dak Mountain",
+      "opponent_points": 122.5,
+      "margin": -48.05,
+      "result": "L",
       "players_resolved": [
         {
           "player_id": "11563",
@@ -2297,6 +2337,10 @@
         "LAR": 15.0
       },
       "team_name": "demon44",
+      "opponent_team_name": "Silverbacks",
+      "opponent_points": 98.6,
+      "margin": 16.95,
+      "result": "W",
       "players_resolved": [
         {
           "player_id": "11583",
@@ -2495,6 +2539,10 @@
         "DEN": 11.0
       },
       "team_name": "Screaming Eagles",
+      "opponent_team_name": "Joe Mama Angie Daddy",
+      "opponent_points": 133.55,
+      "margin": -20.45,
+      "result": "L",
       "players_resolved": [
         {
           "player_id": "11564",
@@ -3408,7 +3456,7 @@
       "position": "QB",
       "player_dropped": "Keaton Mitchell",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 11,
+      "waiver_priority_before_move": 12,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3436,7 +3484,7 @@
       "position": "TE",
       "player_dropped": "Demarcus Robinson",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 7,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3450,7 +3498,7 @@
       "position": "DEF",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 10,
+      "waiver_priority_before_move": 8,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3464,7 +3512,7 @@
       "position": "RB",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 10,
+      "waiver_priority_before_move": 8,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": "Quinshon Judkins",
       "confirmed_homer_transaction": false
@@ -3478,7 +3526,7 @@
       "position": "WR",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 7,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3492,7 +3540,7 @@
       "position": "DEF",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 7,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
