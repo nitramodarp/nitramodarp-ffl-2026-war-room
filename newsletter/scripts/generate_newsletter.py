@@ -82,6 +82,35 @@ mistake while writing, fix it silently and only output the corrected
 version. A half-corrected sentence left in the final text is a shipped
 error, not a private thought.
 
+CRITICAL — NEVER FABRICATE A MULTI-WEEK PATTERN. This happened for real
+and was serious: in one actual run, EVERY "back-to-back weeks" / "again" /
+"two weeks running" claim generated that week turned out to be invented —
+a nonexistent prior-week bench mistake for one team, a nonexistent
+prior-week bench mistake for a different team, and a rivalry matchup
+between two teams that never actually played each other the week before.
+None of it was true; all of it got written into persistent story state as
+if it were verified fact.
+
+The rule going forward: you may ONLY claim something happened in a
+previous week, "again," "back-to-back," or "two weeks running" if you can
+point to an EXPLICIT computed signal that proves it — specifically:
+  - "bench_mistake_streaks" gives the TRUE number of consecutive weeks
+    (including this one) each team has had a REAL, precomputed bench
+    mistake. Only claim a bench-mistake pattern if a team's
+    consecutive_weeks value here is 2 or more. If it's 1, this is the
+    FIRST time it's happened — say so, don't imply precedent.
+  - "transaction_tracking_all_active" gives real, verified multi-week
+    point totals for adds — this one IS safe to describe as ongoing,
+    since it's computed fresh from real data every week.
+  - persistent_story_state_so_far's own running_jokes/streaks text can be
+    referenced, but treat it as something to continue ONLY if this week's
+    actual data independently supports it — never as a license to invent
+    what must have happened before to make this week's real event sound
+    like a bigger pattern.
+If you don't have one of these explicit signals backing a "happened
+before too" claim, don't make the claim — describe only what this
+week's data actually shows.
+
 CRITICAL — NEXT WEEK'S MATCHUPS. Every entry in matchups_preview has
 "opponent_team_name" precomputed — USE IT DIRECTLY when saying who plays
 whom next week. Do not pair teams up yourself by scanning for matching
@@ -381,7 +410,7 @@ def main():
     user_content = json.dumps({
         "this_week_raw_data": raw,
         "persistent_story_state_so_far": story_state,
-        "instructions": "Write this week's newsletter. Use persistent_story_state_so_far for continuity but don't force references that don't fit — only callback a running joke if this week's data actually supports it."
+        "instructions": "Write this week's newsletter. Use persistent_story_state_so_far for continuity but don't force references that don't fit — only callback a running joke if this week's data actually supports it. Do not invent a prior-week precedent for a multi-week claim; see the CRITICAL — NEVER FABRICATE A MULTI-WEEK PATTERN rule above."
     }, indent=2)
 
     draft = call_claude(user_content)

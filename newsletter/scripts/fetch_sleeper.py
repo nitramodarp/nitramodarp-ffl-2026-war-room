@@ -343,6 +343,41 @@ def compute_league_top_scorer(matchups):
     return best
 
 
+def update_bench_mistake_streaks(story_state, matchups_recap, week):
+    """Deterministic per-team count of CONSECUTIVE weeks with a real,
+    precomputed bench_mistake — added after a confirmed, serious bug: the
+    model invented a nonexistent Week 1 bench-mistake precedent to make a
+    real Week 2 event sound like a "back-to-back weeks" pattern, and that
+    fabrication got written into persistent story_state as if it were
+    verified fact. Checked directly against Week 1's actual published
+    newsletter: EVERY multi-week claim generated that week (4 separate
+    running_jokes entries, covering two different teams and one entirely
+    fictional repeat matchup) turned out to be invented — this wasn't a
+    one-off slip, it was systemic. Never again: the model gets a TRUE
+    streak length computed here, and is told not to claim a multi-week
+    pattern without one."""
+    streaks = story_state.setdefault("bench_mistake_streaks", {})
+    for m in matchups_recap:
+        team = m.get("team_name")
+        mistake = m.get("bench_mistake")
+        existing = streaks.get(team)
+        if mistake:
+            if existing and existing.get("last_week_counted") == week - 1:
+                consecutive = existing["consecutive_weeks"] + 1
+            else:
+                consecutive = 1
+            streaks[team] = {
+                "consecutive_weeks": consecutive,
+                "last_week_counted": week,
+                "last_mistake": mistake,
+            }
+        elif existing:
+            # Had a streak, none this week — record that it's broken
+            # rather than leaving stale data that implies it's ongoing.
+            streaks[team] = {"consecutive_weeks": 0, "last_week_counted": week, "last_mistake": None}
+    return streaks
+
+
 def roster_position_counts(roster, players_db):
     """How many players at each position a roster carried BEFORE this
     week's moves — used to judge whether an add addressed a real need or
@@ -585,9 +620,6 @@ def main():
     tracked_results = refresh_tracked_points(story_state, matchups_recap, week_to_recap)  # needs raw players_points — must run BEFORE enrich_matchup_players
     track_waiver_priority(story_state, rosters)  # snapshot AFTER this week's claims for next week's diff
 
-    with open(PATHS["story_state"], "w") as f:
-        json.dump(story_state, f, indent=2)
-
     def annotate(matchups):
         for m in matchups:
             m["team_name"] = roster_names.get(m["roster_id"], {}).get("team_name", "Unknown")
@@ -596,9 +628,17 @@ def main():
     annotate(matchups_recap)
     compute_matchup_results(matchups_recap)  # adds result (W/L/T), opponent_team_name, opponent_points, margin
     enrich_matchup_players(matchups_recap, players_db)  # adds named players_resolved/top_scorer_on_roster/bench_mistake
+    bench_mistake_streaks = update_bench_mistake_streaks(story_state, matchups_recap, week_to_recap)  # needs bench_mistake — must run AFTER enrich_matchup_players
     league_top_scorer = compute_league_top_scorer(matchups_recap)
     annotate(matchups_preview)  # preview has no scores yet — names not useful there, skip enrichment
     attach_opponent_names(matchups_preview)  # who's playing whom next week — see docstring for why this can't be left to inference
+
+    # Single write, now that everything that touches story_state (including
+    # bench_mistake_streaks, which needs matchup enrichment to have already
+    # run) is done. Previously this wrote too early and bench_mistake_streaks
+    # couldn't exist yet at that point.
+    with open(PATHS["story_state"], "w") as f:
+        json.dump(story_state, f, indent=2)
 
     data = {
         "season": nfl_state["season"],
@@ -610,6 +650,7 @@ def main():
         "matchups_recap": matchups_recap,
         "matchups_preview": matchups_preview,
         "league_top_scorer": league_top_scorer,
+        "bench_mistake_streaks": bench_mistake_streaks,
         "transactions_this_week": enriched_tx,
         "transaction_tracking_all_active": tracked_results,
     }
