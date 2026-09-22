@@ -2,31 +2,24 @@
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
   "last_week_updated": 2,
   "running_jokes": [
-    "Screaming Eagles have now benched a 40-plus-point quarterback in back-to-back weeks (Stafford Week 2, following the Week 1 pattern) and sit 0-2.",
-    "The Chuba Bucky Doo / Long Live King Henry matchup has been decided by roughly a point two weeks running, both times traced directly to a bench decision.",
-    "demon44 remains undefeated on a roster built almost entirely from zero-cost waiver claims.",
-    "Dak to the Future has led the league in points scored in both weeks played.",
-    "Broke Dak Mountain has now produced the league's top individual scorer in back-to-back weeks (Josh Allen twice) and finally converted one into a blowout.",
-    "The Chuba Bucky Doo / Long Live King Henry rivalry has now been decided by roughly a point in both meetings, both times traceable to a King Henry bench decision \u2014 Vele's numbers weren't the issue in Week 1, and Goff sitting for 45.05 wasn't the issue this week either, except that it obviously was.",
-    "Long Live King Henry has benched two separate 40-plus-point performances in two straight weeks and is 1-1 to show for it.",
-    "Screaming Eagles have benched a 40-plus-point quarterback in back-to-back weeks (Stafford twice now) and are 0-2.",
-    "Broke Dak Mountain has produced the league's top individual scorer in consecutive weeks (Josh Allen twice) and has now converted one into a blowout win.",
-    "mikelanta's record continues to undersell it \u2014 second in the league in total points at 1-1."
+    "demon44 remains undefeated on a roster built entirely from uncontested waiver claims.",
+    "mikelanta's record doesn't match its point total \u2014 currently second in the league in points scored at 1-1.",
+    "demon44 remains undefeated on a roster built almost entirely from zero-cost waiver claims."
   ],
   "streaks": {
-    "Chuba Bucky Doo": "2-0 in one-possession finishes against Long Live King Henry, won this one 128.4-127.2",
-    "mikelanta": "1-1, second-highest point total in the league",
+    "Chuba Bucky Doo": "2-0 in one-possession finishes against Long Live King Henry, won this one by 1.2",
+    "mikelanta": "1-1, has the second-highest point total in the league",
     "Meredith's Fan Club": "1-1, lost by nearly 32 with a scoreless Puka Nacua in the lineup",
-    "Screaming Eagles": "0-2, both losses compounded by benching a 40-plus-point quarterback",
-    "Broke Dak Mountain": "1-1, league's top scorer in back-to-back weeks, just posted the week's biggest blowout at 48.05",
-    "Long Live King Henry ": "1-1, has now benched two separate 40-plus-point performances across two weeks",
+    "Screaming Eagles": "0-2 after two weeks; Week 2's loss included a real bench mistake (Stafford for Maye)",
+    "Broke Dak Mountain": "1-1, has had the league's top individual scorer in back-to-back weeks and cashed one into a 48-point win",
+    "Long Live King Henry ": "1-1, has benched two separate 40-plus-point performances across two weeks",
     "Waffle House": "1-1, on the playoff bubble by points",
-    "Pukachu Chews You": "0-2, last in total points scored, just absorbed a 48.05-point loss",
+    "Pukachu Chews You": "0-2, last in total points scored, lost by 48.05 this week",
     "Dak to the Future": "2-0, has led the league in points scored both weeks",
-    "Joe Mama Angie Daddy": "1-1, holds the points-based sixth playoff seed",
+    "Joe Mama Angie Daddy": "1-1, currently holds the points-based sixth playoff seed",
     "demon44": "2-0, built entirely on free-agent value",
-    "Silverbacks": "1-1, lost after benching a 35.95-point Bryce Young for a second straight week's worth of regret",
-    "Meredith\u2019s Fan Club": "1-1, lost by nearly 32 for a second straight week despite a big quarterback number"
+    "Silverbacks": "1-1, lost after benching a 35.95-point Bryce Young in favor of Justin Herbert",
+    "Meredith\u2019s Fan Club": "1-1, lost by nearly 32 despite a 41.8-point day from Patrick Mahomes"
   },
   "notable_quotes": [],
   "season_awards_tracker": {
