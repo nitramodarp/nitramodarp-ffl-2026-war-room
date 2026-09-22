@@ -3018,7 +3018,7 @@
         "10229",
         "12518",
         "11834",
-        "13345",
+        "10232",
         "MIN"
       ],
       "starters_points": [
@@ -3457,6 +3457,129 @@
     "points": 54.3,
     "started": true,
     "team_name": "Broke Dak Mountain"
+  },
+  "bench_mistake_streaks": {
+    "Joe Mama Angie Daddy": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Travis Kelce",
+        "benched_points": 21.6,
+        "started_instead": "Rhamondre Stevenson",
+        "started_points": 3.1,
+        "margin": 18.5
+      }
+    },
+    "Broke Dak Mountain": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "George Kittle",
+        "benched_points": 17.0,
+        "started_instead": "Jayden Reed",
+        "started_points": 0.9,
+        "margin": 16.1
+      }
+    },
+    "Waffle House": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Brian Robinson",
+        "benched_points": 7.7,
+        "started_instead": "DJ Moore",
+        "started_points": -0.1,
+        "margin": 7.8
+      }
+    },
+    "Silverbacks": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Bryce Young",
+        "benched_points": 35.95,
+        "started_instead": "Justin Herbert",
+        "started_points": 14.8,
+        "margin": 21.15
+      }
+    },
+    "Long Live King Henry ": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Jared Goff",
+        "benched_points": 45.05,
+        "started_instead": "Jalen Hurts",
+        "started_points": 26.8,
+        "margin": 18.25
+      }
+    },
+    "Meredith\u2019s Fan Club": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Rachaad White",
+        "benched_points": 11.3,
+        "started_instead": "Puka Nacua",
+        "started_points": 0,
+        "margin": 11.3
+      }
+    },
+    "Dak to the Future": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Aaron Jones",
+        "benched_points": 10.5,
+        "started_instead": "Jameson Williams",
+        "started_points": 4.3,
+        "margin": 6.2
+      }
+    },
+    "mikelanta": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Josh Downs",
+        "benched_points": 10.7,
+        "started_instead": "Jadarian Price",
+        "started_points": 4.5,
+        "margin": 6.2
+      }
+    },
+    "Pukachu Chews You": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Pittsburgh Steelers",
+        "benched_points": 11.0,
+        "started_instead": "Los Angeles Chargers",
+        "started_points": 6.0,
+        "margin": 5.0
+      }
+    },
+    "demon44": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Romeo Doubs",
+        "benched_points": 11.1,
+        "started_instead": "Malik Nabers",
+        "started_points": 0.6,
+        "margin": 10.5
+      }
+    },
+    "Screaming Eagles": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Matthew Stafford",
+        "benched_points": 43.25,
+        "started_instead": "Drake Maye",
+        "started_points": 11.1,
+        "margin": 32.15
+      }
+    }
   },
   "transactions_this_week": [
     {

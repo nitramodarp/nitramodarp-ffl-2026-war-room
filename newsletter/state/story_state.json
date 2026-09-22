@@ -4,20 +4,23 @@
   "running_jokes": [
     "demon44 remains undefeated on a roster built entirely from uncontested waiver claims.",
     "mikelanta's record doesn't match its point total \u2014 currently second in the league in points scored at 1-1.",
-    "demon44 remains undefeated on a roster built almost entirely from zero-cost waiver claims."
+    "demon44 remains undefeated on a roster built almost entirely from zero-cost waiver claims.",
+    "demon44 remains undefeated on a roster built almost entirely from uncontested waiver claims.",
+    "mikelanta's record still doesn't match its scoring output \u2014 second in the league in points at 1-1.",
+    "Nearly the entire league made an avoidable bench mistake in week 2 \u2014 this was a league-wide phenomenon, not an isolated one."
   ],
   "streaks": {
     "Chuba Bucky Doo": "2-0 in one-possession finishes against Long Live King Henry, won this one by 1.2",
     "mikelanta": "1-1, has the second-highest point total in the league",
     "Meredith's Fan Club": "1-1, lost by nearly 32 with a scoreless Puka Nacua in the lineup",
-    "Screaming Eagles": "0-2 after two weeks; Week 2's loss included a real bench mistake (Stafford for Maye)",
-    "Broke Dak Mountain": "1-1, has had the league's top individual scorer in back-to-back weeks and cashed one into a 48-point win",
-    "Long Live King Henry ": "1-1, has benched two separate 40-plus-point performances across two weeks",
+    "Screaming Eagles": "0-2, week 2 loss included a 32.15-point bench mistake (Stafford for Maye)",
+    "Broke Dak Mountain": "1-1, produced the week's top individual scorer (Josh Allen, 54.3) in a 48-point win",
+    "Long Live King Henry ": "1-1, benched a 45.05-point Jared Goff in a game lost by exactly 1.2 points",
     "Waffle House": "1-1, on the playoff bubble by points",
     "Pukachu Chews You": "0-2, last in total points scored, lost by 48.05 this week",
     "Dak to the Future": "2-0, has led the league in points scored both weeks",
     "Joe Mama Angie Daddy": "1-1, currently holds the points-based sixth playoff seed",
-    "demon44": "2-0, built entirely on free-agent value",
+    "demon44": "2-0, built largely on free-agent value",
     "Silverbacks": "1-1, lost after benching a 35.95-point Bryce Young in favor of Justin Herbert",
     "Meredith\u2019s Fan Club": "1-1, lost by nearly 32 despite a 41.8-point day from Patrick Mahomes"
   },
@@ -401,5 +404,128 @@
     "10": 8,
     "11": 7,
     "12": 6
+  },
+  "bench_mistake_streaks": {
+    "Joe Mama Angie Daddy": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Travis Kelce",
+        "benched_points": 21.6,
+        "started_instead": "Rhamondre Stevenson",
+        "started_points": 3.1,
+        "margin": 18.5
+      }
+    },
+    "Broke Dak Mountain": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "George Kittle",
+        "benched_points": 17.0,
+        "started_instead": "Jayden Reed",
+        "started_points": 0.9,
+        "margin": 16.1
+      }
+    },
+    "Waffle House": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Brian Robinson",
+        "benched_points": 7.7,
+        "started_instead": "DJ Moore",
+        "started_points": -0.1,
+        "margin": 7.8
+      }
+    },
+    "Silverbacks": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Bryce Young",
+        "benched_points": 35.95,
+        "started_instead": "Justin Herbert",
+        "started_points": 14.8,
+        "margin": 21.15
+      }
+    },
+    "Long Live King Henry ": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Jared Goff",
+        "benched_points": 45.05,
+        "started_instead": "Jalen Hurts",
+        "started_points": 26.8,
+        "margin": 18.25
+      }
+    },
+    "Meredith\u2019s Fan Club": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Rachaad White",
+        "benched_points": 11.3,
+        "started_instead": "Puka Nacua",
+        "started_points": 0,
+        "margin": 11.3
+      }
+    },
+    "Dak to the Future": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Aaron Jones",
+        "benched_points": 10.5,
+        "started_instead": "Jameson Williams",
+        "started_points": 4.3,
+        "margin": 6.2
+      }
+    },
+    "mikelanta": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Josh Downs",
+        "benched_points": 10.7,
+        "started_instead": "Jadarian Price",
+        "started_points": 4.5,
+        "margin": 6.2
+      }
+    },
+    "Pukachu Chews You": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Pittsburgh Steelers",
+        "benched_points": 11.0,
+        "started_instead": "Los Angeles Chargers",
+        "started_points": 6.0,
+        "margin": 5.0
+      }
+    },
+    "demon44": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Romeo Doubs",
+        "benched_points": 11.1,
+        "started_instead": "Malik Nabers",
+        "started_points": 0.6,
+        "margin": 10.5
+      }
+    },
+    "Screaming Eagles": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 2,
+      "last_mistake": {
+        "benched_player": "Matthew Stafford",
+        "benched_points": 43.25,
+        "started_instead": "Drake Maye",
+        "started_points": 11.1,
+        "margin": 32.15
+      }
+    }
   }
 }
