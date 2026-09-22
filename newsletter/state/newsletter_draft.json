@@ -1,88 +1,87 @@
 {
-  "headline": "Every bench in the league made a mistake this week \u2014 Screaming Eagles' was worth 32 points",
-  "meme_brief": "Eleven of twelve teams left their actual best player on the bench this week, including a guy who sat a 45-point quarterback and a guy who sat a 43-point quarterback and both still somehow didn't learn anything from each other.",
-  "recap": "Dak to the Future and demon44 are the only unbeaten teams left after two weeks, and they got there very differently. Dak to the Future throttled Meredith's Fan Club 138.45 to 106.7 behind Dak Prescott's 44.55 points and a 33.3-point day from CeeDee Lamb, while demon44 needed a 29.2-point Jonathan Taylor game to hold off Silverbacks 115.55 to 98.6. The closest game of the week was a rematch of last week's tight finish: Chuba Bucky Doo beat Long Live King Henry by 1.2 points, 128.4 to 127.2, with Jaxon Smith-Njigba's 43-point outing doing basically all the work. The biggest blowout belonged to Broke Dak Mountain, who ran up 122.5 against Pukachu Chews You's 74.45 \u2014 a 48.05-point margin built on Josh Allen's league-best 54.3 points, the top individual score of the week by a wide margin.\n\nThe bench-mistake column is where this week gets ugly. Every single matchup produced a real, avoidable points-on-the-bench error, and several were not close. Long Live King Henry sat Jared Goff (45.05 points) in favor of Jalen Hurts (26.8), a self-inflicted 18.25-point gap in a game they lost by 1.2 \u2014 the margin that actually would have flipped the result. Screaming Eagles benched Matthew Stafford's 43.25 points for Drake Maye's 11.1, a 32.15-point gap, in a game they lost by 20.45. Silverbacks left Bryce Young (35.95) on the bench for Justin Herbert (14.8), a 21.15-point swing, in a loss decided by 16.95. None of those decisions were season-defining on their own, but stacked together it was a week where almost every team out-thought itself.\n\nJoe Mama Angie Daddy's win over Screaming Eagles was comfortable at 133.55 to 113.1, though it came with its own bench math: Travis Kelce scored 21.6 points from the bench while Rhamondre Stevenson managed 3.1 as a starter, an 18.5-point gift that didn't end up costing the result. Waffle House beat mikelanta 118.95 to 97.9 on the strength of Davante Adams' 37.5 points, despite starting DJ Moore's -0.1 over Brian Robinson's 7.7 on the bench.",
-  "transaction_desk": "The waiver wire was almost entirely a defense-and-depth week \u2014 no team spent real priority capital, and nothing here was a bidding war. mikelanta's pickup of Jacoby Brissett cost nothing (they're sitting at the back of the priority order anyway) and has already returned 11.45 points in the one week it's been rostered, which is a fine value proposition for a QB stash that cost literally nothing to acquire.\n\nThe more interesting note is Pukachu Chews You adding Dylan Sampson, which the data flags as a likely handcuff to Quinshon Judkins already on that roster \u2014 a sensible bit of insurance given Judkins is one of their starters, not a speculative flier. Everything else \u2014 Long Live King Henry grabbing the Bengals defense, demon44 picking up Kenyon Sadiq, Demarcus Robinson, and the Packers defense, Pukachu Chews You also adding the Chargers defense \u2014 came at zero cost, uncontested, and none of it has moved the needle yet beyond replacement-level production. demon44's whole roster-building approach continues to be built on exactly these kinds of free pickups, which is notable mostly because it's now 2-0 doing it.",
+  "headline": "Chuba Bucky Doo Survives 1.2-Point Thriller as Every Bench in the League Costs Someone a Win",
+  "meme_brief": "A guy benches his backup quarterback, who goes for 45 points, and still wins by barely more than a field goal \u2014 meanwhile literally everyone else in the league also benched a stud and lost anyway, so nobody gets to feel smug about it.",
+  "recap": "Chuba Bucky Doo beat Long Live King Henry by 1.2 points, 128.4 to 127.2, in a matchup that both teams somehow found ways to complicate. Jaxon Smith-Njigba's 43-point outburst carried Chuba Bucky Doo, while Long Live King Henry got 26.8 from Jalen Hurts and 32.7 from Amon-Ra St. Brown but left 45.05 points on the bench in the form of Jared Goff, a decision that would have flipped the result outright had Goff been in the lineup instead of Hurts.\n\nThe biggest margin of the week belonged to Broke Dak Mountain, which beat Pukachu Chews You 122.5 to 74.45, a 48.05-point rout powered by Josh Allen's 54.3 points \u2014 the single highest individual total in the league this week. Dak to the Future also cruised, handling Meredith's Fan Club 138.45 to 106.7 despite Patrick Mahomes going for 41.8 points on the losing side, and Joe Mama Angie Daddy beat Screaming Eagles 133.55 to 113.1 behind Brock Purdy's 38.35.\n\nBench mismanagement was the actual story of the week, not the exception. Screaming Eagles sat Matthew Stafford (43.25 points) in favor of Drake Maye (11.1), a 32.15-point gap that turned a competitive-looking week into a 20-plus point loss. Silverbacks left Bryce Young (35.95) on the bench for Justin Herbert (14.8) and lost to demon44 by 16.95. Joe Mama Angie Daddy won anyway despite benching Travis Kelce's 21.6 points for Rhamondre Stevenson's 3.1. Every single matchup this week featured at least one team that could have swapped a bench player in for more points \u2014 an unusually clean sweep of bad lineup decisions across all twelve rosters.\n\ndemon44 and Dak to the Future are both 2-0 after wins over Silverbacks and Meredith's Fan Club, respectively, and stand alone at the top of the standings. mikelanta lost to Waffle House 118.95 to 97.9 despite owning the second-highest point total in the league, a gap between record and production that continues to define its season.",
+  "transaction_desk": "The waiver wire was quiet this week \u2014 every move logged was uncontested, meaning nobody had to burn meaningful priority to get anything done. Pukachu Chews You added Dylan Sampson as a direct handcuff to Quinshon Judkins, a sensible bit of insurance given Judkins is already on the roster, and paired it with a free pickup of the Chargers defense. demon44 continued its pattern of building almost entirely off the waiver wire with zero cost, adding Kenyon Sadiq, Demarcus Robinson, and the Packers defense, none of which required spending anything.\n\nmikelanta's addition of Jacoby Brissett cost nothing in priority and has already returned 11.45 points in its first week on the roster. Long Live King Henry's free add of the Bengals defense has produced 12 points since the pickup. None of this week's moves required spending a premium priority slot, so there's little to grade harshly on process \u2014 the only teams taking real swings this week were the ones making questionable lineup calls, not questionable waiver claims.",
   "power_rankings": [
     {
       "rank": 1,
       "team": "Dak to the Future",
-      "blurb": "2-0, has led the league in scoring both weeks, and Dak Prescott is playing like the league's best asset."
+      "blurb": "2-0, leads the league in points scored, and just hung 138 on a playoff-contending roster."
     },
     {
       "rank": 2,
       "team": "demon44",
-      "blurb": "2-0 on a roster stocked with waiver afterthoughts and Jonathan Taylor doing the heavy lifting."
+      "blurb": "2-0 on the back of a roster stocked almost entirely with free-agent finds."
     },
     {
       "rank": 3,
       "team": "mikelanta",
-      "blurb": "1-1 but second in the league in points scored \u2014 the schedule, not the roster, is the problem."
+      "blurb": "Second in the league in total points but 1-1 \u2014 the record doesn't match the output."
     },
     {
       "rank": 4,
       "team": "Chuba Bucky Doo",
-      "blurb": "1-1, has now won two straight one-possession games against the same team, riding Jaxon Smith-Njigba's monster week."
+      "blurb": "Won by 1.2 points thanks to a 43-point week from Jaxon Smith-Njigba."
     },
     {
       "rank": 5,
       "team": "Broke Dak Mountain",
-      "blurb": "1-1 with the league's top individual scorer this week (Josh Allen, 54.3) and a 48-point blowout to show for it."
+      "blurb": "Got the league's top individual score, Josh Allen's 54.3, in a 48-point blowout win."
     },
     {
       "rank": 6,
-      "team": "Long Live King Henry ",
-      "blurb": "1-1, benched a 45-point Jared Goff in a game decided by 1.2 points \u2014 that one's going to sting."
+      "team": "Joe Mama Angie Daddy",
+      "blurb": "Won despite benching a 21.6-point Travis Kelce \u2014 currently holds the points-based playoff spot."
     },
     {
       "rank": 7,
-      "team": "Joe Mama Angie Daddy",
-      "blurb": "1-1, holds the points-based sixth playoff seed, won comfortably despite a costly Kelce benching."
+      "team": "Long Live King Henry ",
+      "blurb": "Lost by 1.2 points with 45.05 sitting on the bench in Jared Goff's lap."
     },
     {
       "rank": 8,
       "team": "Waffle House",
-      "blurb": "1-1 and on the playoff bubble, but Davante Adams bailed out a rough DJ Moore start."
+      "blurb": "Beat mikelanta behind a 37.5-point day from Davante Adams."
     },
     {
       "rank": 9,
       "team": "Silverbacks",
-      "blurb": "1-1, lost a game it would have won with Bryce Young in the lineup instead of Justin Herbert."
+      "blurb": "Started Justin Herbert over a 35.95-point Bryce Young and paid for it in the loss column."
     },
     {
       "rank": 10,
-      "team": "Meredith\u2019s Fan Club",
-      "blurb": "1-1, lost by nearly 32 despite Patrick Mahomes going for 41.8."
+      "team": "Meredith's Fan Club",
+      "blurb": "Mahomes went for 41.8 and it still wasn't enough in a 31.75-point loss."
     },
     {
       "rank": 11,
       "team": "Screaming Eagles",
-      "blurb": "0-2, and the Stafford-for-Maye decision cost more points than the final margin by a wide stretch."
+      "blurb": "0-2, and left a 43.25-point Matthew Stafford on the bench in the loss."
     },
     {
       "rank": 12,
       "team": "Pukachu Chews You",
-      "blurb": "0-2, last in points scored, lost by 48.05 with nothing going right."
+      "blurb": "0-2 and last in points scored after a 48-point defeat."
     }
   ],
-  "standings_narrative": "The three division leaders \u2014 Dak to the Future, demon44, and mikelanta \u2014 currently hold the top three seeds by record, with mikelanta getting in at 1-1 because nobody else in the Hearts division has separated. The next two seeds by record belong to Chuba Bucky Doo and Long Live King Henry, both 1-1 but ahead of the other 1-1 teams on tiebreakers. The sixth and final spot doesn't go to a record at all \u2014 it goes to whichever remaining team has scored the most points, and right now that's Joe Mama Angie Daddy, whose 259.15 points edges out Waffle House's 246.75. Waffle House sits on the bubble looking directly up at that points gap, while Silverbacks, Broke Dak Mountain, Screaming Eagles, and Meredith's Fan Club round out the group currently on the outside.\n\nBroke Dak Mountain is the team to watch here \u2014 1-1 with the second-highest single game score of the season (122.5) but sitting outside the picture entirely because of how points-based seeding works. If the season ended today, raw scoring output would matter more for several of these teams than their actual records do.",
-  "look_ahead": "Week 3 pairs Chuba Bucky Doo against Waffle House, a matchup between a team riding a hot receiver and a team that just leaned hard on Davante Adams to survive. Long Live King Henry gets mikelanta, a game between two 1-1 teams that have each shown they can score with anyone but also beat themselves. Dak to the Future, fresh off back-to-back league-leading weeks, draws Screaming Eagles, who are still searching for their first win. Broke Dak Mountain and Silverbacks face off in a battle of teams both sitting outside the current playoff picture despite respectable point totals, and demon44 takes on Pukachu Chews You, who will need to find a much cleaner performance than the 74.45 points they managed this week.",
+  "standings_narrative": "Dak to the Future, demon44, and mikelanta currently sit as the three division leaders and would take the top three playoff seeds by record if the season ended today, with mikelanta holding the third spot despite its .500 record on the strength of division standing. Chuba Bucky Doo and Long Live King Henry fill the next two seeds on record, both at 1-1. The sixth and final seed currently belongs to Joe Mama Angie Daddy on total points scored, edging out Waffle House, which sits on the bubble also at 1-1 but with fewer points. Silverbacks, Broke Dak Mountain, Screaming Eagles, Meredith's Fan Club, and Pukachu Chews You are all currently on the outside looking in, with Broke Dak Mountain's points-heavy 1-1 record putting it closest to pushing back into the picture.",
+  "look_ahead": "Next week, Chuba Bucky Doo faces Waffle House, and Dak to the Future draws Screaming Eagles, a potentially lopsided matchup given the gap in production so far. Long Live King Henry gets mikelanta, pitting two teams whose records don't reflect their point totals against each other. demon44 and Pukachu Chews You square off, along with Joe Mama Angie Daddy against Meredith's Fan Club, Broke Dak Mountain against Silverbacks, and Woody Marks and company on the sideline as Chuba Bucky Doo looks to make it three straight decided by single digits.",
   "story_state_updates": {
     "running_jokes": [
       "demon44 remains undefeated on a roster built almost entirely from uncontested waiver claims.",
       "mikelanta's record still doesn't match its scoring output \u2014 second in the league in points at 1-1.",
-      "Nearly the entire league made an avoidable bench mistake in week 2 \u2014 this was a league-wide phenomenon, not an isolated one."
+      "Nearly the entire league made an avoidable bench mistake in week 2 \u2014 a genuinely league-wide phenomenon, not an isolated one.",
+      "Chuba Bucky Doo has now won consecutive one-possession games against Long Live King Henry."
     ],
     "streaks": {
       "Chuba Bucky Doo": "2-0 in one-possession finishes against Long Live King Henry, won this one by 1.2",
-      "mikelanta": "1-1, has the second-highest point total in the league",
-      "Dak to the Future": "2-0, has led the league in points scored both weeks",
+      "mikelanta": "1-1, still holds the second-highest point total in the league",
+      "Dak to the Future": "2-0, leads the league in points scored",
       "demon44": "2-0, built largely on free-agent value",
-      "Long Live King Henry ": "1-1, benched a 45.05-point Jared Goff in a game lost by exactly 1.2 points",
+      "Long Live King Henry ": "1-1, has now lost by exactly 1.2 with a major bench-scoring gap in the loss",
       "Screaming Eagles": "0-2, week 2 loss included a 32.15-point bench mistake (Stafford for Maye)",
-      "Pukachu Chews You": "0-2, last in total points scored, lost by 48.05 this week",
-      "Joe Mama Angie Daddy": "1-1, currently holds the points-based sixth playoff seed",
-      "Broke Dak Mountain": "1-1, produced the week's top individual scorer (Josh Allen, 54.3) in a 48-point win"
+      "Pukachu Chews You": "0-2, last in total points scored"
     },
     "notable_quotes": []
   }
