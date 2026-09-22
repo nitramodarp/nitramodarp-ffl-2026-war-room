@@ -141,11 +141,17 @@ imply one exists. Grade transactions using ONLY what's in the data below:
 - "transaction_tracking_all_active" gives you RESULTS signals for adds from
   recent weeks: real cumulative points scored since the pickup (already
   correctly scored under this league's exact rules, straight from Sleeper —
-  no external system involved). Use this to call out a heist or a bust with
-  actual numbers, not vibes. Burning top waiver priority on a player who's
-  since produced nothing is fair game to call out; a free-agent afterthought
-  that's quietly outscored the league's actual RB2s is a heist worth
-  reporting even if it "cost" nothing.
+  no external system involved). Each entry ALSO carries priority_cost_description
+  from when the add originally happened — USE IT, the same way you would for
+  a brand-new move this week. Confirmed in production: without this, an
+  older pickup that cost next to nothing (a team already at the back of
+  the priority order) got described as "a burned priority slot with
+  nothing to show" with no acknowledgment that the burn itself was nearly
+  free — don't repeat that. Use the results to call out a heist or a bust
+  with actual numbers, not vibes. Burning a genuinely valuable priority
+  slot on a player who's since produced nothing is fair game to call out;
+  a free-agent afterthought that's quietly outscored the league's actual
+  RB2s is a heist worth reporting even if it "cost" nothing.
 
 Do NOT include any preliminary attempt, self-correction, or "wait, let me
 redo this" commentary in your output — if you need to reconsider partway
@@ -232,21 +238,40 @@ SELF_CORRECTION_MARKERS = (
     "on second thought", "correction:", "scratch that", "i made an error",
 )
 
+# A parenthetical restating a number/fact right after stating it — confirmed
+# in production: "105.55 to 98.6 (actually 115.55 to 98.6)" slipped past the
+# phrase-list check above entirely, since "(actually ...)" doesn't match any
+# of those exact phrases. This is the same underlying failure (a visible,
+# un-cleaned-up self-correction) in a second wording shape the fixed list
+# didn't anticipate — a regex on the STRUCTURE catches variants a phrase
+# list can't.
+SELF_CORRECTION_PARENTHETICAL = re.compile(r"\(\s*actually\b[^)]*\)", re.IGNORECASE)
+
+# Real English prose essentially never contains a bare word with an
+# underscore in it. Rather than maintain a list of every internal field
+# name (which has to be updated every time a new one is added, and still
+# missed "league_top_scorer" printed verbatim in production despite an
+# explicit prompt instruction and that exact name being on an earlier
+# list), just flag ANY underscored token — it's a near-certain field-name
+# leak regardless of which field it is.
+FIELD_NAME_LEAK_PATTERN = re.compile(r"\b[a-z][a-z0-9]*_[a-z0-9_]*\b")
+
 
 def find_self_correction_artifact(obj):
     """Recursively scan every string value for tell-tale self-correction
-    phrases left visible in the final text — confirmed in production: a
-    real newsletter shipped with '...got outscored by demon44's 115.55...
-    actually, no — Broke Dak Mountain lost the week's most one-sided
-    argument with itself' embedded mid-paragraph, syntactically valid JSON
-    so the existing parse-based retry never caught it. The prompt now also
-    forbids this explicitly, but a wording instruction alone hasn't
-    reliably stopped it in the past — this is the code-level backstop."""
+    text left visible in the final output — confirmed in production twice
+    now, in two different phrasings, both syntactically valid JSON so the
+    parse-based retry never caught either one. The prompt also forbids
+    this explicitly, but wording instructions alone haven't reliably
+    stopped it — this is the code-level backstop."""
     if isinstance(obj, str):
         lowered = obj.lower()
         for marker in SELF_CORRECTION_MARKERS:
             if marker in lowered:
                 return marker
+        m = SELF_CORRECTION_PARENTHETICAL.search(obj)
+        if m:
+            return m.group(0)
         return None
     if isinstance(obj, dict):
         for v in obj.values():
@@ -256,6 +281,32 @@ def find_self_correction_artifact(obj):
     elif isinstance(obj, list):
         for v in obj:
             found = find_self_correction_artifact(v)
+            if found:
+                return found
+    return None
+
+
+def find_field_name_leak(obj):
+    """Recursively scan every string value for a literal internal field
+    name printed as if it were English — confirmed in production:
+    'league_top_scorer' appeared verbatim in a recap despite an explicit
+    instruction not to, with that exact name already called out in the
+    prompt. Generic pattern match rather than a maintained list of known
+    field names, so it doesn't need updating every time the data schema
+    grows."""
+    if isinstance(obj, str):
+        m = FIELD_NAME_LEAK_PATTERN.search(obj)
+        if m:
+            return m.group(0)
+        return None
+    if isinstance(obj, dict):
+        for v in obj.values():
+            found = find_field_name_leak(v)
+            if found:
+                return found
+    elif isinstance(obj, list):
+        for v in obj:
+            found = find_field_name_leak(v)
             if found:
                 return found
     return None
@@ -304,6 +355,10 @@ def call_claude(user_content):
             artifact = find_self_correction_artifact(parsed)
             if artifact:
                 raise ValueError(f"Response contains a visible self-correction artifact ({artifact!r}) — treating as a failed attempt.")
+
+            leak = find_field_name_leak(parsed)
+            if leak:
+                raise ValueError(f"Response contains a leaked internal field name ({leak!r}) — treating as a failed attempt.")
 
             return parsed
 
@@ -354,7 +409,22 @@ def main():
             deduped_jokes.append(joke)
     story_state["running_jokes"] = deduped_jokes[-10:]
 
-    story_state.setdefault("streaks", {}).update(updates.get("streaks", {}))
+    # Validate streaks keys against REAL team names from this week's own
+    # data before accepting them — confirmed in production: the prompt
+    # already said "team name only, NEVER a username," and the model still
+    # wrote a literal Sleeper username ("Saturn75") as a streaks key, plus
+    # a non-team key ("league_wide") that isn't a team at all. A prompt
+    # instruction alone didn't hold; this is the code-level backstop that
+    # can't be talked past — anything that isn't a real team name this
+    # week is dropped rather than trusted.
+    known_team_names = {t["team_name"] for t in raw.get("standings", [])}
+    raw_streak_updates = updates.get("streaks", {})
+    sanitized_streak_updates = {k: v for k, v in raw_streak_updates.items() if k in known_team_names}
+    dropped_keys = set(raw_streak_updates) - set(sanitized_streak_updates)
+    if dropped_keys:
+        print(f"WARNING: dropped {len(dropped_keys)} streaks key(s) that weren't real team names: {dropped_keys}")
+    story_state.setdefault("streaks", {}).update(sanitized_streak_updates)
+
     story_state["notable_quotes"] = (
         story_state.get("notable_quotes", []) + updates.get("notable_quotes", [])
     )[-30:]  # keep it bounded

@@ -6,6 +6,7 @@ max_tokens, lenient JSON parsing) since those are proven necessary.
 
 import json
 import os
+import re
 import time
 import requests
 from config import PATHS, CLAUDE_MODEL
@@ -198,6 +199,62 @@ def parse_best_json(text, required_keys):
 
 MAX_ATTEMPTS = 3
 
+SELF_CORRECTION_MARKERS = (
+    "actually, no", "actually no", "wait, i need", "wait, let me",
+    "let me reconsider", "let me redo", "let me re-do", "let me provide the",
+    "on second thought", "correction:", "scratch that", "i made an error",
+)
+SELF_CORRECTION_PARENTHETICAL = re.compile(r"\(\s*actually\b[^)]*\)", re.IGNORECASE)
+FIELD_NAME_LEAK_PATTERN = re.compile(r"\b[a-z][a-z0-9]*_[a-z0-9_]*\b")
+
+
+def find_self_correction_artifact(obj):
+    """Same check as generate_newsletter.py — see that file for the full
+    rationale. Confirmed in production on the weekly newsletter in two
+    different phrasings; added here so the draft recap has the same
+    protection if it's ever regenerated."""
+    if isinstance(obj, str):
+        lowered = obj.lower()
+        for marker in SELF_CORRECTION_MARKERS:
+            if marker in lowered:
+                return marker
+        m = SELF_CORRECTION_PARENTHETICAL.search(obj)
+        if m:
+            return m.group(0)
+        return None
+    if isinstance(obj, dict):
+        for v in obj.values():
+            found = find_self_correction_artifact(v)
+            if found:
+                return found
+    elif isinstance(obj, list):
+        for v in obj:
+            found = find_self_correction_artifact(v)
+            if found:
+                return found
+    return None
+
+
+def find_field_name_leak(obj):
+    """Same check as generate_newsletter.py — see that file for the full
+    rationale."""
+    if isinstance(obj, str):
+        m = FIELD_NAME_LEAK_PATTERN.search(obj)
+        if m:
+            return m.group(0)
+        return None
+    if isinstance(obj, dict):
+        for v in obj.values():
+            found = find_field_name_leak(v)
+            if found:
+                return found
+    elif isinstance(obj, list):
+        for v in obj:
+            found = find_field_name_leak(v)
+            if found:
+                return found
+    return None
+
 
 def call_claude(user_content):
     """Retries on a malformed/incomplete response — this is a genuine
@@ -238,7 +295,17 @@ def call_claude(user_content):
             if not text.strip():
                 raise RuntimeError(f"Model returned no text content. Full API response: {json.dumps(data)}")
 
-            return parse_best_json(text, REQUIRED_KEYS)
+            parsed = parse_best_json(text, REQUIRED_KEYS)
+
+            artifact = find_self_correction_artifact(parsed)
+            if artifact:
+                raise ValueError(f"Response contains a visible self-correction artifact ({artifact!r}) — treating as a failed attempt.")
+
+            leak = find_field_name_leak(parsed)
+            if leak:
+                raise ValueError(f"Response contains a leaked internal field name ({leak!r}) — treating as a failed attempt.")
+
+            return parsed
 
         except (ValueError, RuntimeError, requests.exceptions.RequestException) as e:
             last_error = e

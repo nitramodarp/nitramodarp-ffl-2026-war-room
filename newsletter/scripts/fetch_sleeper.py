@@ -475,7 +475,17 @@ def update_transaction_tracking(story_state, new_transactions, week):
     duplicate entry every single time, with no cleanup. One case grew to
     105 tracked entries where 22 distinct ones should have existed. This
     function must be safe to call any number of times for the same week's
-    data without changing the result beyond the first call."""
+    data without changing the result beyond the first call.
+
+    priority_cost_description and waiver_priority_at_add are carried over
+    from the enriched transaction at creation time and persist for as long
+    as this entry is tracked — confirmed in production this context was
+    previously LOST the moment an add left transactions_this_week: a real
+    week-1 add tracked into week 2 lost all trace of how cheap or costly
+    the original claim actually was, so a genuinely free (priority #12 of
+    12) pickup got described the same as a premium one. Computed once, at
+    the time of the add, since that's the only point where the "before"
+    priority number is meaningful — it should never be recomputed later."""
     tracked = story_state.setdefault("transaction_tracking", [])
     existing_keys = {(t["roster_id"], t["player_added_id"], t["week_added"]) for t in tracked}
     for tx in new_transactions:
@@ -491,6 +501,8 @@ def update_transaction_tracking(story_state, new_transactions, week):
             "player_added": tx["player_added"],
             "player_added_id": tx["player_added_id"],
             "used_waiver_priority": tx["used_waiver_priority"],
+            "waiver_priority_at_add": tx.get("waiver_priority_before_move"),
+            "priority_cost_description": tx.get("priority_cost_description"),
             "cumulative_points_since_add": 0.0,
             "weeks_tracked": 0,
             "weeks_counted": [],  # which week numbers have already had points applied — prevents double-counting on re-runs
