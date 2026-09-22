@@ -1699,13 +1699,24 @@ async function fetchSalfinoWorkbook() {
   return workbook;
 }
 
+// Returns week -> the EXACT tab name as it appears in the workbook (not a
+// template we rebuild later) — matching is done case-insensitively so a
+// week's existence is still detected regardless of capitalization, but
+// the actual string returned is verbatim from workbook.SheetNames. That
+// distinction matters: sheet_to_json's own lookup (workbook.Sheets[name])
+// IS case-sensitive, so a rebuilt template name silently fails to find a
+// real tab whose capitalization drifted, coming back with zero rows and
+// no error. Confirmed live Sept 2026 — Salfino published Week 2 as
+// "WR Targets Week 2" (capital T) after Week 1 was "WR targets Week 1"
+// (lowercase); the old template-rebuild approach always fetched
+// "WR targets Week 2" and got nothing back, even though the tab existed.
 function parseSalfinoWeekTabs(titles) {
-  const wr = new Set(), rb = new Set();
+  const wr = new Map(), rb = new Map();
   (titles || []).forEach(t => {
     let m = t.match(/^WR targets Week (\d+)$/i);
-    if (m && Number(m[1]) <= CONFIG.SALFINO_MAX_WEEKS_BACK) wr.add(Number(m[1]));
+    if (m && Number(m[1]) <= CONFIG.SALFINO_MAX_WEEKS_BACK) wr.set(Number(m[1]), t);
     m = t.match(/^RB Touches Week (\d+)$/i);
-    if (m && Number(m[1]) <= CONFIG.SALFINO_MAX_WEEKS_BACK) rb.add(Number(m[1]));
+    if (m && Number(m[1]) <= CONFIG.SALFINO_MAX_WEEKS_BACK) rb.set(Number(m[1]), t);
   });
   return { wr, rb };
 }
@@ -1754,12 +1765,12 @@ async function loadSalfinoSeason() {
     return clean;
   }
 
-  const { wr: wrWeeks, rb: rbWeeks } = parseSalfinoWeekTabs(workbook.SheetNames);
+  const { wr: wrTabs, rb: rbTabs } = parseSalfinoWeekTabs(workbook.SheetNames);
   state.salfinoTabTitles = workbook.SheetNames;
 
   const fresh = { wr: {}, rb: {} };
-  wrWeeks.forEach(w => { fresh.wr[w] = sheetToSalfinoRows(workbook, `WR targets Week ${w}`); });
-  rbWeeks.forEach(w => { fresh.rb[w] = sheetToSalfinoRows(workbook, `RB Touches Week ${w}`); });
+  wrTabs.forEach((tabName, w) => { fresh.wr[w] = sheetToSalfinoRows(workbook, tabName); });
+  rbTabs.forEach((tabName, w) => { fresh.rb[w] = sheetToSalfinoRows(workbook, tabName); });
 
   saveSalfinoCache(fresh);
   return fresh;
