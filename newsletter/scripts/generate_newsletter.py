@@ -82,18 +82,28 @@ mistake while writing, fix it silently and only output the corrected
 version. A half-corrected sentence left in the final text is a shipped
 error, not a private thought.
 
-CRITICAL — NEVER FABRICATE A MULTI-WEEK PATTERN. This happened for real
-and was serious: in one actual run, EVERY "back-to-back weeks" / "again" /
-"two weeks running" claim generated that week turned out to be invented —
-a nonexistent prior-week bench mistake for one team, a nonexistent
-prior-week bench mistake for a different team, and a rivalry matchup
-between two teams that never actually played each other the week before.
-None of it was true; all of it got written into persistent story state as
-if it were verified fact.
+CRITICAL — NEVER FABRICATE ANYTHING ABOUT A PREVIOUS WEEK OR THE SEASON
+AS A WHOLE. This applies to EVERY section you write — headline, recap,
+transaction_desk, power_rankings, standings_narrative, look_ahead, ALL of
+it — not just running_jokes and streaks. This happened for real and was
+serious, twice: once producing a run where nearly every "back-to-back
+weeks" claim in running_jokes was invented, and again in the recap itself
+with a fabricated "rematch of last week" and a fabricated "2nd-highest
+score of the season" — neither of which was true, and neither of which
+was even in running_jokes/streaks, proving this isn't a narrow problem
+with one field.
 
-The rule going forward: you may ONLY claim something happened in a
-previous week, "again," "back-to-back," or "two weeks running" if you can
-point to an EXPLICIT computed signal that proves it — specifically:
+The reason this keeps happening: you do NOT have access to exact prior-
+week or season-long data. You only ever see THIS week's real numbers.
+Anything about a previous week, a rematch, a season-long ranking, or how
+this week compares to earlier ones is something you cannot verify and
+must not guess at, no matter how natural the phrasing feels ("last week's
+tight finish," "the second-highest score of the season," "who's led the
+league in X all year").
+
+The rule, with no exceptions: you may ONLY make a claim about a previous
+week or the season as a whole if you can point to an EXPLICIT computed
+signal in the data that proves it — specifically:
   - "bench_mistake_streaks" gives the TRUE number of consecutive weeks
     (including this one) each team has had a REAL, precomputed bench
     mistake. Only claim a bench-mistake pattern if a team's
@@ -105,11 +115,13 @@ point to an EXPLICIT computed signal that proves it — specifically:
   - persistent_story_state_so_far's own running_jokes/streaks text can be
     referenced, but treat it as something to continue ONLY if this week's
     actual data independently supports it — never as a license to invent
-    what must have happened before to make this week's real event sound
-    like a bigger pattern.
-If you don't have one of these explicit signals backing a "happened
-before too" claim, don't make the claim — describe only what this
-week's data actually shows.
+    what must have happened before.
+For everything else — matchup history, season-long score rankings, "who's
+faced whom before," any comparison across weeks — there is currently NO
+data source that lets you verify it. Do not estimate, do not extrapolate,
+do not write something plausible-sounding. If you don't have an explicit
+signal backing a historical or season-wide claim, don't make the claim at
+all — describe only what THIS week's data actually shows.
 
 CRITICAL — NEXT WEEK'S MATCHUPS. Every entry in matchups_preview has
 "opponent_team_name" precomputed — USE IT DIRECTLY when saying who plays
@@ -410,7 +422,7 @@ def main():
     user_content = json.dumps({
         "this_week_raw_data": raw,
         "persistent_story_state_so_far": story_state,
-        "instructions": "Write this week's newsletter. Use persistent_story_state_so_far for continuity but don't force references that don't fit — only callback a running joke if this week's data actually supports it. Do not invent a prior-week precedent for a multi-week claim; see the CRITICAL — NEVER FABRICATE A MULTI-WEEK PATTERN rule above."
+        "instructions": "Write this week's newsletter. Use persistent_story_state_so_far for continuity but don't force references that don't fit — only callback a running joke if this week's data actually supports it. Do not invent ANYTHING about a previous week or the season as a whole in ANY section — see the CRITICAL rule above."
     }, indent=2)
 
     draft = call_claude(user_content)
