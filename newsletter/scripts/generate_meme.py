@@ -185,6 +185,11 @@ def pick_template_and_captions(meme_brief, templates):
                 },
                 timeout=60,
             )
+            if not resp.ok:
+                print(f"---- API ERROR RESPONSE (attempt {attempt}/{MAX_ATTEMPTS}) ----")
+                print(f"Status: {resp.status_code}")
+                print(f"Body: {resp.text}")
+                print("---- END API ERROR RESPONSE ----")
             resp.raise_for_status()
             data = resp.json()
             text = "".join(b["text"] for b in data["content"] if b["type"] == "text")

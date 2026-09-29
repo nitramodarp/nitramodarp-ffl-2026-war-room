@@ -377,6 +377,16 @@ def call_claude(user_content):
                 },
                 timeout=120,
             )
+            if not resp.ok:
+                # Confirmed blind spot: raise_for_status() throws away
+                # Anthropic's actual error body, leaving only a generic
+                # "400 Bad Request" with no way to know why. This surfaces
+                # the real reason in the Action log before the exception
+                # discards it.
+                print(f"---- API ERROR RESPONSE (attempt {attempt}/{MAX_ATTEMPTS}) ----")
+                print(f"Status: {resp.status_code}")
+                print(f"Body: {resp.text}")
+                print("---- END API ERROR RESPONSE ----")
             resp.raise_for_status()
             data = resp.json()
 
