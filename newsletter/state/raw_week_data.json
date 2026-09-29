@@ -3488,7 +3488,7 @@
   },
   "bench_mistake_streaks": {
     "Joe Mama Angie Daddy": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Houston Texans",
@@ -3499,7 +3499,7 @@
       }
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Sam Darnold",
@@ -3510,7 +3510,7 @@
       }
     },
     "Waffle House": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Brian Robinson",
@@ -3521,7 +3521,7 @@
       }
     },
     "Silverbacks": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Tre Tucker",
@@ -3532,7 +3532,7 @@
       }
     },
     "Long Live King Henry ": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Jared Goff",
@@ -3543,7 +3543,7 @@
       }
     },
     "Meredith\u2019s Fan Club": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Jordan Addison",
@@ -3554,7 +3554,7 @@
       }
     },
     "Dak to the Future": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Tyler Shough",
@@ -3565,7 +3565,7 @@
       }
     },
     "mikelanta": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Mike Washington",
@@ -3576,7 +3576,7 @@
       }
     },
     "Pukachu Chews You": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Bo Nix",
@@ -3587,7 +3587,7 @@
       }
     },
     "demon44": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Kenyon Sadiq",
@@ -3598,7 +3598,7 @@
       }
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Courtland Sutton",
@@ -3630,7 +3630,7 @@
       "position": "TE",
       "player_dropped": "Los Angeles Chargers",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3644,7 +3644,7 @@
       "position": "RB",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 3,
+      "waiver_priority_before_move": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3658,7 +3658,7 @@
       "position": "DEF",
       "player_dropped": "San Francisco 49ers",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 12,
+      "waiver_priority_before_move": 9,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3672,7 +3672,7 @@
       "position": "DEF",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3686,8 +3686,8 @@
       "position": "DEF",
       "player_dropped": null,
       "used_waiver_priority": true,
-      "waiver_priority_before_move": 7,
-      "priority_cost_description": "spent a mid-tier priority slot (#7 of 12)",
+      "waiver_priority_before_move": 12,
+      "priority_cost_description": "was already near the back of the priority order (#12 of 12) \u2014 burning it cost next to nothing",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3700,7 +3700,7 @@
       "position": "QB",
       "player_dropped": "Jaxson Dart",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 10,
+      "waiver_priority_before_move": 8,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3714,7 +3714,7 @@
       "position": "WR",
       "player_dropped": "Jacob Saylors",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 9,
+      "waiver_priority_before_move": 7,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3728,7 +3728,7 @@
       "position": "RB",
       "player_dropped": "Pittsburgh Steelers",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false

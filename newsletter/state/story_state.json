@@ -2,30 +2,30 @@
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
   "last_week_updated": 3,
   "running_jokes": [
-    "mikelanta's record doesn't match its point total \u2014 currently second in the league in points scored at 1-1.",
-    "demon44 remains undefeated on a roster built almost entirely from zero-cost waiver claims.",
-    "demon44 remains undefeated on a roster built almost entirely from uncontested waiver claims.",
     "mikelanta's record still doesn't match its scoring output \u2014 second in the league in points at 1-1.",
     "Nearly the entire league made an avoidable bench mistake in week 2 \u2014 this was a league-wide phenomenon, not an isolated one.",
     "Nearly the entire league made an avoidable bench mistake in week 2 \u2014 a genuinely league-wide phenomenon, not an isolated one.",
     "Chuba Bucky Doo has now won consecutive one-possession games against Long Live King Henry.",
     "Bench mismanagement is now a league-wide epidemic \u2014 the data shows real, ongoing multi-week bench mistake streaks for eleven of the twelve teams in the league.",
     "demon44 continues to build its roster largely off free-agent value, but a 94.9-point loss this week is the first real crack in that story.",
-    "mikelanta keeps scoring like a contender and losing like a rebuild \u2014 a genuine waiver heist at quarterback (Jacoby Brissett) hasn't been enough to fix the record."
+    "mikelanta keeps scoring like a contender and losing like a rebuild \u2014 a genuine waiver heist at quarterback (Jacoby Brissett) hasn't been enough to fix the record.",
+    "mikelanta continues to outscore its win total \u2014 sitting second among the league's sub-.500 teams in points, largely thanks to a Jacoby Brissett pickup that's now up to 46.85 cumulative points across two weeks for zero cost.",
+    "demon44's run of building a competitive roster off cheap waiver claims hit its first real wall this week with a 94.9-point loss.",
+    "Joe Mama Angie Daddy posted the league's biggest single-week score and margin so far this season, led by Brock Purdy's league-high 48.25 points."
   ],
   "streaks": {
-    "Chuba Bucky Doo": "First real bench mistake of the tracked stretch this week, though it didn't cost them the win over Waffle House.",
-    "mikelanta": "Two straight weeks with a real bench mistake, still 1-2 despite ranking near the top of the league in points scored.",
+    "Chuba Bucky Doo": "First tracked bench mistake this week, didn't cost them the win over Waffle House.",
+    "mikelanta": "First tracked bench mistake this week, still 1-2 despite ranking near the top of the league in points scored.",
     "Meredith's Fan Club": "1-1, lost by nearly 32 with a scoreless Puka Nacua in the lineup",
-    "Screaming Eagles": "Two straight weeks with a real bench mistake, still managed a 12.4-point win over Dak to the Future.",
-    "Broke Dak Mountain": "Two straight weeks with a real bench mistake, including sitting a 45.45-point Sam Darnold outing this week; still 2-1.",
-    "Long Live King Henry ": "1-1, has now lost by exactly 1.2 with a major bench-scoring gap in the loss",
-    "Waffle House": "Two straight weeks with a real bench mistake, now 1-2 and on the outside of the points-based playoff picture.",
-    "Pukachu Chews You": "Two straight weeks with a real bench mistake, offset this week by a 94.9-point blowout win.",
-    "Dak to the Future": "Two straight weeks with a real bench mistake, and this week it actually cost them the game against Screaming Eagles.",
-    "Joe Mama Angie Daddy": "Two straight weeks with a real bench mistake, but it hasn't mattered \u2014 just posted the league's biggest score and margin of the season so far.",
-    "demon44": "Two straight weeks with a real bench mistake, compounded by the week's second-largest blowout loss.",
-    "Silverbacks": "Two straight weeks with a real bench mistake, dropped the week's closest game by 6.15.",
+    "Screaming Eagles": "First tracked bench mistake this week, still managed a 12.4-point win over Dak to the Future.",
+    "Broke Dak Mountain": "First tracked bench mistake this week, sitting a 45.45-point Sam Darnold outing behind Josh Allen; won anyway, but only by 6.15.",
+    "Long Live King Henry ": "First tracked bench mistake this week (28.05-point Jared Goff left on the bench), still won by 27.15.",
+    "Waffle House": "First tracked bench mistake this week, now 1-2 and outside the points-based playoff picture.",
+    "Pukachu Chews You": "First tracked bench mistake this week, offset by a 94.9-point blowout win over demon44.",
+    "Dak to the Future": "First tracked bench mistake this week, and it actually cost them the game against Screaming Eagles by 12.4.",
+    "Joe Mama Angie Daddy": "First tracked bench mistake this week (Houston Texans over Seattle Seahawks, 9.0 points), but it didn't matter \u2014 still posted the league's best score.",
+    "demon44": "First tracked bench mistake this week, compounded by the week's largest blowout loss.",
+    "Silverbacks": "First tracked bench mistake this week, also lost the week's closest game by 6.15.",
     "Meredith\u2019s Fan Club": "1-1, lost by nearly 32 despite a 41.8-point day from Patrick Mahomes"
   },
   "notable_quotes": [],
@@ -572,7 +572,7 @@
   },
   "bench_mistake_streaks": {
     "Joe Mama Angie Daddy": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Houston Texans",
@@ -583,7 +583,7 @@
       }
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Sam Darnold",
@@ -594,7 +594,7 @@
       }
     },
     "Waffle House": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Brian Robinson",
@@ -605,7 +605,7 @@
       }
     },
     "Silverbacks": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Tre Tucker",
@@ -616,7 +616,7 @@
       }
     },
     "Long Live King Henry ": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Jared Goff",
@@ -627,7 +627,7 @@
       }
     },
     "Meredith\u2019s Fan Club": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Jordan Addison",
@@ -638,7 +638,7 @@
       }
     },
     "Dak to the Future": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Tyler Shough",
@@ -649,7 +649,7 @@
       }
     },
     "mikelanta": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Mike Washington",
@@ -660,7 +660,7 @@
       }
     },
     "Pukachu Chews You": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Bo Nix",
@@ -671,7 +671,7 @@
       }
     },
     "demon44": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Kenyon Sadiq",
@@ -682,7 +682,7 @@
       }
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Courtland Sutton",
