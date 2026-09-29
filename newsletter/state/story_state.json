@@ -1,29 +1,31 @@
 {
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
-  "last_week_updated": 2,
+  "last_week_updated": 3,
   "running_jokes": [
-    "demon44 remains undefeated on a roster built entirely from uncontested waiver claims.",
     "mikelanta's record doesn't match its point total \u2014 currently second in the league in points scored at 1-1.",
     "demon44 remains undefeated on a roster built almost entirely from zero-cost waiver claims.",
     "demon44 remains undefeated on a roster built almost entirely from uncontested waiver claims.",
     "mikelanta's record still doesn't match its scoring output \u2014 second in the league in points at 1-1.",
     "Nearly the entire league made an avoidable bench mistake in week 2 \u2014 this was a league-wide phenomenon, not an isolated one.",
     "Nearly the entire league made an avoidable bench mistake in week 2 \u2014 a genuinely league-wide phenomenon, not an isolated one.",
-    "Chuba Bucky Doo has now won consecutive one-possession games against Long Live King Henry."
+    "Chuba Bucky Doo has now won consecutive one-possession games against Long Live King Henry.",
+    "Bench mismanagement is now a league-wide epidemic \u2014 the data shows real, ongoing multi-week bench mistake streaks for eleven of the twelve teams in the league.",
+    "demon44 continues to build its roster largely off free-agent value, but a 94.9-point loss this week is the first real crack in that story.",
+    "mikelanta keeps scoring like a contender and losing like a rebuild \u2014 a genuine waiver heist at quarterback (Jacoby Brissett) hasn't been enough to fix the record."
   ],
   "streaks": {
-    "Chuba Bucky Doo": "2-0 in one-possession finishes against Long Live King Henry, won this one by 1.2",
-    "mikelanta": "1-1, still holds the second-highest point total in the league",
+    "Chuba Bucky Doo": "First real bench mistake of the tracked stretch this week, though it didn't cost them the win over Waffle House.",
+    "mikelanta": "Two straight weeks with a real bench mistake, still 1-2 despite ranking near the top of the league in points scored.",
     "Meredith's Fan Club": "1-1, lost by nearly 32 with a scoreless Puka Nacua in the lineup",
-    "Screaming Eagles": "0-2, week 2 loss included a 32.15-point bench mistake (Stafford for Maye)",
-    "Broke Dak Mountain": "1-1, produced the week's top individual scorer (Josh Allen, 54.3) in a 48-point win",
+    "Screaming Eagles": "Two straight weeks with a real bench mistake, still managed a 12.4-point win over Dak to the Future.",
+    "Broke Dak Mountain": "Two straight weeks with a real bench mistake, including sitting a 45.45-point Sam Darnold outing this week; still 2-1.",
     "Long Live King Henry ": "1-1, has now lost by exactly 1.2 with a major bench-scoring gap in the loss",
-    "Waffle House": "1-1, on the playoff bubble by points",
-    "Pukachu Chews You": "0-2, last in total points scored",
-    "Dak to the Future": "2-0, leads the league in points scored",
-    "Joe Mama Angie Daddy": "1-1, currently holds the points-based sixth playoff seed",
-    "demon44": "2-0, built largely on free-agent value",
-    "Silverbacks": "1-1, lost after benching a 35.95-point Bryce Young in favor of Justin Herbert",
+    "Waffle House": "Two straight weeks with a real bench mistake, now 1-2 and on the outside of the points-based playoff picture.",
+    "Pukachu Chews You": "Two straight weeks with a real bench mistake, offset this week by a 94.9-point blowout win.",
+    "Dak to the Future": "Two straight weeks with a real bench mistake, and this week it actually cost them the game against Screaming Eagles.",
+    "Joe Mama Angie Daddy": "Two straight weeks with a real bench mistake, but it hasn't mattered \u2014 just posted the league's biggest score and margin of the season so far.",
+    "demon44": "Two straight weeks with a real bench mistake, compounded by the week's second-largest blowout loss.",
+    "Silverbacks": "Two straight weeks with a real bench mistake, dropped the week's closest game by 6.15.",
     "Meredith\u2019s Fan Club": "1-1, lost by nearly 32 despite a 41.8-point day from Patrick Mahomes"
   },
   "notable_quotes": [],
@@ -43,10 +45,11 @@
       "player_added_id": "DET",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -57,10 +60,11 @@
       "player_added_id": "7528",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -71,10 +75,11 @@
       "player_added_id": "10218",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -84,11 +89,12 @@
       "player_added": "Ted Hurst",
       "player_added_id": "13317",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 8.8,
-      "weeks_tracked": 2,
+      "cumulative_points_since_add": 20.3,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -99,10 +105,11 @@
       "player_added_id": "LV",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 16.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -113,10 +120,11 @@
       "player_added_id": "3214",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 9.6,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -127,10 +135,11 @@
       "player_added_id": "LAC",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 2.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -141,10 +150,11 @@
       "player_added_id": "8210",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 2.6,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -155,10 +165,11 @@
       "player_added_id": "8800",
       "used_waiver_priority": true,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -168,11 +179,12 @@
       "player_added": "Mike Washington",
       "player_added_id": "13305",
       "used_waiver_priority": true,
-      "cumulative_points_since_add": 4.8,
-      "weeks_tracked": 2,
+      "cumulative_points_since_add": 17.2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -182,11 +194,12 @@
       "player_added": "Kaelon Black",
       "player_added_id": "13414",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 10.0,
-      "weeks_tracked": 2,
+      "cumulative_points_since_add": 11.7,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -196,11 +209,12 @@
       "player_added": "Devaughn Vele",
       "player_added_id": "11834",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 26.299999999999997,
-      "weeks_tracked": 2,
+      "cumulative_points_since_add": 31.699999999999996,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -211,10 +225,11 @@
       "player_added_id": "8205",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -225,10 +240,11 @@
       "player_added_id": "13293",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 1.6,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -239,10 +255,11 @@
       "player_added_id": "11237",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -252,11 +269,12 @@
       "player_added": "Tre Tucker",
       "player_added_id": "10213",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2,
+      "cumulative_points_since_add": 6.3,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -267,10 +285,11 @@
       "player_added_id": "9482",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 10.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -281,10 +300,11 @@
       "player_added_id": "9502",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -295,10 +315,11 @@
       "player_added_id": "11559",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         1,
-        2
+        2,
+        3
       ]
     },
     {
@@ -308,10 +329,11 @@
       "player_added": "Jacoby Brissett",
       "player_added_id": "3257",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 11.45,
-      "weeks_tracked": 1,
+      "cumulative_points_since_add": 46.849999999999994,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        2
+        2,
+        3
       ]
     },
     {
@@ -322,9 +344,10 @@
       "player_added_id": "CIN",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 12.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        2
+        2,
+        3
       ]
     },
     {
@@ -334,10 +357,11 @@
       "player_added": "Kenyon Sadiq",
       "player_added_id": "13330",
       "used_waiver_priority": false,
-      "cumulative_points_since_add": 2.7,
-      "weeks_tracked": 1,
+      "cumulative_points_since_add": 23.7,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        2
+        2,
+        3
       ]
     },
     {
@@ -348,9 +372,10 @@
       "player_added_id": "LAC",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 6.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        2
+        2,
+        3
       ]
     },
     {
@@ -361,9 +386,10 @@
       "player_added_id": "12469",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        2
+        2,
+        3
       ]
     },
     {
@@ -374,9 +400,10 @@
       "player_added_id": "3286",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        2
+        2,
+        3
       ]
     },
     {
@@ -387,146 +414,293 @@
       "player_added_id": "GB",
       "used_waiver_priority": false,
       "cumulative_points_since_add": 9.0,
+      "weeks_tracked": 2,
+      "weeks_counted": [
+        2,
+        3
+      ]
+    },
+    {
+      "week_added": 3,
+      "roster_id": 10,
+      "team_name": "Pukachu Chews You",
+      "player_added": "Terrance Ferguson",
+      "player_added_id": "12487",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 8,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 1.4,
       "weeks_tracked": 1,
       "weeks_counted": [
-        2
+        3
+      ]
+    },
+    {
+      "week_added": 3,
+      "roster_id": 6,
+      "team_name": "Long Live King Henry ",
+      "player_added": "Keaton Mitchell",
+      "player_added_id": "9511",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 3,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 13.2,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        3
+      ]
+    },
+    {
+      "week_added": 3,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "New York Giants",
+      "player_added_id": "NYG",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 12,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 11.0,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        3
+      ]
+    },
+    {
+      "week_added": 3,
+      "roster_id": 10,
+      "team_name": "Pukachu Chews You",
+      "player_added": "Pittsburgh Steelers",
+      "player_added_id": "PIT",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 8,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 6.0,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        3
+      ]
+    },
+    {
+      "week_added": 3,
+      "roster_id": 11,
+      "team_name": "demon44",
+      "player_added": "Cincinnati Bengals",
+      "player_added_id": "CIN",
+      "used_waiver_priority": true,
+      "waiver_priority_at_add": 7,
+      "priority_cost_description": "spent a mid-tier priority slot (#7 of 12)",
+      "cumulative_points_since_add": 3.0,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        3
+      ]
+    },
+    {
+      "week_added": 3,
+      "roster_id": 1,
+      "team_name": "Chuba Bucky Doo",
+      "player_added": "Kirk Cousins",
+      "player_added_id": "1166",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 10,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 33.7,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        3
+      ]
+    },
+    {
+      "week_added": 3,
+      "roster_id": 2,
+      "team_name": "Joe Mama Angie Daddy",
+      "player_added": "Rashod Bateman",
+      "player_added_id": "7571",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 9,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 4.7,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        3
+      ]
+    },
+    {
+      "week_added": 3,
+      "roster_id": 10,
+      "team_name": "Pukachu Chews You",
+      "player_added": "Emanuel Wilson",
+      "player_added_id": "11435",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 8,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 1.4,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        3
+      ]
+    },
+    {
+      "week_added": 3,
+      "roster_id": 8,
+      "team_name": "Dak to the Future",
+      "player_added": "New Orleans Saints",
+      "player_added_id": "NO",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 2,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 3.0,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        3
       ]
     }
   ],
   "last_known_waiver_priority": {
-    "1": 10,
-    "2": 9,
-    "3": 5,
+    "1": 8,
+    "2": 7,
+    "3": 4,
     "4": 1,
     "5": 11,
-    "6": 3,
-    "7": 4,
+    "6": 10,
+    "7": 3,
     "8": 2,
-    "9": 12,
-    "10": 8,
-    "11": 7,
-    "12": 6
+    "9": 9,
+    "10": 6,
+    "11": 12,
+    "12": 5
   },
   "bench_mistake_streaks": {
     "Joe Mama Angie Daddy": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
-        "benched_player": "Travis Kelce",
-        "benched_points": 21.6,
-        "started_instead": "Rhamondre Stevenson",
-        "started_points": 3.1,
-        "margin": 18.5
+        "benched_player": "Houston Texans",
+        "benched_points": 14.0,
+        "started_instead": "Seattle Seahawks",
+        "started_points": 5.0,
+        "margin": 9.0
       }
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
-        "benched_player": "George Kittle",
-        "benched_points": 17.0,
-        "started_instead": "Jayden Reed",
-        "started_points": 0.9,
-        "margin": 16.1
+        "benched_player": "Sam Darnold",
+        "benched_points": 45.45,
+        "started_instead": "Josh Allen",
+        "started_points": 23.0,
+        "margin": 22.45
       }
     },
     "Waffle House": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Brian Robinson",
-        "benched_points": 7.7,
-        "started_instead": "DJ Moore",
-        "started_points": -0.1,
-        "margin": 7.8
+        "benched_points": 12.0,
+        "started_instead": "Dalton Kincaid",
+        "started_points": 2.8,
+        "margin": 9.2
       }
     },
     "Silverbacks": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
-        "benched_player": "Bryce Young",
-        "benched_points": 35.95,
-        "started_instead": "Justin Herbert",
-        "started_points": 14.8,
-        "margin": 21.15
+        "benched_player": "Tre Tucker",
+        "benched_points": 6.3,
+        "started_instead": "Kyle Monangai",
+        "started_points": 3.1,
+        "margin": 3.2
       }
     },
     "Long Live King Henry ": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
         "benched_player": "Jared Goff",
-        "benched_points": 45.05,
+        "benched_points": 28.05,
         "started_instead": "Jalen Hurts",
-        "started_points": 26.8,
-        "margin": 18.25
+        "started_points": 16.15,
+        "margin": 11.9
       }
     },
     "Meredith\u2019s Fan Club": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
-        "benched_player": "Rachaad White",
-        "benched_points": 11.3,
-        "started_instead": "Puka Nacua",
-        "started_points": 0,
-        "margin": 11.3
+        "benched_player": "Jordan Addison",
+        "benched_points": 18.5,
+        "started_instead": "Emmett Johnson",
+        "started_points": 1.7,
+        "margin": 16.8
       }
     },
     "Dak to the Future": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
-        "benched_player": "Aaron Jones",
-        "benched_points": 10.5,
-        "started_instead": "Jameson Williams",
-        "started_points": 4.3,
-        "margin": 6.2
+        "benched_player": "Tyler Shough",
+        "benched_points": 39.35,
+        "started_instead": "Dak Prescott",
+        "started_points": 24.7,
+        "margin": 14.65
       }
     },
     "mikelanta": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
-        "benched_player": "Josh Downs",
-        "benched_points": 10.7,
+        "benched_player": "Mike Washington",
+        "benched_points": 12.4,
         "started_instead": "Jadarian Price",
-        "started_points": 4.5,
-        "margin": 6.2
+        "started_points": 0.7,
+        "margin": 11.7
       }
     },
     "Pukachu Chews You": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
-        "benched_player": "Pittsburgh Steelers",
-        "benched_points": 11.0,
-        "started_instead": "Los Angeles Chargers",
-        "started_points": 6.0,
-        "margin": 5.0
+        "benched_player": "Bo Nix",
+        "benched_points": 34.0,
+        "started_instead": "Jordan Love",
+        "started_points": 28.6,
+        "margin": 5.4
       }
     },
     "demon44": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
-        "benched_player": "Romeo Doubs",
-        "benched_points": 11.1,
-        "started_instead": "Malik Nabers",
-        "started_points": 0.6,
-        "margin": 10.5
+        "benched_player": "Kenyon Sadiq",
+        "benched_points": 21.0,
+        "started_instead": "Kyle Pitts",
+        "started_points": 1.0,
+        "margin": 20.0
       }
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 2,
+      "consecutive_weeks": 2,
+      "last_week_counted": 3,
       "last_mistake": {
-        "benched_player": "Matthew Stafford",
-        "benched_points": 43.25,
-        "started_instead": "Drake Maye",
-        "started_points": 11.1,
-        "margin": 32.15
+        "benched_player": "Courtland Sutton",
+        "benched_points": 6.1,
+        "started_instead": "Tetairoa McMillan",
+        "started_points": 2.7,
+        "margin": 3.4
+      }
+    },
+    "Chuba Bucky Doo": {
+      "consecutive_weeks": 1,
+      "last_week_counted": 3,
+      "last_mistake": {
+        "benched_player": "Chris Rodriguez",
+        "benched_points": 10.7,
+        "started_instead": "Chris Godwin",
+        "started_points": 4.0,
+        "margin": 6.7
       }
     }
   }
