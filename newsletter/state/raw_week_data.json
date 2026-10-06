@@ -2831,7 +2831,7 @@
         "5001",
         "9221",
         "6801",
-        "SEA"
+        "HOU"
       ],
       "starters_points": [
         0.0,
@@ -3220,13 +3220,13 @@
       "matchup_id": 4,
       "starters": [
         "3294",
-        "12533",
+        "6790",
         "4199",
         "6786",
         "8146",
         "7002",
         "8148",
-        "6790",
+        "12495",
         "BAL"
       ],
       "starters_points": [
@@ -3543,7 +3543,7 @@
   },
   "bench_mistake_streaks": {
     "Joe Mama Angie Daddy": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Deebo Samuel",
@@ -3554,7 +3554,7 @@
       }
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Tony Pollard",
@@ -3565,7 +3565,7 @@
       }
     },
     "Waffle House": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Quentin Johnston",
@@ -3576,7 +3576,7 @@
       }
     },
     "Silverbacks": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Michael Penix",
@@ -3587,7 +3587,7 @@
       }
     },
     "Long Live King Henry ": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Devaughn Vele",
@@ -3598,7 +3598,7 @@
       }
     },
     "Meredith\u2019s Fan Club": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "C.J. Stroud",
@@ -3609,7 +3609,7 @@
       }
     },
     "Dak to the Future": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Ollie Gordon",
@@ -3620,7 +3620,7 @@
       }
     },
     "mikelanta": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Rome Odunze",
@@ -3631,7 +3631,7 @@
       }
     },
     "Pukachu Chews You": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Brian Thomas",
@@ -3642,7 +3642,7 @@
       }
     },
     "demon44": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Romeo Doubs",
@@ -3653,7 +3653,7 @@
       }
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Drake Maye",
@@ -3664,7 +3664,7 @@
       }
     },
     "Chuba Bucky Doo": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 4,
       "last_mistake": {
         "benched_player": "Chris Rodriguez",
@@ -3685,7 +3685,7 @@
       "position": "QB",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 11,
+      "waiver_priority_before_move": 9,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3699,7 +3699,7 @@
       "position": "RB",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 4,
+      "waiver_priority_before_move": 2,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3713,7 +3713,7 @@
       "position": "WR",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 4,
+      "waiver_priority_before_move": 2,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3727,7 +3727,7 @@
       "position": "WR",
       "player_dropped": "Chig Okonkwo",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 9,
+      "waiver_priority_before_move": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3741,7 +3741,7 @@
       "position": "TE",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 9,
+      "waiver_priority_before_move": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3755,7 +3755,7 @@
       "position": "RB",
       "player_dropped": "Malachi Fields",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 12,
+      "waiver_priority_before_move": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3769,7 +3769,7 @@
       "position": "WR",
       "player_dropped": "Chig Okonkwo",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 9,
+      "waiver_priority_before_move": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3783,7 +3783,7 @@
       "position": "TE",
       "player_dropped": "Wan'Dale Robinson",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 9,
+      "waiver_priority_before_move": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3797,7 +3797,7 @@
       "position": "DEF",
       "player_dropped": "Tampa Bay Buccaneers",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 5,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3811,7 +3811,7 @@
       "position": "WR",
       "player_dropped": "Terrance Ferguson",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 6,
+      "waiver_priority_before_move": 3,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3825,8 +3825,8 @@
       "position": "QB",
       "player_dropped": "Malik Willis",
       "used_waiver_priority": true,
-      "waiver_priority_before_move": 12,
-      "priority_cost_description": "was already near the back of the priority order (#12 of 12) \u2014 burning it cost next to nothing",
+      "waiver_priority_before_move": 10,
+      "priority_cost_description": "was already near the back of the priority order (#10 of 12) \u2014 burning it cost next to nothing",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3839,8 +3839,8 @@
       "position": "TE",
       "player_dropped": "Tyler Allgeier",
       "used_waiver_priority": true,
-      "waiver_priority_before_move": 3,
-      "priority_cost_description": "spent a premium priority slot (was #3 of 12) \u2014 a real, costly bet",
+      "waiver_priority_before_move": 12,
+      "priority_cost_description": "was already near the back of the priority order (#12 of 12) \u2014 burning it cost next to nothing",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3853,7 +3853,7 @@
       "position": "RB",
       "player_dropped": "Oronde Gadsden",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 11,
+      "waiver_priority_before_move": 9,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": "Travis Etienne",
       "confirmed_homer_transaction": false
@@ -3867,7 +3867,7 @@
       "position": "RB",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 7,
+      "waiver_priority_before_move": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": "Jahmyr Gibbs",
       "confirmed_homer_transaction": false
@@ -3881,8 +3881,8 @@
       "position": "RB",
       "player_dropped": "Dontayvion Wicks",
       "used_waiver_priority": true,
-      "waiver_priority_before_move": 9,
-      "priority_cost_description": "spent a mid-tier priority slot (#9 of 12)",
+      "waiver_priority_before_move": 11,
+      "priority_cost_description": "was already near the back of the priority order (#11 of 12) \u2014 burning it cost next to nothing",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3895,7 +3895,7 @@
       "position": "TE",
       "player_dropped": "Chig Okonkwo",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 5,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3909,7 +3909,7 @@
       "position": "WR",
       "player_dropped": "Kenny Gainwell",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 5,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
