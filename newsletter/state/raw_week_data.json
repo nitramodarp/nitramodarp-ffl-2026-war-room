@@ -2836,14 +2836,14 @@
       "matchup_id": 3,
       "starters": [
         "8183",
-        "7588",
         "7611",
-        "8137",
+        "7588",
         "9487",
+        "8137",
         "1466",
         "0",
-        "11625",
-        "HOU"
+        "0",
+        "SEA"
       ],
       "starters_points": [
         0.0,
@@ -3237,13 +3237,13 @@
       "starters": [
         "3294",
         "6790",
-        "4199",
+        "12533",
         "6786",
         "8146",
         "7002",
-        "8148",
-        "12495",
-        "DAL"
+        "13279",
+        "9508",
+        "BAL"
       ],
       "starters_points": [
         0.0,
@@ -3559,7 +3559,7 @@
   },
   "bench_mistake_streaks": {
     "Joe Mama Angie Daddy": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Deebo Samuel",
@@ -3570,7 +3570,7 @@
       }
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Khalil Shakir",
@@ -3586,7 +3586,7 @@
       "last_mistake": null
     },
     "Silverbacks": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Aaron Rodgers",
@@ -3597,7 +3597,7 @@
       }
     },
     "Long Live King Henry ": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "J.K. Dobbins",
@@ -3608,7 +3608,7 @@
       }
     },
     "Meredith\u2019s Fan Club": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Rachaad White",
@@ -3619,7 +3619,7 @@
       }
     },
     "Dak to the Future": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Jacory Croskey-Merritt",
@@ -3630,7 +3630,7 @@
       }
     },
     "mikelanta": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Dontayvion Wicks",
@@ -3641,7 +3641,7 @@
       }
     },
     "Pukachu Chews You": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Jordan Love",
@@ -3652,7 +3652,7 @@
       }
     },
     "demon44": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Kyle Pitts",
@@ -3663,7 +3663,7 @@
       }
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Courtland Sutton",
@@ -3674,7 +3674,7 @@
       }
     },
     "Chuba Bucky Doo": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 5,
       "last_mistake": {
         "benched_player": "Jayden Daniels",
@@ -3695,7 +3695,7 @@
       "position": "DEF",
       "player_dropped": "Kendre Miller",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 9,
+      "waiver_priority_before_move": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3751,7 +3751,7 @@
       "position": "QB",
       "player_dropped": "Justin Herbert",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 9,
+      "waiver_priority_before_move": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3793,7 +3793,7 @@
       "position": "DEF",
       "player_dropped": "Kansas City Chiefs",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 12,
+      "waiver_priority_before_move": 8,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
