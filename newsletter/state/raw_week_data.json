@@ -3547,7 +3547,7 @@
       "last_mistake": null
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Khalil Shakir",
@@ -3569,7 +3569,7 @@
       }
     },
     "Silverbacks": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Michael Penix",
@@ -3580,7 +3580,7 @@
       }
     },
     "Long Live King Henry ": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "J.K. Dobbins",
@@ -3591,7 +3591,7 @@
       }
     },
     "Meredith\u2019s Fan Club": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "C.J. Stroud",
@@ -3602,7 +3602,7 @@
       }
     },
     "Dak to the Future": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Tyler Shough",
@@ -3613,7 +3613,7 @@
       }
     },
     "mikelanta": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Hunter Henry",
@@ -3624,7 +3624,7 @@
       }
     },
     "Pukachu Chews You": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Rico Dowdle",
@@ -3635,7 +3635,7 @@
       }
     },
     "demon44": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Trevor Lawrence",
@@ -3646,7 +3646,7 @@
       }
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Jakobi Meyers",
@@ -3756,7 +3756,7 @@
       "position": "TE",
       "player_dropped": "KC Concepcion",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 10,
+      "waiver_priority_before_move": 12,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
@@ -3770,8 +3770,8 @@
       "position": "RB",
       "player_dropped": "Kaelon Black",
       "used_waiver_priority": true,
-      "waiver_priority_before_move": 10,
-      "priority_cost_description": "was already near the back of the priority order (#10 of 12) \u2014 burning it cost next to nothing",
+      "waiver_priority_before_move": 12,
+      "priority_cost_description": "was already near the back of the priority order (#12 of 12) \u2014 burning it cost next to nothing",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false
     },
@@ -3784,7 +3784,7 @@
       "position": "RB",
       "player_dropped": "Jordan Addison",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 8,
+      "waiver_priority_before_move": 7,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": "Omarion Hampton",
       "confirmed_homer_transaction": false

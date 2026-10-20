@@ -2,22 +2,22 @@
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
   "last_week_updated": 6,
   "running_jokes": [
-    "mikelanta keeps winning just enough to stay tethered to the points-based wildcard \u2014 now 2-3 but still projected into the playoff field on points alone.",
-    "Joe Mama Angie Daddy's 85.4-point win is the largest margin recorded this week, continuing their run as the league's clear top team.",
-    "Chuba Bucky Doo keeps winning big enough to make real bench mistakes irrelevant \u2014 benched Jayden Daniels for 17 points' worth of margin and still won by 48.",
-    "Pukachu Chews You benched a 36.95-point Jordan Love for Bo Nix and lost by 2.05 \u2014 the single most expensive lineup decision of the season relative to the margin of the loss.",
     "Joe Mama Angie Daddy's 85.4-point win over Broke Dak Mountain was the largest margin of the week.",
     "mikelanta keeps scoring enough to be a problem and losing enough to stay under .500, yet the points-based tiebreaker still has them projected into the playoffs over Long Live King Henry.",
     "Bench mismanagement touched almost every roster again this week, but for several of the winners (Chuba Bucky Doo, Screaming Eagles, Meredith's Fan Club) it simply didn't matter.",
     "Bench mismanagement remains close to universal \u2014 ten of twelve teams logged a real bench mistake this week, and several (Broke Dak Mountain, Silverbacks, Long Live King Henry, Meredith's Fan Club, Dak to the Future, mikelanta, Pukachu Chews You, demon44, Screaming Eagles) are now on multi-week streaks of it.",
     "demon44 won by 88 points while still benching a 43.4-point Trevor Lawrence, continuing the pattern of this team's lineup errors not mattering because the talent gap is too large.",
-    "Dak to the Future's bench mistake nearly cost them a game for the first time \u2014 a 19.8-point error in a contest decided by 0.8."
+    "Dak to the Future's bench mistake nearly cost them a game for the first time \u2014 a 19.8-point error in a contest decided by 0.8.",
+    "Demon44 keeps winning by enormous margins while benching the league's best individual performances \u2014 this week it was a 43.4-point Trevor Lawrence sitting through an 88-point win.",
+    "Joe Mama Angie Daddy's bargain-bin waiver strategy (zero priority spent across four separate adds this week) keeps hitting, with Tre Tucker the latest free find to produce immediately.",
+    "Dak to the Future's bench mistakes are starting to have real consequences \u2014 a second straight week with a real error, this time nearly costing them a game decided by 0.8 points.",
+    "The points-based wildcard race is getting tight \u2014 Screaming Eagles currently hold it over Long Live King Henry by under 20 total points."
   ],
   "streaks": {
     "Chuba Bucky Doo": "No bench mistake this week.",
     "mikelanta": "Two straight weeks with a real bench mistake, this time in a win.",
     "Meredith's Fan Club": "1-1, lost by nearly 32 with a scoreless Puka Nacua in the lineup",
-    "Screaming Eagles": "Two straight weeks with a real bench mistake, this time in a win.",
+    "Screaming Eagles": "Two straight weeks with a real bench mistake, this time in a loss.",
     "Broke Dak Mountain": "Two straight weeks with a real bench mistake, this time inside a 63.2-point win.",
     "Long Live King Henry ": "Two straight weeks with a real bench mistake, both in losses.",
     "Waffle House": "First real bench mistake logged this week, inside an 88-point loss.",
@@ -937,7 +937,7 @@
       "last_mistake": null
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Khalil Shakir",
@@ -959,7 +959,7 @@
       }
     },
     "Silverbacks": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Michael Penix",
@@ -970,7 +970,7 @@
       }
     },
     "Long Live King Henry ": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "J.K. Dobbins",
@@ -981,7 +981,7 @@
       }
     },
     "Meredith\u2019s Fan Club": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "C.J. Stroud",
@@ -992,7 +992,7 @@
       }
     },
     "Dak to the Future": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Tyler Shough",
@@ -1003,7 +1003,7 @@
       }
     },
     "mikelanta": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Hunter Henry",
@@ -1014,7 +1014,7 @@
       }
     },
     "Pukachu Chews You": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Rico Dowdle",
@@ -1025,7 +1025,7 @@
       }
     },
     "demon44": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Trevor Lawrence",
@@ -1036,7 +1036,7 @@
       }
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 6,
       "last_mistake": {
         "benched_player": "Jakobi Meyers",
