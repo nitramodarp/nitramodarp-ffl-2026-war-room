@@ -502,7 +502,7 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
     for roster_id, moves in moves_by_team.items():
         parts = []
         for n, m in enumerate(moves, 1):
-            piece = f"{n}) added {m['player_added']}"
+            piece = f"{n}) added {m['player_added']} ({m['position'] or 'unknown position'})"
             if m["player_dropped"]:
                 piece += f", dropped {m['player_dropped']}"
             parts.append(piece)

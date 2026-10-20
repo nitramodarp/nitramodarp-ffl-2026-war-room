@@ -187,7 +187,11 @@ imply one exists. Grade transactions using ONLY what's in the data below:
   reverse. If "dropped_player_was_added_earlier_this_week" is true, the
   player was picked up and then cut within the same week; say so
   accurately. This was gotten wrong once already (a team's add-then-drop
-  of a quarterback was written up backwards).
+  of a quarterback was written up backwards). Each add in the sequence
+  shows its position in parentheses: count or describe moves by position
+  ONLY from that text (a defense or RB move is not a quarterback move),
+  and say "moves" rather than naming a position when the moves span
+  different positions.
 - "transaction_tracking_all_active" gives you RESULTS signals for adds from
   recent weeks: real cumulative points scored since the pickup (already
   correctly scored under this league's exact rules, straight from Sleeper —
