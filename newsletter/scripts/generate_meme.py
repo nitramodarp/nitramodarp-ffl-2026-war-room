@@ -10,6 +10,7 @@ so we only offer Claude the templates flagged safe/free.
 
 import json
 import os
+import random
 import re
 import time
 import requests
@@ -36,7 +37,58 @@ CANDIDATE_TEMPLATES = [
     "Is This A Pigeon",
     "Gru's Plan",
     "Bernie I Am Once Again Asking For Your Support",
+    # Added for variety. Names that don't match Imgflip exactly are skipped
+    # by get_templates(), and anything with box_count > 2 is filtered out.
+    "Batman Slapping Robin",
+    "Mocking Spongebob",
+    "Evil Kermit",
+    "Tuxedo Winnie The Pooh",
+    "Roll Safe Think About It",
+    "One Does Not Simply",
+    "Futurama Fry",
+    "Waiting Skeleton",
+    "Monkey Puppet",
+    "Unsettled Tom",
+    "Hide the Pain Harold",
+    "Leonardo Dicaprio Cheers",
+    "Success Kid",
+    "Third World Skeptical Kid",
 ]
+
+# Templates used in the last N newsletters are withheld from the model so
+# the same one can't win every week. Python owns this, not the prompt.
+RECENT_EXCLUDE_COUNT = 4
+HISTORY_PATH = os.path.join(os.path.dirname(PATHS["meme"]), "meme_history.json")
+
+
+def load_history():
+    try:
+        with open(HISTORY_PATH) as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+def save_history(history, template_name):
+    history = [h for h in history if isinstance(h, str)]
+    history.append(template_name)
+    os.makedirs(os.path.dirname(HISTORY_PATH), exist_ok=True)
+    with open(HISTORY_PATH, "w") as f:
+        json.dump(history[-30:], f, indent=2)
+
+
+def apply_rotation(templates, history):
+    """Drop recently used templates and shuffle the rest (the model leans
+    toward whatever is listed first). Never returns an empty list."""
+    recent = set(history[-RECENT_EXCLUDE_COUNT:])
+    fresh = [t for t in templates if t["name"] not in recent]
+    if len(fresh) < 3:
+        # pool too small to exclude safely: only exclude the single latest
+        fresh = [t for t in templates if t["name"] != (history[-1] if history else None)]
+    pool = fresh or templates
+    random.shuffle(pool)
+    return pool
 
 
 def get_templates():
@@ -162,7 +214,9 @@ def pick_template_and_captions(meme_brief, templates):
                       "[\"...\", \"...\"]} where captions has EXACTLY box_count "
                       "entries for the template you chose. Keep captions short "
                       "and punchy — longtime friends who talk real trash, not "
-                      "corporate-safe humor.")
+                      "corporate-safe humor. Choose the template whose format "
+                      "genuinely fits the joke; do not default to a generic "
+                      "disaster or panic template unless the story really is one.")
     last_error = None
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
@@ -241,10 +295,17 @@ def main():
         draft = json.load(f)
 
     meme_brief = draft["meme_brief"]
-    templates = get_templates()
+    history = load_history()
+    templates = apply_rotation(get_templates(), history)
+    print(f"Recent templates (excluded): {history[-RECENT_EXCLUDE_COUNT:]}")
+    print(f"Offered to model: {[t['name'] for t in templates]}")
     choice = pick_template_and_captions(meme_brief, templates)
 
-    template = next(t for t in templates if t["name"] == choice["template_name"])
+    template = next((t for t in templates if t["name"] == choice["template_name"]), None)
+    if template is None:
+        print(f"WARNING: model chose {choice['template_name']!r}, which was not offered; using {templates[0]['name']!r}.")
+        template = templates[0]
+        choice["template_name"] = template["name"]
     captions = choice.get("captions", [])
     if len(captions) != template["box_count"]:
         print(f"WARNING: model returned {len(captions)} captions but "
@@ -257,6 +318,7 @@ def main():
     with open(PATHS["meme"], "w") as f:
         json.dump({"image_url": image_url, "template_name": choice["template_name"], "captions": captions}, f, indent=2)
 
+    save_history(history, choice["template_name"])
     print(f"Meme rendered: {image_url}")
 
 

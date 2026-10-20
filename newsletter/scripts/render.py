@@ -8,6 +8,23 @@ import json
 import os
 from config import PATHS
 
+import html as _html
+import re as _re
+
+
+def to_paragraphs(text):
+    """Turn model text into one <p> per paragraph. The model separates
+    paragraphs with blank lines, which HTML collapses if the whole string
+    sits inside a single <p>. Falls back to single newlines if the model
+    never used a blank line. Text is escaped so stray < or & can't break
+    the page."""
+    text = (text or "").strip()
+    chunks = [c.strip() for c in _re.split(r"\n\s*\n", text) if c.strip()]
+    if len(chunks) <= 1:
+        chunks = [c.strip() for c in text.split("\n") if c.strip()]
+    return "\n  ".join(f"<p>{_html.escape(c, quote=False)}</p>" for c in chunks)
+
+
 def main():
     with open(PATHS["raw_data"]) as f:
         raw = json.load(f)
@@ -36,12 +53,12 @@ def main():
         .replace("{{WEEK}}", str(raw["week_recapped"]))
         .replace("{{SEASON}}", str(raw["season"]))
         .replace("{{MEME_URL}}", meme["image_url"])
-        .replace("{{RECAP}}", draft["recap"])
-        .replace("{{TRANSACTION_DESK}}", draft["transaction_desk"])
+        .replace("{{RECAP}}", to_paragraphs(draft["recap"]))
+        .replace("{{TRANSACTION_DESK}}", to_paragraphs(draft["transaction_desk"]))
         .replace("{{POWER_RANKINGS_HTML}}", rankings_html)
-        .replace("{{STANDINGS_NARRATIVE}}", draft["standings_narrative"])
+        .replace("{{STANDINGS_NARRATIVE}}", to_paragraphs(draft["standings_narrative"]))
         .replace("{{WAIVER_PRIORITY_HTML}}", waiver_priority_html)
-        .replace("{{LOOK_AHEAD}}", draft["look_ahead"])
+        .replace("{{LOOK_AHEAD}}", to_paragraphs(draft["look_ahead"]))
     )
 
     out_path = f"{PATHS['output_dir']}/{raw['season']}-wk{raw['week_recapped']:02d}.html"
