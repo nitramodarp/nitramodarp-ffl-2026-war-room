@@ -179,6 +179,15 @@ imply one exists. Grade transactions using ONLY what's in the data below:
   certainly is unless something else about the move suggests otherwise;
   don't read it as low-value just because the added player isn't a
   starter-caliber name on his own.
+- ORDER OF MOVES: every transaction carries "team_move_sequence", the
+  verified chronological order (oldest first) of that team's moves this
+  week. When a team made more than one move, narrate them in exactly that
+  order and never infer order from where entries sit in the list. Add
+  then drop of the same player is "added X, then dropped him" — never the
+  reverse. If "dropped_player_was_added_earlier_this_week" is true, the
+  player was picked up and then cut within the same week; say so
+  accurately. This was gotten wrong once already (a team's add-then-drop
+  of a quarterback was written up backwards).
 - "transaction_tracking_all_active" gives you RESULTS signals for adds from
   recent weeks: real cumulative points scored since the pickup (already
   correctly scored under this league's exact rules, straight from Sleeper —

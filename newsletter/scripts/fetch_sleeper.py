@@ -454,6 +454,11 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
     prev_priority = story_state.get("last_known_waiver_priority", {})
     enriched = []
     skipped_incomplete = 0
+    # Sleeper returns transactions newest-first. Sort oldest-first so every
+    # downstream consumer (including the model) sees real chronological order.
+    transactions = sorted(
+        transactions, key=lambda t: t.get("created") or t.get("status_updated") or 0
+    )
     for t in transactions:
         if t.get("type") not in ("waiver", "free_agent", "trade"):
             continue
@@ -487,6 +492,32 @@ def enrich_transactions(transactions, players_db, roster_names, rosters_by_id, s
                 "possible_handcuff_of": find_handcuff_teammate(pid, player, roster, players_db),
                 "confirmed_homer_transaction": bool(note and note.get("homer_team") == player.get("team")),
             })
+
+    # Chronological per-team summary, built here so the model never has to
+    # infer the order of a team's moves (it once told a team's story
+    # backwards: "dropped X for Y, then re-added X" when X was added first).
+    moves_by_team = {}
+    for e in enriched:
+        moves_by_team.setdefault(e["roster_id"], []).append(e)
+    for roster_id, moves in moves_by_team.items():
+        parts = []
+        for n, m in enumerate(moves, 1):
+            piece = f"{n}) added {m['player_added']}"
+            if m["player_dropped"]:
+                piece += f", dropped {m['player_dropped']}"
+            parts.append(piece)
+        summary = ("In chronological order (oldest first), this team's moves this week were: "
+                   + "; ".join(parts) + ".")
+        added_names = {m["player_added"] for m in moves}
+        for n, m in enumerate(moves, 1):
+            m["move_number_for_team"] = n
+            m["team_total_moves"] = len(moves)
+            m["team_move_sequence"] = summary
+            # flag only when the player dropped here was added EARLIER this week
+            earlier_adds = {x["player_added"] for x in moves[:n - 1]}
+            m["dropped_player_was_added_earlier_this_week"] = bool(
+                m["player_dropped"] and m["player_dropped"] in earlier_adds
+            )
     return enriched, skipped_incomplete
 
 
