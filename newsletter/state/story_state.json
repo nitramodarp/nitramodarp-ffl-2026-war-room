@@ -2,16 +2,16 @@
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
   "last_week_updated": 6,
   "running_jokes": [
-    "Dak to the Future's bench mistake nearly cost them a game for the first time \u2014 a 19.8-point error in a contest decided by 0.8.",
-    "Demon44 keeps winning by enormous margins while benching the league's best individual performances \u2014 this week it was a 43.4-point Trevor Lawrence sitting through an 88-point win.",
-    "Joe Mama Angie Daddy's bargain-bin waiver strategy (zero priority spent across four separate adds this week) keeps hitting, with Tre Tucker the latest free find to produce immediately.",
-    "Dak to the Future's bench mistakes are starting to have real consequences \u2014 a second straight week with a real error, this time nearly costing them a game decided by 0.8 points.",
-    "The points-based wildcard race is getting tight \u2014 Screaming Eagles currently hold it over Long Live King Henry by under 20 total points.",
     "Joe Mama Angie Daddy's zero-priority waiver strategy keeps hitting \u2014 Tre Tucker was the latest free pickup to produce immediately, going for 26.2 in his debut.",
     "demon44 continues to win by enormous margins while committing real bench mistakes that simply don't matter against the talent gap \u2014 this week it was a 43.4-point Trevor Lawrence sitting through an 88-point win.",
     "Dak to the Future's bench mistakes are now a two-week pattern with real consequences, having nearly cost them a game decided by 0.8 points this week after a similar issue the week before.",
     "The points-based sixth seed race between Screaming Eagles and Long Live King Henry remains tight, separated by under 20 total points.",
-    "Long Live King Henry burned through three different quarterbacks in a single week of roster moves, landing on Tyler Huntley, who then led the team in scoring in a loss."
+    "Long Live King Henry burned through three different quarterbacks in a single week of roster moves, landing on Tyler Huntley, who then led the team in scoring in a loss.",
+    "Joe Mama Angie Daddy's zero-priority waiver approach keeps hitting \u2014 Tre Tucker produced 26.2 in his debut after four moves that cost nothing in priority.",
+    "demon44 continues to win by enormous margins while benching the league's best individual scores \u2014 this week a 43.4-point Trevor Lawrence sat through an 88-point win.",
+    "Dak to the Future's bench mistakes are now a two-week pattern with real consequences, this time nearly costing a game decided by 0.8 points.",
+    "Long Live King Henry burned through three different quarterback moves in a single week, landing on Tyler Huntley, who then led the team in scoring in a loss.",
+    "Kirk Cousins and Jacoby Brissett, both free bench pickups for Chuba Bucky Doo and mikelanta respectively, have each cleared 114 cumulative points without starting regularly."
   ],
   "streaks": {
     "Chuba Bucky Doo": "No bench mistake this week.",
@@ -26,7 +26,7 @@
     "Joe Mama Angie Daddy": "No bench mistake this week.",
     "demon44": "Two straight weeks with a real bench mistake, this time in an 88-point win.",
     "Silverbacks": "Two straight weeks with a real bench mistake, both in losses.",
-    "Meredith\u2019s Fan Club": "Two straight weeks with a real bench mistake \u2014 sat a 32.55-point C.J. Stroud and won anyway."
+    "Meredith\u2019s Fan Club": "Two straight weeks with a real bench mistake, this time sitting a 36.1-point C.J. Stroud in a loss."
   },
   "notable_quotes": [],
   "season_awards_tracker": {
