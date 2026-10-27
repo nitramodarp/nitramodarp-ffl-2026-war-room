@@ -3223,7 +3223,7 @@
         "6786",
         "8146",
         "7002",
-        "4199",
+        "13279",
         "8148",
         "DAL"
       ],
@@ -3551,7 +3551,7 @@
       }
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 7,
       "last_mistake": {
         "benched_player": "Isaiah Davis",
@@ -3567,7 +3567,7 @@
       "last_mistake": null
     },
     "Silverbacks": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 7,
       "last_mistake": {
         "benched_player": "Michael Penix",
@@ -3578,7 +3578,7 @@
       }
     },
     "Long Live King Henry ": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 7,
       "last_mistake": {
         "benched_player": "Cam Skattebo",
@@ -3594,7 +3594,7 @@
       "last_mistake": null
     },
     "Dak to the Future": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 7,
       "last_mistake": {
         "benched_player": "Carnell Tate",
@@ -3605,7 +3605,7 @@
       }
     },
     "mikelanta": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 7,
       "last_mistake": {
         "benched_player": "Hunter Henry",
@@ -3616,7 +3616,7 @@
       }
     },
     "Pukachu Chews You": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 7,
       "last_mistake": {
         "benched_player": "Omar Cooper",
@@ -3627,7 +3627,7 @@
       }
     },
     "demon44": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 7,
       "last_mistake": {
         "benched_player": "Blake Corum",
@@ -3638,7 +3638,7 @@
       }
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 7,
       "last_mistake": {
         "benched_player": "Marvin Harrison",
@@ -3670,7 +3670,7 @@
       "position": "WR",
       "player_dropped": "Dohnte Meyers",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 5,
+      "waiver_priority_before_move": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": "Justin Jefferson",
       "confirmed_homer_transaction": false,
@@ -3688,7 +3688,7 @@
       "position": "RB",
       "player_dropped": "Darren Waller",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 5,
+      "waiver_priority_before_move": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3706,7 +3706,7 @@
       "position": "DEF",
       "player_dropped": "Indianapolis Colts",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 10,
+      "waiver_priority_before_move": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3724,7 +3724,7 @@
       "position": "RB",
       "player_dropped": "MarShawn Lloyd",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 3,
+      "waiver_priority_before_move": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3742,7 +3742,7 @@
       "position": "DEF",
       "player_dropped": null,
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 9,
+      "waiver_priority_before_move": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3760,7 +3760,7 @@
       "position": "WR",
       "player_dropped": "Mike Gesicki",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 10,
+      "waiver_priority_before_move": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3778,7 +3778,7 @@
       "position": "WR",
       "player_dropped": "Dameon Pierce",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 4,
+      "waiver_priority_before_move": 3,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3796,7 +3796,7 @@
       "position": "RB",
       "player_dropped": "San Francisco 49ers",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 6,
+      "waiver_priority_before_move": 7,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3832,7 +3832,7 @@
       "position": "QB",
       "player_dropped": "Kendrick Bourne",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 10,
+      "waiver_priority_before_move": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3850,7 +3850,7 @@
       "position": "WR",
       "player_dropped": "Josh Downs",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 10,
+      "waiver_priority_before_move": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3868,7 +3868,7 @@
       "position": "DEF",
       "player_dropped": "Kyler Murray",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 10,
+      "waiver_priority_before_move": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
