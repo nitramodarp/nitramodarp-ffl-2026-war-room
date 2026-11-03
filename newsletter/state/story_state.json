@@ -1,32 +1,32 @@
 {
   "_comment": "Persistent narrative memory across weeks. generate_newsletter.py reads this before writing and updates it after \u2014 this is what lets week 8 remember week 3's joke instead of reading like a generic recap bot. Edit by hand anytime if the model tracks something wrong.",
-  "last_week_updated": 7,
+  "last_week_updated": 8,
   "running_jokes": [
-    "Long Live King Henry burned through three different quarterback moves in a single week, landing on Tyler Huntley, who then led the team in scoring in a loss.",
-    "Kirk Cousins and Jacoby Brissett, both free bench pickups for Chuba Bucky Doo and mikelanta respectively, have each cleared 114 cumulative points without starting regularly.",
-    "Joe Mama Angie Daddy's zero-priority waiver approach keeps producing results, with Kirk Cousins' 144.1 cumulative points now the standard-bearer for cheap pickups across the league.",
-    "mikelanta ran five separate transactions in a single week without spending any waiver priority, and none of the new additions have scored yet.",
-    "Pukachu Chews You and Dak to the Future have now each logged bench mistakes in back-to-back weeks, both with real point swings attached.",
     "Silverbacks and Long Live King Henry are both carrying two-week bench mistake streaks, and both are currently outside the playoff picture.",
     "Joe Mama Angie Daddy's bench decisions are becoming a pattern worth watching \u2014 this week it was a 43.8-point Joe Burrow sitting behind Brock Purdy, and the team won anyway.",
     "mikelanta ran five transactions in a single week for the second straight tracked week and still hasn't gotten production from the new additions.",
     "Pukachu Chews You and demon44 both posted bench mistakes with real margins again, continuing a stretch of costly lineup calls across multiple rosters.",
-    "Kirk Cousins remains the standard-bearer for cheap bench-the-field pickups, now sitting at 144.1 cumulative points since being added for no priority cost."
+    "Kirk Cousins remains the standard-bearer for cheap bench-the-field pickups, now sitting at 144.1 cumulative points since being added for no priority cost.",
+    "Joe Mama Angie Daddy has now logged a bench mistake in back-to-back weeks, and this time it didn't matter because Joe Burrow dropped 63.1 points on the way to a 72.55-point win.",
+    "Chuba Bucky Doo has also hit back-to-back bench mistakes, this week sitting Chris Rodriguez's 13.3 points behind a scoreless Chris Godwin \u2014 again in a win, because Kirk Cousins keeps bailing the lineup out.",
+    "Broke Dak Mountain's two-week bench mistake streak continued but barely mattered, since the team won by two-tenths of a point anyway.",
+    "Long Live King Henry added, then dropped, its own defense within the same week in order to chase a quarterback (Jacoby Brissett) who scored 5.65 points in a loss.",
+    "Pukachu Chews You, demon44, mikelanta, and Screaming Eagles are all now carrying two-week bench mistake streaks."
   ],
   "streaks": {
-    "Chuba Bucky Doo": "First bench mistake tracked this stretch, a 5-point miss, in a 42.1-point win.",
-    "mikelanta": "First bench mistake tracked this stretch, a 9.2-point miss, in a loss.",
+    "Chuba Bucky Doo": "Two straight weeks with a real bench mistake, a 13.3-point miss, in a 26.5-point win.",
+    "mikelanta": "Two straight weeks with a real bench mistake, a 9.5-point miss, in a 72.55-point loss.",
     "Meredith's Fan Club": "1-1, lost by nearly 32 with a scoreless Puka Nacua in the lineup",
-    "Screaming Eagles": "First bench mistake tracked this stretch, a 5.1-point miss, in a 42.1-point loss.",
-    "Broke Dak Mountain": "First bench mistake tracked this stretch, a 2.5-point miss, inside a 41.15-point win.",
-    "Long Live King Henry ": "First bench mistake tracked this stretch, a 15.4-point miss, inside a 39.3-point win.",
-    "Waffle House": "No bench mistake this week.",
-    "Pukachu Chews You": "First bench mistake tracked this stretch, a 14.2-point miss, in a 9.5-point loss.",
-    "Dak to the Future": "First bench mistake tracked this stretch, a 6.2-point miss, inside a 48.3-point win.",
-    "Joe Mama Angie Daddy": "First bench mistake tracked this stretch, a 23.9-point miss, in a win.",
-    "demon44": "First bench mistake tracked this stretch, a 14.3-point miss, in a 39.3-point loss.",
-    "Silverbacks": "First bench mistake tracked this stretch, a 13.35-point miss, in a loss.",
-    "Meredith\u2019s Fan Club": "Two straight weeks with a real bench mistake, this time sitting a 36.1-point C.J. Stroud in a loss."
+    "Screaming Eagles": "Two straight weeks with a real bench mistake, a 3.9-point miss, in a win.",
+    "Broke Dak Mountain": "Two straight weeks with a real bench mistake, an 8.9-point miss, inside a 0.2-point win.",
+    "Long Live King Henry ": "Two straight weeks with a real bench mistake, a 9.15-point miss, in a loss.",
+    "Waffle House": "First bench mistake of this stretch, a 0.5-point miss, in a loss.",
+    "Pukachu Chews You": "Two straight weeks with a real bench mistake, an 11.3-point miss, in a win.",
+    "Dak to the Future": "No bench mistake this week.",
+    "Joe Mama Angie Daddy": "Two straight weeks with a real bench mistake, this time a 4.4-point miss, in a 72.55-point win.",
+    "demon44": "Two straight weeks with a real bench mistake, a 0.6-point miss, in a loss.",
+    "Silverbacks": "No bench mistake this week.",
+    "Meredith\u2019s Fan Club": "First bench mistake of this stretch, a 6.8-point miss, in a 0.2-point loss."
   },
   "notable_quotes": [],
   "season_awards_tracker": {
@@ -38,177 +38,6 @@
   },
   "transaction_tracking": [
     {
-      "week_added": 3,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Terrance Ferguson",
-      "player_added_id": "12487",
-      "used_waiver_priority": false,
-      "waiver_priority_at_add": 8,
-      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 1.4,
-      "weeks_tracked": 5,
-      "weeks_counted": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
-    },
-    {
-      "week_added": 3,
-      "roster_id": 6,
-      "team_name": "Long Live King Henry ",
-      "player_added": "Keaton Mitchell",
-      "player_added_id": "9511",
-      "used_waiver_priority": false,
-      "waiver_priority_at_add": 3,
-      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 26.4,
-      "weeks_tracked": 5,
-      "weeks_counted": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
-    },
-    {
-      "week_added": 3,
-      "roster_id": 9,
-      "team_name": "mikelanta",
-      "player_added": "New York Giants",
-      "player_added_id": "NYG",
-      "used_waiver_priority": false,
-      "waiver_priority_at_add": 12,
-      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 11.0,
-      "weeks_tracked": 5,
-      "weeks_counted": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
-    },
-    {
-      "week_added": 3,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Pittsburgh Steelers",
-      "player_added_id": "PIT",
-      "used_waiver_priority": false,
-      "waiver_priority_at_add": 8,
-      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 41.0,
-      "weeks_tracked": 5,
-      "weeks_counted": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
-    },
-    {
-      "week_added": 3,
-      "roster_id": 11,
-      "team_name": "demon44",
-      "player_added": "Cincinnati Bengals",
-      "player_added_id": "CIN",
-      "used_waiver_priority": true,
-      "waiver_priority_at_add": 7,
-      "priority_cost_description": "spent a mid-tier priority slot (#7 of 12)",
-      "cumulative_points_since_add": 20.0,
-      "weeks_tracked": 5,
-      "weeks_counted": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
-    },
-    {
-      "week_added": 3,
-      "roster_id": 1,
-      "team_name": "Chuba Bucky Doo",
-      "player_added": "Kirk Cousins",
-      "player_added_id": "1166",
-      "used_waiver_priority": false,
-      "waiver_priority_at_add": 10,
-      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 144.1,
-      "weeks_tracked": 5,
-      "weeks_counted": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
-    },
-    {
-      "week_added": 3,
-      "roster_id": 2,
-      "team_name": "Joe Mama Angie Daddy",
-      "player_added": "Rashod Bateman",
-      "player_added_id": "7571",
-      "used_waiver_priority": false,
-      "waiver_priority_at_add": 9,
-      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 4.7,
-      "weeks_tracked": 5,
-      "weeks_counted": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
-    },
-    {
-      "week_added": 3,
-      "roster_id": 10,
-      "team_name": "Pukachu Chews You",
-      "player_added": "Emanuel Wilson",
-      "player_added_id": "11435",
-      "used_waiver_priority": false,
-      "waiver_priority_at_add": 8,
-      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 66.3,
-      "weeks_tracked": 5,
-      "weeks_counted": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
-    },
-    {
-      "week_added": 3,
-      "roster_id": 8,
-      "team_name": "Dak to the Future",
-      "player_added": "New Orleans Saints",
-      "player_added_id": "NO",
-      "used_waiver_priority": false,
-      "waiver_priority_at_add": 2,
-      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 5,
-      "weeks_counted": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
-    },
-    {
       "week_added": 4,
       "roster_id": 5,
       "team_name": "Silverbacks",
@@ -217,13 +46,14 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 103.64999999999999,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 106.99999999999999,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -235,13 +65,14 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 12.200000000000001,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 13.700000000000001,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -253,13 +84,14 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 5.7,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 7.800000000000001,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -271,13 +103,14 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 9,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 25.2,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 38.9,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -290,12 +123,13 @@
       "waiver_priority_at_add": 9,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -308,12 +142,13 @@
       "waiver_priority_at_add": 12,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.7,
-      "weeks_tracked": 4,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -326,12 +161,13 @@
       "waiver_priority_at_add": 9,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 15.500000000000002,
-      "weeks_tracked": 4,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -344,12 +180,13 @@
       "waiver_priority_at_add": 8,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 12.0,
-      "weeks_tracked": 4,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -362,12 +199,13 @@
       "waiver_priority_at_add": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 4,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -379,13 +217,14 @@
       "used_waiver_priority": true,
       "waiver_priority_at_add": 12,
       "priority_cost_description": "was already near the back of the priority order (#12 of 12) \u2014 burning it cost next to nothing",
-      "cumulative_points_since_add": 73.45,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 89.9,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -397,13 +236,14 @@
       "used_waiver_priority": true,
       "waiver_priority_at_add": 3,
       "priority_cost_description": "spent a premium priority slot (was #3 of 12) \u2014 a real, costly bet",
-      "cumulative_points_since_add": 9.5,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 17.2,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -416,12 +256,13 @@
       "waiver_priority_at_add": 11,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.9,
-      "weeks_tracked": 4,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -433,13 +274,14 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 7,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 3.8000000000000003,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 11.3,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -451,13 +293,14 @@
       "used_waiver_priority": true,
       "waiver_priority_at_add": 9,
       "priority_cost_description": "spent a mid-tier priority slot (#9 of 12)",
-      "cumulative_points_since_add": 26.7,
-      "weeks_tracked": 4,
+      "cumulative_points_since_add": 40.7,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -470,12 +313,13 @@
       "waiver_priority_at_add": 8,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 5.1,
-      "weeks_tracked": 4,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -488,12 +332,13 @@
       "waiver_priority_at_add": 8,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 1.6,
-      "weeks_tracked": 4,
+      "weeks_tracked": 5,
       "weeks_counted": [
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -505,12 +350,13 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 9,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 20.0,
-      "weeks_tracked": 3,
+      "cumulative_points_since_add": 32.0,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -522,12 +368,13 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 1,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 14.1,
-      "weeks_tracked": 3,
+      "cumulative_points_since_add": 27.6,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -540,11 +387,12 @@
       "waiver_priority_at_add": 1,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 51.0,
-      "weeks_tracked": 3,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -557,11 +405,12 @@
       "waiver_priority_at_add": 2,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 11.0,
-      "weeks_tracked": 3,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -573,12 +422,13 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 9,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 79.10000000000001,
-      "weeks_tracked": 3,
+      "cumulative_points_since_add": 86.7,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -591,11 +441,12 @@
       "waiver_priority_at_add": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 1.2,
-      "weeks_tracked": 3,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -607,12 +458,13 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 7,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 7.0,
-      "weeks_tracked": 3,
+      "cumulative_points_since_add": 14.0,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -624,12 +476,13 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 12,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 32.0,
-      "weeks_tracked": 3,
+      "cumulative_points_since_add": 36.0,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -642,11 +495,12 @@
       "waiver_priority_at_add": 5,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 2.2,
-      "weeks_tracked": 3,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -658,12 +512,13 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 5,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 31.0,
-      "weeks_tracked": 3,
+      "cumulative_points_since_add": 36.0,
+      "weeks_tracked": 4,
       "weeks_counted": [
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -676,10 +531,11 @@
       "waiver_priority_at_add": 3,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.2,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -692,10 +548,11 @@
       "waiver_priority_at_add": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 18.05,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -708,10 +565,11 @@
       "waiver_priority_at_add": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -724,10 +582,11 @@
       "waiver_priority_at_add": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 46.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -740,10 +599,11 @@
       "waiver_priority_at_add": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -756,10 +616,11 @@
       "waiver_priority_at_add": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -772,10 +633,11 @@
       "waiver_priority_at_add": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 4.6,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -788,10 +650,11 @@
       "waiver_priority_at_add": 10,
       "priority_cost_description": "was already near the back of the priority order (#10 of 12) \u2014 burning it cost next to nothing",
       "cumulative_points_since_add": 0.4,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -803,11 +666,12 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 8,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 5.5,
-      "weeks_tracked": 2,
+      "cumulative_points_since_add": 9.5,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -820,10 +684,11 @@
       "waiver_priority_at_add": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 14.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -836,10 +701,11 @@
       "waiver_priority_at_add": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 8.0,
-      "weeks_tracked": 2,
+      "weeks_tracked": 3,
       "weeks_counted": [
         6,
-        7
+        7,
+        8
       ]
     },
     {
@@ -851,10 +717,11 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 5,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 3.3,
-      "weeks_tracked": 1,
+      "cumulative_points_since_add": 13.399999999999999,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -867,9 +734,10 @@
       "waiver_priority_at_add": 5,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 11.4,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -882,9 +750,10 @@
       "waiver_priority_at_add": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 4.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -897,9 +766,10 @@
       "waiver_priority_at_add": 3,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 9.2,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -911,10 +781,11 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 9,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 6.0,
-      "weeks_tracked": 1,
+      "cumulative_points_since_add": 13.0,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -927,9 +798,10 @@
       "waiver_priority_at_add": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -942,9 +814,10 @@
       "waiver_priority_at_add": 4,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -957,9 +830,10 @@
       "waiver_priority_at_add": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -971,10 +845,11 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 1,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": -2.0,
-      "weeks_tracked": 1,
+      "cumulative_points_since_add": 5.0,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -987,9 +862,10 @@
       "waiver_priority_at_add": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -1002,9 +878,10 @@
       "waiver_priority_at_add": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.0,
-      "weeks_tracked": 1,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -1016,10 +893,11 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 11.0,
-      "weeks_tracked": 1,
+      "cumulative_points_since_add": 15.0,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -1031,10 +909,11 @@
       "used_waiver_priority": false,
       "waiver_priority_at_add": 1,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
-      "cumulative_points_since_add": 2.8,
-      "weeks_tracked": 1,
+      "cumulative_points_since_add": 14.100000000000001,
+      "weeks_tracked": 2,
       "weeks_counted": [
-        7
+        7,
+        8
       ]
     },
     {
@@ -1047,9 +926,160 @@
       "waiver_priority_at_add": 1,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "cumulative_points_since_add": 0.7,
+      "weeks_tracked": 2,
+      "weeks_counted": [
+        7,
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 6,
+      "team_name": "Long Live King Henry ",
+      "player_added": "Washington Commanders",
+      "player_added_id": "WAS",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 7,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 0.0,
       "weeks_tracked": 1,
       "weeks_counted": [
-        7
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 5,
+      "team_name": "Silverbacks",
+      "player_added": "Kendrick Bourne",
+      "player_added_id": "4454",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 12,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 3.4,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 2,
+      "team_name": "Joe Mama Angie Daddy",
+      "player_added": "Tyler Goodson",
+      "player_added_id": "8207",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 3,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 4.3,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 8,
+      "team_name": "Dak to the Future",
+      "player_added": "T.J. Hockenson",
+      "player_added_id": "5844",
+      "used_waiver_priority": true,
+      "waiver_priority_at_add": 6,
+      "priority_cost_description": "spent a mid-tier priority slot (#6 of 12)",
+      "cumulative_points_since_add": 14.8,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 11,
+      "team_name": "demon44",
+      "player_added": "Antonio Williams",
+      "player_added_id": "13301",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 9,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 7.9,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 7,
+      "team_name": "Meredith\u2019s Fan Club",
+      "player_added": "Ted Hurst",
+      "player_added_id": "13317",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 5,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 6,
+      "team_name": "Long Live King Henry ",
+      "player_added": "Jacoby Brissett",
+      "player_added_id": "3257",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 7,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 5.65,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 9,
+      "team_name": "mikelanta",
+      "player_added": "Makai Lemon",
+      "player_added_id": "13294",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 11,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 8.7,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 5,
+      "team_name": "Silverbacks",
+      "player_added": "Devin Singletary",
+      "player_added_id": "6130",
+      "used_waiver_priority": true,
+      "waiver_priority_at_add": 12,
+      "priority_cost_description": "was already near the back of the priority order (#12 of 12) \u2014 burning it cost next to nothing",
+      "cumulative_points_since_add": 0.0,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        8
+      ]
+    },
+    {
+      "week_added": 8,
+      "roster_id": 5,
+      "team_name": "Silverbacks",
+      "player_added": "Austin Ekeler",
+      "player_added_id": "4663",
+      "used_waiver_priority": false,
+      "waiver_priority_at_add": 12,
+      "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
+      "cumulative_points_since_add": 5.6,
+      "weeks_tracked": 1,
+      "weeks_counted": [
+        8
       ]
     }
   ],
@@ -1059,133 +1089,133 @@
     "3": 2,
     "4": 1,
     "5": 12,
-    "6": 7,
+    "6": 6,
     "7": 5,
-    "8": 6,
-    "9": 11,
-    "10": 10,
+    "8": 11,
+    "9": 10,
+    "10": 8,
     "11": 9,
-    "12": 8
+    "12": 7
   },
   "bench_mistake_streaks": {
     "Joe Mama Angie Daddy": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "consecutive_weeks": 2,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Joe Burrow",
-        "benched_points": 43.8,
-        "started_instead": "Brock Purdy",
-        "started_points": 19.9,
-        "margin": 23.9
+        "benched_player": "Sione Vaki",
+        "benched_points": 7.5,
+        "started_instead": "Parker Washington",
+        "started_points": 3.1,
+        "margin": 4.4
       }
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "consecutive_weeks": 2,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Isaiah Davis",
-        "benched_points": 6.9,
-        "started_instead": "Jauan Jennings",
-        "started_points": 4.4,
-        "margin": 2.5
+        "benched_player": "Khalil Shakir",
+        "benched_points": 8.9,
+        "started_instead": "Emeka Egbuka",
+        "started_points": 0,
+        "margin": 8.9
       }
     },
     "Waffle House": {
-      "consecutive_weeks": 0,
-      "last_week_counted": 7,
-      "last_mistake": null
-    },
-    "Silverbacks": {
       "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Michael Penix",
-        "benched_points": 31.55,
-        "started_instead": "Aaron Rodgers",
-        "started_points": 18.2,
-        "margin": 13.35
+        "benched_player": "Quentin Johnston",
+        "benched_points": 5.7,
+        "started_instead": "Dallas Goedert",
+        "started_points": 5.2,
+        "margin": 0.5
       }
     },
+    "Silverbacks": {
+      "consecutive_weeks": 0,
+      "last_week_counted": 8,
+      "last_mistake": null
+    },
     "Long Live King Henry ": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "consecutive_weeks": 2,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Cam Skattebo",
-        "benched_points": 19.6,
-        "started_instead": "Denzel Boston",
-        "started_points": 4.2,
-        "margin": 15.4
+        "benched_player": "Jared Goff",
+        "benched_points": 14.8,
+        "started_instead": "Jacoby Brissett",
+        "started_points": 5.65,
+        "margin": 9.15
       }
     },
     "Meredith\u2019s Fan Club": {
-      "consecutive_weeks": 0,
-      "last_week_counted": 7,
-      "last_mistake": null
-    },
-    "Dak to the Future": {
       "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Carnell Tate",
-        "benched_points": 7.4,
-        "started_instead": "Juwan Johnson",
-        "started_points": 1.2,
-        "margin": 6.2
+        "benched_player": "Oronde Gadsden",
+        "benched_points": 7.7,
+        "started_instead": "DK Metcalf",
+        "started_points": 0.9,
+        "margin": 6.8
       }
     },
+    "Dak to the Future": {
+      "consecutive_weeks": 0,
+      "last_week_counted": 8,
+      "last_mistake": null
+    },
     "mikelanta": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "consecutive_weeks": 2,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Hunter Henry",
-        "benched_points": 10.6,
-        "started_instead": "Jalen Coker",
-        "started_points": 1.4,
-        "margin": 9.2
+        "benched_player": "Kenny Gainwell",
+        "benched_points": 14.0,
+        "started_instead": "Hunter Henry",
+        "started_points": 4.5,
+        "margin": 9.5
       }
     },
     "Pukachu Chews You": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "consecutive_weeks": 2,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Omar Cooper",
-        "benched_points": 21.0,
-        "started_instead": "Jordan Mason",
-        "started_points": 6.8,
-        "margin": 14.2
+        "benched_player": "Rico Dowdle",
+        "benched_points": 12.6,
+        "started_instead": "Drake London",
+        "started_points": 1.3,
+        "margin": 11.3
       }
     },
     "demon44": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "consecutive_weeks": 2,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Blake Corum",
-        "benched_points": 17.6,
-        "started_instead": "TreVeyon Henderson",
-        "started_points": 3.3,
-        "margin": 14.3
+        "benched_player": "Chig Okonkwo",
+        "benched_points": 2.2,
+        "started_instead": "Kyle Pitts",
+        "started_points": 1.6,
+        "margin": 0.6
       }
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "consecutive_weeks": 2,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Marvin Harrison",
-        "benched_points": 8.1,
-        "started_instead": "Pat Freiermuth",
-        "started_points": 3.0,
-        "margin": 5.1
+        "benched_player": "Courtland Sutton",
+        "benched_points": 7.3,
+        "started_instead": "Jakobi Meyers",
+        "started_points": 3.4,
+        "margin": 3.9
       }
     },
     "Chuba Bucky Doo": {
-      "consecutive_weeks": 1,
-      "last_week_counted": 7,
+      "consecutive_weeks": 2,
+      "last_week_counted": 8,
       "last_mistake": {
-        "benched_player": "Kaelon Black",
-        "benched_points": 11.4,
-        "started_instead": "Justin Jefferson",
-        "started_points": 6.4,
-        "margin": 5.0
+        "benched_player": "Chris Rodriguez",
+        "benched_points": 13.3,
+        "started_instead": "Chris Godwin",
+        "started_points": 0,
+        "margin": 13.3
       }
     }
   }
