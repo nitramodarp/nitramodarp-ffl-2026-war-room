@@ -3479,6 +3479,26 @@
     "started": true,
     "team_name": "Joe Mama Angie Daddy"
   },
+  "game_highlights": {
+    "closest_game": {
+      "winner": "Broke Dak Mountain",
+      "loser": "Meredith\u2019s Fan Club",
+      "winner_points": 119.25,
+      "loser_points": 119.05,
+      "margin": 0.2,
+      "is_tie": false
+    },
+    "biggest_blowout": {
+      "winner": "Joe Mama Angie Daddy",
+      "loser": "mikelanta",
+      "winner_points": 160.2,
+      "loser_points": 87.65,
+      "margin": 72.55,
+      "is_tie": false
+    },
+    "has_close_game": true,
+    "close_game_max_margin": 10.0
+  },
   "bench_mistake_streaks": {
     "Joe Mama Angie Daddy": {
       "consecutive_weeks": 0,
@@ -3563,7 +3583,7 @@
       "position": "DEF",
       "player_dropped": "T.J. Hockenson",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 7,
+      "waiver_priority_before_move": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3617,8 +3637,8 @@
       "position": "TE",
       "player_dropped": "Baltimore Ravens",
       "used_waiver_priority": true,
-      "waiver_priority_before_move": 6,
-      "priority_cost_description": "spent a mid-tier priority slot (#6 of 12)",
+      "waiver_priority_before_move": 11,
+      "priority_cost_description": "was already near the back of the priority order (#11 of 12) \u2014 burning it cost next to nothing",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
       "move_number_for_team": 1,
@@ -3671,7 +3691,7 @@
       "position": "QB",
       "player_dropped": "Washington Commanders",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 7,
+      "waiver_priority_before_move": 6,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
@@ -3689,7 +3709,7 @@
       "position": "WR",
       "player_dropped": "Devin Singletary",
       "used_waiver_priority": false,
-      "waiver_priority_before_move": 11,
+      "waiver_priority_before_move": 10,
       "priority_cost_description": "no priority spent \u2014 an uncontested free-agent pickup, nobody else wanted him",
       "possible_handcuff_of": null,
       "confirmed_homer_transaction": false,
