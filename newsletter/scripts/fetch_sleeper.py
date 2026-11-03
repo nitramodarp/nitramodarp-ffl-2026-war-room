@@ -18,6 +18,9 @@ from config import LEAGUE_ID, OWNER_MAP, PATHS, COMMISSIONER_OWNER_USERNAME, OWN
 BASE = "https://api.sleeper.app/v1"
 PLAYERS_CACHE_PATH = "newsletter/state/players_cache.json"
 PLAYERS_CACHE_MAX_AGE_DAYS = 7
+# A benched player only counts as a lineup mistake if he beat the starter he
+# could have replaced by at least this many points; smaller swaps are noise.
+BENCH_MISTAKE_MIN_MARGIN = 10.0
 TRANSACTION_TRACKING_WINDOW_WEEKS = 4  # how many weeks to keep tallying an add's output
 
 
@@ -302,7 +305,7 @@ def enrich_matchup_players(matchups, players_db):
             bench_at_pos = [p for p in bench_entries if p["position"] == pos]
             if starter_at_pos and bench_at_pos:
                 best_bench = max(bench_at_pos, key=lambda p: p["points"])
-                if best_bench["points"] > starter_at_pos["points"]:
+                if best_bench["points"] - starter_at_pos["points"] >= BENCH_MISTAKE_MIN_MARGIN:
                     margin = best_bench["points"] - starter_at_pos["points"]
                     if not bench_mistake or margin > bench_mistake["margin"]:
                         bench_mistake = {
@@ -316,7 +319,7 @@ def enrich_matchup_players(matchups, players_db):
         if starter_flex and bench_flex:
             worst_starter = min(starter_flex, key=lambda p: p["points"])
             best_bench = max(bench_flex, key=lambda p: p["points"])
-            if best_bench["points"] > worst_starter["points"]:
+            if best_bench["points"] - worst_starter["points"] >= BENCH_MISTAKE_MIN_MARGIN:
                 margin = best_bench["points"] - worst_starter["points"]
                 if not bench_mistake or margin > bench_mistake["margin"]:
                     bench_mistake = {
@@ -361,6 +364,13 @@ def update_bench_mistake_streaks(story_state, matchups_recap, week):
         team = m.get("team_name")
         mistake = m.get("bench_mistake")
         existing = streaks.get(team)
+        if existing and existing.get("last_week_counted") == week:
+            # Re-run of a week already counted: never change the count, only
+            # refresh the mistake details (re-running a week must be harmless).
+            if mistake:
+                existing["last_mistake"] = mistake
+                existing["consecutive_weeks"] = max(existing.get("consecutive_weeks", 0), 1)
+            continue
         if mistake:
             if existing and existing.get("last_week_counted") == week - 1:
                 consecutive = existing["consecutive_weeks"] + 1

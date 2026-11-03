@@ -1099,37 +1099,19 @@
   },
   "bench_mistake_streaks": {
     "Joe Mama Angie Daddy": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 0,
       "last_week_counted": 8,
-      "last_mistake": {
-        "benched_player": "Sione Vaki",
-        "benched_points": 7.5,
-        "started_instead": "Parker Washington",
-        "started_points": 3.1,
-        "margin": 4.4
-      }
+      "last_mistake": null
     },
     "Broke Dak Mountain": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 0,
       "last_week_counted": 8,
-      "last_mistake": {
-        "benched_player": "Khalil Shakir",
-        "benched_points": 8.9,
-        "started_instead": "Emeka Egbuka",
-        "started_points": 0,
-        "margin": 8.9
-      }
+      "last_mistake": null
     },
     "Waffle House": {
-      "consecutive_weeks": 1,
+      "consecutive_weeks": 0,
       "last_week_counted": 8,
-      "last_mistake": {
-        "benched_player": "Quentin Johnston",
-        "benched_points": 5.7,
-        "started_instead": "Dallas Goedert",
-        "started_points": 5.2,
-        "margin": 0.5
-      }
+      "last_mistake": null
     },
     "Silverbacks": {
       "consecutive_weeks": 0,
@@ -1137,26 +1119,14 @@
       "last_mistake": null
     },
     "Long Live King Henry ": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 0,
       "last_week_counted": 8,
-      "last_mistake": {
-        "benched_player": "Jared Goff",
-        "benched_points": 14.8,
-        "started_instead": "Jacoby Brissett",
-        "started_points": 5.65,
-        "margin": 9.15
-      }
+      "last_mistake": null
     },
     "Meredith\u2019s Fan Club": {
-      "consecutive_weeks": 1,
+      "consecutive_weeks": 0,
       "last_week_counted": 8,
-      "last_mistake": {
-        "benched_player": "Oronde Gadsden",
-        "benched_points": 7.7,
-        "started_instead": "DK Metcalf",
-        "started_points": 0.9,
-        "margin": 6.8
-      }
+      "last_mistake": null
     },
     "Dak to the Future": {
       "consecutive_weeks": 0,
@@ -1164,15 +1134,9 @@
       "last_mistake": null
     },
     "mikelanta": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 0,
       "last_week_counted": 8,
-      "last_mistake": {
-        "benched_player": "Kenny Gainwell",
-        "benched_points": 14.0,
-        "started_instead": "Hunter Henry",
-        "started_points": 4.5,
-        "margin": 9.5
-      }
+      "last_mistake": null
     },
     "Pukachu Chews You": {
       "consecutive_weeks": 2,
@@ -1186,29 +1150,17 @@
       }
     },
     "demon44": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 0,
       "last_week_counted": 8,
-      "last_mistake": {
-        "benched_player": "Chig Okonkwo",
-        "benched_points": 2.2,
-        "started_instead": "Kyle Pitts",
-        "started_points": 1.6,
-        "margin": 0.6
-      }
+      "last_mistake": null
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 0,
       "last_week_counted": 8,
-      "last_mistake": {
-        "benched_player": "Courtland Sutton",
-        "benched_points": 7.3,
-        "started_instead": "Jakobi Meyers",
-        "started_points": 3.4,
-        "margin": 3.9
-      }
+      "last_mistake": null
     },
     "Chuba Bucky Doo": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 1,
       "last_week_counted": 8,
       "last_mistake": {
         "benched_player": "Chris Rodriguez",
