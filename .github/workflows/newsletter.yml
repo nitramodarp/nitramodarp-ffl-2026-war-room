@@ -1,12 +1,8 @@
 name: FFL Weekly Newsletter
 
 on:
-  schedule:
-    # 12:00 UTC = 8am EDT / 7am EST. Cron is always UTC — GitHub has no
-    # native DST awareness, so this drifts an hour during EST months
-    # (early Nov through early Mar). Not a big deal for a Tuesday-morning
-    # job; adjust manually if it starts landing at an annoying hour.
-    - cron: '0 12 * * 2'
+  # Manual only: run it from the Actions tab (Run workflow) on Tuesday mornings.
+  # The cron schedule was removed because GitHub delayed scheduled runs by hours.
   workflow_dispatch: {}  # lets you trigger it manually from the Actions tab for testing
 
 permissions:
