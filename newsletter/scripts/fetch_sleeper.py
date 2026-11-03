@@ -197,7 +197,17 @@ def determine_weeks(nfl_state):
     return max(current - 1, 1), current
 
 
-FLEX_ELIGIBLE = {"RB", "WR", "TE"}
+# Which player positions may fill each Sleeper roster slot. The league's own
+# roster_positions list decides which slots exist (QB, RB, WR, TE, FLEX,
+# DEF...) — nothing about the lineup is assumed here.
+SLOT_ELIGIBILITY = {
+    "QB": {"QB"}, "RB": {"RB"}, "WR": {"WR"}, "TE": {"TE"}, "K": {"K"}, "DEF": {"DEF"},
+    "FLEX": {"RB", "WR", "TE"},
+    "WRRB_FLEX": {"RB", "WR"},
+    "REC_FLEX": {"WR", "TE"},
+    "SUPER_FLEX": {"QB", "RB", "WR", "TE"},
+}
+
 
 
 def attach_opponent_names(matchups):
@@ -261,27 +271,30 @@ def compute_matchup_results(matchups):
     return matchups
 
 
-def enrich_matchup_players(matchups, players_db):
+def enrich_matchup_players(matchups, players_db, roster_positions, rosters_by_id):
     """Resolve raw player_id -> name/position for every rostered player in
     each matchup entry (Sleeper's players_points is only {player_id:
-    points}, no names at all), then precompute the two facts the
-    newsletter actually needs names for: this roster's single top scorer,
-    and any bench player who outscored a starter they could plausibly have
-    swapped for. Without this the model could only ever write vague lines
-    like "by 47.95 from one starter" — it genuinely had no name to use.
+    points}, no names at all), then precompute the facts the newsletter
+    needs names for: each roster's single top scorer, and the single
+    biggest real lineup mistake (a bench player who outscored the starter
+    in a slot he was eligible for, by at least BENCH_MISTAKE_MIN_MARGIN points).
 
-    The bench-mistake check is a reasonable approximation, not a full
-    optimal-lineup solver: QB and DEF have exactly one dedicated slot, so
-    a bench player there outscoring the starter is a clean, certain
-    mistake. RB/WR/TE share 2 dedicated RB, 2 dedicated WR, 1 dedicated
-    TE, and 2 position-agnostic FLEX slots — comparing the best bench
-    RB/WR/TE against the worst starting RB/WR/TE usually, but not always,
-    reflects a real available swap (a rare edge case: needing to keep 2
-    dedicated RBs could occasionally block it). Documented here rather
-    than silently assumed perfect."""
+    The bench-mistake check is exact, not an approximation: Sleeper's
+    `starters` array lines up one-to-one with the league's non-bench
+    roster_positions, so every starter's actual slot is known. A bench
+    player is a mistake candidate for a slot if his position is allowed
+    in that slot and he outscored whoever started there. Players on IR or
+    the taxi squad can't be started, so they're never candidates. If the
+    slot list and the starters array don't line up, no mistake is claimed
+    for that matchup rather than guessing."""
+    slots = [p for p in (roster_positions or []) if p != "BN"]
+    mismatches = 0
     for m in matchups:
         players_points = m.get("players_points") or {}
-        starters = set(m.get("starters") or [])
+        starters_list = list(m.get("starters") or [])
+        starters = set(starters_list)
+        roster = rosters_by_id.get(m.get("roster_id"), {})
+        unavailable = set(map(str, (roster.get("reserve") or []) + (roster.get("taxi") or [])))
 
         resolved = []
         for pid, pts in players_points.items():
@@ -294,43 +307,36 @@ def enrich_matchup_players(matchups, players_db):
                 "points": pts or 0,
                 "started": pid in starters,
             })
-
-        starter_entries = [p for p in resolved if p["started"]]
-        bench_entries = [p for p in resolved if not p["started"]]
+        by_id = {p["player_id"]: p for p in resolved}
         top_scorer = max(resolved, key=lambda p: p["points"], default=None)
 
         bench_mistake = None
-        for pos in ("QB", "DEF"):
-            starter_at_pos = next((p for p in starter_entries if p["position"] == pos), None)
-            bench_at_pos = [p for p in bench_entries if p["position"] == pos]
-            if starter_at_pos and bench_at_pos:
-                best_bench = max(bench_at_pos, key=lambda p: p["points"])
-                if best_bench["points"] - starter_at_pos["points"] >= BENCH_MISTAKE_MIN_MARGIN:
-                    margin = best_bench["points"] - starter_at_pos["points"]
-                    if not bench_mistake or margin > bench_mistake["margin"]:
-                        bench_mistake = {
-                            "benched_player": best_bench["name"], "benched_points": best_bench["points"],
-                            "started_instead": starter_at_pos["name"], "started_points": starter_at_pos["points"],
-                            "margin": round(margin, 2),
-                        }
-
-        starter_flex = [p for p in starter_entries if p["position"] in FLEX_ELIGIBLE]
-        bench_flex = [p for p in bench_entries if p["position"] in FLEX_ELIGIBLE]
-        if starter_flex and bench_flex:
-            worst_starter = min(starter_flex, key=lambda p: p["points"])
-            best_bench = max(bench_flex, key=lambda p: p["points"])
-            if best_bench["points"] - worst_starter["points"] >= BENCH_MISTAKE_MIN_MARGIN:
-                margin = best_bench["points"] - worst_starter["points"]
-                if not bench_mistake or margin > bench_mistake["margin"]:
-                    bench_mistake = {
-                        "benched_player": best_bench["name"], "benched_points": best_bench["points"],
-                        "started_instead": worst_starter["name"], "started_points": worst_starter["points"],
-                        "margin": round(margin, 2),
-                    }
+        if len(starters_list) == len(slots):
+            bench_entries = [p for p in resolved
+                             if not p["started"] and str(p["player_id"]) not in unavailable]
+            for slot, pid in zip(slots, starters_list):
+                eligible = SLOT_ELIGIBILITY.get(slot)
+                starter = by_id.get(pid)
+                if not eligible or not starter:
+                    continue  # unknown slot type or empty slot — make no claim
+                for b in bench_entries:
+                    if b["position"] in eligible and b["points"] - starter["points"] >= BENCH_MISTAKE_MIN_MARGIN:
+                        gap = b["points"] - starter["points"]
+                        if not bench_mistake or gap > bench_mistake["margin"]:
+                            bench_mistake = {
+                                "benched_player": b["name"], "benched_points": b["points"],
+                                "started_instead": starter["name"], "started_points": starter["points"],
+                                "margin": round(gap, 2),
+                            }
+        else:
+            mismatches += 1
 
         m["players_resolved"] = resolved
         m["top_scorer_on_roster"] = top_scorer
         m["bench_mistake"] = bench_mistake  # null if no valid swap found
+    if mismatches:
+        print(f"WARNING: {mismatches} matchup(s) had a starters list that doesn't match the "
+              f"league's {len(slots)} starting slots — no bench mistake claimed for those.")
     return matchups
 
 
@@ -627,6 +633,9 @@ def main():
     roster_names = roster_id_to_team_info(rosters, users)
     players_db = get_players_cached()
     league = get_league()
+    roster_positions = league.get("roster_positions") or []
+    print(f"League lineup slots: {[p for p in roster_positions if p != 'BN']} "
+          f"(bench {roster_positions.count('BN')})")
     division_names = get_division_names(league)
 
     # Current waiver priority order — deterministic, no LLM involved. This
@@ -668,7 +677,7 @@ def main():
 
     annotate(matchups_recap)
     compute_matchup_results(matchups_recap)  # adds result (W/L/T), opponent_team_name, opponent_points, margin
-    enrich_matchup_players(matchups_recap, players_db)  # adds named players_resolved/top_scorer_on_roster/bench_mistake
+    enrich_matchup_players(matchups_recap, players_db, roster_positions, rosters_by_id)  # adds named players_resolved/top_scorer_on_roster/bench_mistake
     bench_mistake_streaks = update_bench_mistake_streaks(story_state, matchups_recap, week_to_recap)  # needs bench_mistake — must run AFTER enrich_matchup_players
     league_top_scorer = compute_league_top_scorer(matchups_recap)
     annotate(matchups_preview)  # preview has no scores yet — names not useful there, skip enrichment
