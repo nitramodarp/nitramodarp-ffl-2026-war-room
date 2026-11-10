@@ -641,35 +641,6 @@
   }
   .curve-table tr:last-child td { border-bottom: none; }
 
-  .trade-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-  @media (max-width: 600px) { .trade-row { grid-template-columns: 1fr; } }
-  .trade-side label {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--fg-mute);
-    margin-bottom: 6px;
-  }
-  .trade-side input {
-    width: 100%;
-    padding: 8px 10px;
-    background: var(--bg-elev-2);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    font-family: var(--font-mono);
-    font-size: 13px;
-  }
-  .trade-side input:focus { border-color: var(--accent-dim); }
-  #tradeResult {
-    padding: 12px;
-    background: var(--bg-elev-2);
-    border-radius: var(--radius);
-    font-family: var(--font-mono);
     font-size: 13px;
   }
   #mySlotInput {
@@ -1033,6 +1004,38 @@
     /* Hide less-critical columns on narrow screens */
     .col-adp-hide { display: none; }
   }
+
+  /* ============================================================
+     Trade tab
+     ============================================================ */
+  #tradeHost { padding: 0 var(--hpad) 40px; }
+  .tc-status { font-size: 11.5px; color: var(--fg-mute); line-height: 1.5; padding: 12px 0; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  .tc-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .tc-label { font-family: var(--font-mono); font-size: 11px; color: var(--fg-mute); display: flex; align-items: center; gap: 8px; }
+  .tc-label select { padding: 6px 8px; background: var(--bg-elev-2); border: 1px solid var(--line); border-radius: var(--radius); color: var(--fg); font-size: 13px; min-width: 200px; }
+  .tc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  @media (max-width: 900px) { .tc-cols { grid-template-columns: 1fr; } }
+  .tc-col { background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .tc-coltitle { font-family: var(--font-display); font-weight: 700; font-size: 13px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .tc-row { display: grid; grid-template-columns: 22px 1fr 64px 56px 56px 52px; gap: 6px; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 12.5px; cursor: pointer; }
+  .tc-row:last-child { border-bottom: none; }
+  .tc-row:hover:not(.tc-head) { background: var(--bg-elev-2); }
+  .tc-head { cursor: default; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fg-dim); }
+  .tc-num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  .tc-pos { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-mute); }
+  .tc-badge { font-family: var(--font-mono); font-size: 9px; border: 1px solid var(--line-strong); color: var(--fg-mute); border-radius: 3px; padding: 0 4px; }
+  .tc-badge.tc-warn { color: var(--warn); border-color: var(--warn); }
+  .tc-badge.tc-bad { color: var(--down); border-color: var(--down); }
+  .tc-lag { color: var(--warn); font-size: 9px; }
+  .tc-result { background: var(--bg-elev); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+  .tc-result.tc-idle { color: var(--fg-dim); font-size: 12px; }
+  .tc-verdict { font-family: var(--font-display); font-weight: 700; font-size: 26px; letter-spacing: 0.02em; }
+  .tc-delta { font-family: var(--font-mono); font-size: 12px; margin-top: 4px; }
+  .tc-notes { margin: 10px 0 0 18px; font-size: 12px; color: var(--warn); line-height: 1.5; }
+  .tc-weeks { margin-top: 8px; border-collapse: collapse; font-family: var(--font-mono); font-size: 11.5px; }
+  .tc-weeks th, .tc-weeks td { padding: 3px 14px 3px 0; text-align: left; }
+  .tc-weeks th { color: var(--fg-dim); font-weight: 500; }
+  .tc-foot { font-size: 11px; color: var(--fg-dim); line-height: 1.5; margin-top: 14px; }
 </style>
 </head>
 <body>
@@ -1056,10 +1059,12 @@
 <nav class="tabs" id="tabs">
   <button class="tab active" data-tab="board">Board</button>
   <!-- Pick Values tab hidden — not trading picks this league, no need to
-       track pick-value curves. Underlying code (buildPickCurve, renderPickValues,
-       parsePickList) left in place but unreachable; nothing else depends on it. -->
+       track pick-value curves. Underlying code (buildPickCurve, renderPickValues)
+       left in place but unreachable; nothing else depends on it. The old
+       pick-based Trade Calculator was removed — see the Trade tab. -->
   <button class="tab" data-tab="draft">Live Draft</button>
   <button class="tab" data-tab="waivers">Waivers</button>
+  <button class="tab" data-tab="trade">Trade</button>
   <button class="tab" data-tab="roster">Roster Needs</button>
   <button class="tab" data-tab="trends">Trends</button>
   <button class="tab" data-tab="history">History</button>
@@ -1129,24 +1134,6 @@
       </div>
     </div>
 
-    <div class="pv-card" style="margin-top:14px;">
-      <h4>Trade Calculator</h4>
-      <p style="font-size:12px; color:var(--fg-mute); margin-bottom:12px;">
-        Enter picks as <code>round.slot</code> (e.g. <code>1.06</code>), separated by commas.
-        Curve is a floor — check the Board's tier column before trusting a close call: the last player in a tier is worth more than the curve alone says.
-      </p>
-      <div class="trade-row">
-        <div class="trade-side">
-          <label>You send</label>
-          <input type="text" id="tradeSend" placeholder="e.g. 1.06, 3.06">
-        </div>
-        <div class="trade-side">
-          <label>You receive</label>
-          <input type="text" id="tradeRecv" placeholder="e.g. 2.01">
-        </div>
-      </div>
-      <div id="tradeResult"></div>
-    </div>
   </section>
 
   <section class="tab-panel" id="tab-draft">
@@ -1193,6 +1180,15 @@
       <div class="state">
         <div class="spinner"></div>
         <p style="margin-top:12px">Loading free agents…</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-trade">
+    <div id="tradeHost">
+      <div class="state">
+        <div class="spinner"></div>
+        <p style="margin-top:12px">Loading trade calculator\u2026</p>
       </div>
     </div>
   </section>
@@ -1326,6 +1322,23 @@ const CONFIG = {
   // Importance table) — re-applied to the BLENDED board so live VORP
   // compares like to like, not a live number against a frozen baseline.
   LIVE_VORP_REPLACEMENT_RANK: { QB: 15, RB: 34, WR: 40, TE: 13, DEF: 13 },
+
+  // Trade tab (rest-of-season lineup-delta calculator). Judgment constants,
+  // not measured facts: tune after living with it.
+  TRADE: {
+    LAST_WEEK: 17,               // value horizon. NOT the trade deadline: a player acquired by Wk 14 still scores in the playoffs
+    PLAYOFF_WEIGHT: 1.5,         // multiplier on weeks >= league playoff_week_start (they only count if you qualify; 6 of 12 teams do)
+    FAIR_BAND_PER_WEEK: 0.5,     // |lineup delta| under this many weighted pts/wk reads as a WASH
+    DEF_SD: { pts: 9.5, yds: 80 }, // spread used to turn projected points/yards ALLOWED into expected tier points (approximation)
+    FA_DEPTH: { QB: 1, RB: 4, WR: 4, TE: 3, DEF: 1 }, // free agents per position used to backfill lineup holes
+    OUT_STATUSES: ['Out', 'IR', 'PUP', 'Sus', 'NA', 'COV'], // injury statuses excluded from the FA pool
+    // Undocumented Sleeper endpoints; tried in order until one returns usable data.
+    PROJ_URLS: [
+      'https://api.sleeper.com/projections/nfl/{season}/{week}?season_type=regular&{pos}',
+      'https://api.sleeper.app/projections/nfl/{season}/{week}?season_type=regular&{pos}',
+      'https://api.sleeper.app/v1/projections/nfl/regular/{season}/{week}',
+    ],
+  },
 };
 
 /* ============================================================
@@ -2075,9 +2088,9 @@ function scoreStatLine(statLine, scoringSettings) {
 // { total, games } map. "Games played" is a presence check (the player
 // has ANY recorded stat line that week) rather than a fixed week count,
 // so a bye week correctly doesn't count against them.
-async function aggregateActuals(season, throughWeek, scoringSettings) {
+async function aggregateActuals(season, throughWeek, scoringSettings, fromWeek = 1) {
   const weeks = [];
-  for (let w = 1; w <= throughWeek; w++) weeks.push(w);
+  for (let w = Math.max(1, fromWeek); w <= throughWeek; w++) weeks.push(w);
   const weekly = await Promise.all(weeks.map(w => fetchWeekStatsCached(season, w)));
   const totals = {};
   weekly.forEach(weekData => {
@@ -2134,11 +2147,13 @@ function computeLiveVorp(board, actualsById, waiverIndex) {
 
   const liveVorpByName = {};
   const gamesByName = {};
+  const blendedByName = {}; // full-season-pace points (pre-replacement) — the Trade tab's fallback when the projection feed has no line for a player
   rows.forEach(r => {
     liveVorpByName[r.name] = r.blended - (replacementByPos[r.pos] || 0);
     gamesByName[r.name] = r.games;
+    blendedByName[r.name] = r.blended;
   });
-  return { liveVorpByName, gamesByName, replacementByPos };
+  return { liveVorpByName, gamesByName, replacementByPos, blendedByName };
 }
 
 async function loadLiveVorp(board, waiverIndex) {
@@ -2159,6 +2174,13 @@ async function loadLiveVorp(board, waiverIndex) {
     : {};
 
   const result = computeLiveVorp(board, actualsById, waiverIndex);
+  // Exposed for the Trade tab's display-only context columns (YTD and
+  // last-3-games per-game averages). Past weeks are cached, so the recent
+  // window costs no extra network.
+  result.actualsById = actualsById;
+  result.recentById = throughWeek > 0
+    ? await aggregateActuals(season, throughWeek, scoringSettings, throughWeek - 2)
+    : {};
   result.weeksLoaded = throughWeek;
   result.scoringKeysUsed = Object.keys(scoringSettings).length;
   return result;
@@ -3735,21 +3757,6 @@ function pickLabel(overall, teams = 12) {
   return `${round}.${String(slot).padStart(2, '0')}`;
 }
 
-function parsePickList(str) {
-  // Accepts "1.06, 3.06" or "1.06 3.06" -> [{round, slot, overall, value}]
-  if (!str || !str.trim()) return [];
-  const teams = state.sleeperLeague?.total_rosters || 12;
-  return str.split(/[,\s]+/).filter(Boolean).map(tok => {
-    const m = tok.match(/^(\d+)\.(\d+)$/);
-    if (!m) return null;
-    const round = parseInt(m[1], 10);
-    const slot = parseInt(m[2], 10);
-    const overall = overallPick(round, slot, teams);
-    const value = pickCurve ? (pickCurve.normalized[overall] ?? 0) : 0;
-    return { round, slot, overall, value, label: tok };
-  }).filter(Boolean);
-}
-
 /* ============================================================
    Rendering — Pick Values tab
    ============================================================ */
@@ -3790,33 +3797,6 @@ function renderPickValues() {
       </tbody>
     </table>`;
 
-  renderTradeCalc();
-}
-
-function renderTradeCalc() {
-  const sendStr = document.getElementById('tradeSend').value;
-  const recvStr = document.getElementById('tradeRecv').value;
-  const resultHost = document.getElementById('tradeResult');
-  if (!sendStr.trim() && !recvStr.trim()) {
-    resultHost.innerHTML = `<span style="color:var(--fg-dim)">Enter picks on both sides to evaluate.</span>`;
-    return;
-  }
-  const send = parsePickList(sendStr);
-  const recv = parsePickList(recvStr);
-  const sendTotal = send.reduce((a, p) => a + p.value, 0);
-  const recvTotal = recv.reduce((a, p) => a + p.value, 0);
-  const delta = recvTotal - sendTotal;
-  const deltaColor = delta > 0 ? 'var(--up)' : delta < 0 ? 'var(--down)' : 'var(--fg-mute)';
-  const verdict = Math.abs(delta) < sendTotal * 0.05
-    ? 'Roughly fair'
-    : delta > 0 ? 'Favors you' : 'Favors them';
-
-  resultHost.innerHTML = `
-    <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:center;">
-      <div>You send: <strong>${sendTotal.toFixed(0)}</strong> ${send.length ? '(' + send.map(p=>p.label).join(', ') + ')' : ''}</div>
-      <div>You receive: <strong>${recvTotal.toFixed(0)}</strong> ${recv.length ? '(' + recv.map(p=>p.label).join(', ') + ')' : ''}</div>
-      <div style="color:${deltaColor}; font-weight:600;">Δ ${formatSigned(Math.round(delta))} · ${verdict}</div>
-    </div>`;
 }
 
 /* ============================================================
@@ -6856,6 +6836,636 @@ async function retryBoard() {
 }
 
 /* ============================================================
+   Trade tab — rest-of-season lineup-delta trade calculator
+   ------------------------------------------------------------
+   Value of a roster = the weighted sum, over every remaining week, of
+   the best lineup it can start (1 QB / 2 RB / 2 WR / 1 TE / 2 FLEX /
+   1 DEF), where empty or weak slots are backfilled from the LIVE
+   free-agent pool. A trade is judged by how that number changes for
+   BOTH sides. A surplus bench player therefore moves the needle by ~0,
+   which raw VORP sums can't show.
+
+   "Trade replacement value" here comes from the live FA pool, so it is
+   deliberately NOT comparable to the Waivers tab's Live VORP (that one
+   uses fixed board-rank replacement levels). The UI labels it as such.
+
+   Forward value is purely projection-based (Sleeper's weekly projection
+   feed, scored with the league's OWN scoring_settings). Actual points
+   to date are display-only context. Where the feed has no line for a
+   player, the Live VORP blended pace is used and the row is marked
+   "est". If the feed fails outright the whole tab runs on that fallback
+   and says so loudly. It never shows a zero in place of missing data.
+
+   Horizon runs through Week 17, NOT the trade deadline: the deadline
+   limits when a trade can happen, but a player acquired by Week 14 still
+   scores in the playoffs. Playoff weeks carry CONFIG.TRADE.PLAYOFF_WEIGHT.
+
+   Everything between the PURE markers has no DOM or global-state access
+   (only CONFIG, ROSTER_SLOTS, FLEX_SLOTS, FLEX_ELIGIBLE) so it can be
+   tested in isolation.
+   ============================================================ */
+
+/* TRADE-PURE-START */
+
+// Sleeper scoring keys for DEF tiers look like pts_allow_0, pts_allow_1_6,
+// pts_allow_35p, yds_allow_100_199, yds_allow_550p. Parsed generically so
+// a league-settings tweak is picked up with no code change.
+function tradeParseTiers(scoring, prefix) {
+  const tiers = [];
+  Object.keys(scoring || {}).forEach(k => {
+    if (!k.startsWith(prefix + '_')) return;
+    const m = k.slice(prefix.length + 1).match(/^(\d+)(?:_(\d+)|p)?$/);
+    if (!m) return;
+    const lo = Number(m[1]);
+    const hi = m[2] != null ? Number(m[2]) : (k.endsWith('p') ? Infinity : lo);
+    const pts = Number(scoring[k]);
+    if (isFinite(pts)) tiers.push({ lo, hi, pts });
+  });
+  return tiers.sort((a, b) => a.lo - b.lo);
+}
+
+// A projected "points allowed" of 20.4 is an AVERAGE; DEF scoring is a
+// step function, so scoring the average gives the wrong expected points
+// (a 20.4 projection is really a spread across the 14-20 / 21-27 /
+// 28-34 brackets). This integrates the tier table over a normal
+// distribution around the projected mean. SD values are an approximation
+// (CONFIG.TRADE.DEF_SD), not fitted to this league's data.
+function tradeExpectedTierPoints(mean, sd, tiers, maxVal) {
+  if (!tiers || !tiers.length || !isFinite(mean) || !(sd > 0)) return null;
+  let wsum = 0, psum = 0;
+  for (let x = 0; x <= maxVal; x++) {
+    const z = (x - mean) / sd;
+    const w = Math.exp(-0.5 * z * z);
+    let t = 0;
+    for (const tr of tiers) if (x >= tr.lo && x <= tr.hi) t = tr.pts; // later tier wins a shared boundary
+    wsum += w;
+    psum += w * t;
+  }
+  return wsum > 0 ? psum / wsum : null;
+}
+
+// Scores ONE projected stat line. Returns null (never 0) when the line
+// can't be scored faithfully, so the caller can fall back rather than
+// silently treat "unknown" as "zero".
+function tradeScoreProjectionLine(line, pos, ctx) {
+  if (!line || typeof line !== 'object') return null;
+  let pts = 0;
+  Object.keys(line).forEach(k => {
+    const w = ctx.scoring[k];
+    if (w == null) return;
+    const v = Number(line[k]);
+    if (isFinite(v)) pts += v * w;
+  });
+  if (pos === 'DEF') {
+    const hasTierKeys = Object.keys(line).some(k => /^(pts|yds)_allow_/.test(k));
+    if (!hasTierKeys) {
+      const pa = Number(line.pts_allow), ya = Number(line.yds_allow);
+      if (line.pts_allow == null || line.yds_allow == null || !isFinite(pa) || !isFinite(ya)) return null;
+      const a = tradeExpectedTierPoints(pa, ctx.defSd.pts, ctx.ptsTiers, 70);
+      const b = tradeExpectedTierPoints(ya, ctx.defSd.yds, ctx.ydsTiers, 700);
+      if (a == null || b == null) return null;
+      pts += a + b;
+    }
+  }
+  return pts;
+}
+
+// The projection endpoint's response shape isn't documented. Accept both
+// an array of rows ({player_id, stats:{...}}) and an object keyed by
+// player_id, and return { player_id: statLine }.
+function tradeNormalizeProjectionPayload(payload) {
+  const out = {};
+  if (Array.isArray(payload)) {
+    payload.forEach(r => {
+      if (!r || typeof r !== 'object') return;
+      const pid = String(r.player_id != null ? r.player_id : (r.player && r.player.player_id != null ? r.player.player_id : ''));
+      const stats = (r.stats && typeof r.stats === 'object') ? r.stats : r;
+      if (pid) out[pid] = stats;
+    });
+  } else if (payload && typeof payload === 'object') {
+    Object.keys(payload).forEach(pid => {
+      const v = payload[pid];
+      if (!v || typeof v !== 'object') return;
+      out[pid] = (v.stats && typeof v.stats === 'object') ? v.stats : v;
+    });
+  }
+  return out;
+}
+
+// Cheap plausibility gate on one scored week so a changed/garbled feed is
+// rejected instead of trusted: enough players, and the QB1-QB12 median in
+// a believable range for 7-pt-TD scoring.
+function tradeSanityCheck(scoredByPid, posOf) {
+  const ids = Object.keys(scoredByPid);
+  if (ids.length < 100) return { ok: false, reason: `only ${ids.length} scorable players` };
+  const qbs = ids.filter(id => posOf(id) === 'QB').map(id => scoredByPid[id]).sort((a, b) => b - a).slice(0, 12);
+  if (qbs.length < 8) return { ok: false, reason: `only ${qbs.length} QBs scorable` };
+  const med = qbs[Math.floor(qbs.length / 2)];
+  if (!(med >= 8 && med <= 45)) return { ok: false, reason: `QB1-12 median ${med.toFixed(1)} pts is outside 8-45` };
+  return { ok: true };
+}
+
+// Best lineup for one week. Dedicated slots take the top-N at each
+// position, then the flexes take the best remaining RB/WR/TE. That is
+// optimal for this slot structure (any swap across slots can't improve it).
+// Players with no value that week (ptsFn -> null) and IR players are skipped.
+function tradeBestLineup(players, week, ptsFn) {
+  const byPos = {};
+  players.forEach(p => {
+    if (p.ir) return;
+    const v = ptsFn(p.id, week);
+    if (v == null) return;
+    (byPos[p.pos] = byPos[p.pos] || []).push(v);
+  });
+  Object.keys(byPos).forEach(k => byPos[k].sort((a, b) => b - a));
+  let total = 0;
+  const flexPool = [];
+  Object.keys(ROSTER_SLOTS).forEach(pos => {
+    const arr = byPos[pos] || [];
+    const n = ROSTER_SLOTS[pos];
+    for (let i = 0; i < arr.length; i++) {
+      if (i < n) total += arr[i];
+      else if (FLEX_ELIGIBLE.includes(pos)) flexPool.push(arr[i]);
+    }
+  });
+  flexPool.sort((a, b) => b - a);
+  for (let i = 0; i < FLEX_SLOTS && i < flexPool.length; i++) total += flexPool[i];
+  return total;
+}
+
+function tradeRosterValue(val, players) {
+  let total = 0;
+  const byWeek = [];
+  val.weeks.forEach(w => {
+    const pts = tradeBestLineup(players, w, val.pts);
+    const weight = val.weightOf(w);
+    total += pts * weight;
+    byWeek.push({ week: w, weight, pts });
+  });
+  return { total, byWeek };
+}
+
+// Top FA_DEPTH[pos] free agents per position by weighted ROS points. These
+// are the real, distinct bodies that backfill a lineup hole, so replacement
+// level is "who you could actually pick up", not a rank-based abstraction.
+function tradePickFreeAgents(val, candidates) {
+  const byPos = {};
+  candidates.forEach(c => {
+    let tot = 0, any = false;
+    val.weeks.forEach(w => {
+      const v = val.pts(c.id, w);
+      if (v != null) { tot += v * val.weightOf(w); any = true; }
+    });
+    if (any) (byPos[c.pos] = byPos[c.pos] || []).push({ c, tot });
+  });
+  const out = [];
+  Object.keys(CONFIG.TRADE.FA_DEPTH).forEach(pos => {
+    (byPos[pos] || []).sort((a, b) => b.tot - a.tot).slice(0, CONFIG.TRADE.FA_DEPTH[pos]).forEach(x => {
+      out.push(Object.assign({}, x.c, { fa: true, rosTotal: x.tot }));
+    });
+  });
+  return out;
+}
+
+// What the roster loses if player p vanished (backfilled by the FA pool).
+function tradeMarginals(val, roster, fa) {
+  const full = tradeRosterValue(val, roster.concat(fa)).total;
+  const marginal = {};
+  roster.forEach(p => {
+    marginal[p.id] = full - tradeRosterValue(val, roster.filter(x => x.id !== p.id).concat(fa)).total;
+  });
+  return { full, marginal };
+}
+
+// What the roster gains if player p were simply added.
+function tradeAddValue(val, roster, fa, p) {
+  const base = tradeRosterValue(val, roster.concat(fa)).total;
+  return tradeRosterValue(val, roster.concat([p], fa)).total - base;
+}
+
+function tradeEvaluate(val, myRoster, theirRoster, giveIds, getIds, fa) {
+  const give = myRoster.filter(p => giveIds.has(p.id));
+  const get = theirRoster.filter(p => getIds.has(p.id));
+  const myAfter = myRoster.filter(p => !giveIds.has(p.id)).concat(get);
+  const theirAfter = theirRoster.filter(p => !getIds.has(p.id)).concat(give);
+  const side = (before, after) => {
+    const b = tradeRosterValue(val, before.concat(fa));
+    const a = tradeRosterValue(val, after.concat(fa));
+    return { before: b, after: a, delta: a.total - b.total };
+  };
+  const sumWeights = val.weeks.reduce((s, w) => s + val.weightOf(w), 0);
+  const my = side(myRoster, myAfter);
+  const their = side(theirRoster, theirAfter);
+  my.perWeek = sumWeights ? my.delta / sumWeights : 0;
+  their.perWeek = sumWeights ? their.delta / sumWeights : 0;
+  return { give, get, my, their, sumWeights };
+}
+
+function tradeVerdict(perWeek, band) {
+  if (perWeek >= band) return 'ACCEPT';
+  if (perWeek <= -band) return 'REJECT';
+  return 'WASH';
+}
+
+/* TRADE-PURE-END */
+
+/* ---------- data layer (touches state / network) ---------- */
+
+function tradePosOf(pid) {
+  const raw = state.waiverPlayers ? state.waiverPlayers[pid] : null;
+  if (NFL_TEAM_ABBRS.has(pid)) return 'DEF';
+  return raw && raw.position ? raw.position : null;
+}
+
+function tradeWeekRange() {
+  const nflWeek = state.nflState && state.nflState.week ? state.nflState.week : 1;
+  const weeks = [];
+  for (let w = Math.max(1, nflWeek); w <= CONFIG.TRADE.LAST_WEEK; w++) weeks.push(w);
+  return { first: nflWeek, weeks };
+}
+
+function tradePlayoffStart() {
+  const s = state.sleeperLeague && state.sleeperLeague.settings;
+  return (s && s.playoff_week_start) || 15;
+}
+
+function tradeProjUrl(template, season, week) {
+  const pos = ['QB', 'RB', 'WR', 'TE', 'DEF'].map(p => `position%5B%5D=${p}`).join('&');
+  return template.replace('{season}', season).replace('{week}', week).replace('{pos}', pos);
+}
+
+// One week of projections. Tries each known URL shape until one returns
+// a usable payload, then remembers which worked.
+async function tradeFetchProjectionWeek(season, week, notes) {
+  const templates = state.tradeProjTemplate ? [state.tradeProjTemplate] : CONFIG.TRADE.PROJ_URLS;
+  let lastErr = null;
+  for (const t of templates) {
+    try {
+      const resp = await fetch(tradeProjUrl(t, season, week));
+      if (!resp.ok) { lastErr = new Error(`HTTP ${resp.status}`); continue; }
+      const out = tradeNormalizeProjectionPayload(await resp.json());
+      if (Object.keys(out).length < 100) { lastErr = new Error(`only ${Object.keys(out).length} rows`); continue; }
+      state.tradeProjTemplate = t;
+      notes.source = t;
+      return out;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('no projection URL worked');
+}
+
+async function loadTradeProjections() {
+  const notes = { source: null, weeksOk: [], weeksBad: [], defUnscoreable: 0, error: null };
+  const result = { byPid: {}, weeks: [], notes, loadedAt: Date.now(), failed: false };
+  try {
+    const scoring = state.sleeperLeague && state.sleeperLeague.scoring_settings;
+    if (!scoring) throw new Error('League scoring_settings not loaded');
+    const season = (state.sleeperLeague && state.sleeperLeague.season) || (state.nflState && state.nflState.season);
+    const { weeks } = tradeWeekRange();
+    if (!weeks.length) throw new Error('No regular-season weeks remain');
+    const ctx = {
+      scoring,
+      defSd: CONFIG.TRADE.DEF_SD,
+      ptsTiers: tradeParseTiers(scoring, 'pts_allow'),
+      ydsTiers: tradeParseTiers(scoring, 'yds_allow'),
+    };
+    notes.defTiers = { pts: ctx.ptsTiers.length, yds: ctx.ydsTiers.length };
+
+    // First week alone so URL discovery doesn't fire N parallel failures.
+    const firstRaw = await tradeFetchProjectionWeek(season, weeks[0], notes);
+    const rest = await Promise.all(weeks.slice(1).map(w =>
+      tradeFetchProjectionWeek(season, w, notes).then(r => r, e => ({ __err: e.message }))));
+    const raws = [firstRaw].concat(rest);
+
+    raws.forEach((raw, i) => {
+      const w = weeks[i];
+      if (raw && raw.__err) { notes.weeksBad.push(`W${w}: ${raw.__err}`); return; }
+      const scored = {};
+      Object.keys(raw).forEach(pid => {
+        const pos = tradePosOf(pid);
+        if (!pos || !['QB', 'RB', 'WR', 'TE', 'DEF'].includes(pos)) return;
+        const pts = tradeScoreProjectionLine(raw[pid], pos, ctx);
+        if (pts == null) { if (pos === 'DEF') notes.defUnscoreable++; return; }
+        scored[pid] = pts;
+      });
+      const sane = tradeSanityCheck(scored, tradePosOf);
+      if (!sane.ok) { notes.weeksBad.push(`W${w}: ${sane.reason}`); return; }
+      Object.keys(scored).forEach(pid => {
+        (result.byPid[pid] = result.byPid[pid] || {})[w] = Math.round(scored[pid] * 100) / 100;
+      });
+      notes.weeksOk.push(w);
+    });
+    if (!notes.weeksOk.length) throw new Error('No projection week passed the sanity check' + (notes.weeksBad.length ? ' (' + notes.weeksBad[0] + ')' : ''));
+    result.weeks = notes.weeksOk;
+  } catch (e) {
+    result.failed = true;
+    notes.error = e.message;
+    result.byPid = {};
+  }
+  return result;
+}
+
+// Fallback / gap-filler: per-game pace from the Live VORP blend
+// (actual-to-date shrunk toward Ciely), zeroed on the player's bye.
+function tradeBuildFallback() {
+  const fb = {};
+  const lv = state.liveVorpData;
+  if (!lv || !lv.blendedByName || !state.board || !state.waiverIndex) return fb;
+  state.board.forEach(p => {
+    const sid = resolveBoardPlayerToSleeperId(p, state.waiverIndex);
+    const b = lv.blendedByName[p.name];
+    if (!sid || b == null) return;
+    fb[sid] = { pg: b / CONFIG.LIVE_VORP_GAMES_IN_SEASON, bye: p.bye };
+  });
+  return fb;
+}
+
+function tradeAssembleValuation() {
+  const tp = state.tradeProj || { byPid: {}, weeks: [] };
+  const fb = state.tradeFallback || {};
+  const { weeks } = tradeWeekRange();
+  const poStart = tradePlayoffStart();
+  return {
+    weeks,
+    weightOf: w => (w >= poStart ? CONFIG.TRADE.PLAYOFF_WEIGHT : 1),
+    srcOf: pid => (tp.byPid[pid] ? 'proj' : fb[pid] ? 'est' : null),
+    pts: (pid, w) => {
+      const m = tp.byPid[pid];
+      if (m) return m[w] != null ? m[w] : 0; // has a feed line somewhere: missing week = bye/out
+      const f = fb[pid];
+      if (f) return f.bye === w ? 0 : f.pg;
+      return null; // unknown, excluded and surfaced, never zero-filled
+    },
+  };
+}
+
+function tradeBuildFreeAgentPool(val) {
+  const owned = new Set();
+  (state.waiverRosters || []).forEach(r => (r.players || []).forEach(pid => owned.add(pid)));
+  const ids = new Set(Object.keys((state.tradeProj && state.tradeProj.byPid) || {}));
+  Object.keys(state.tradeFallback || {}).forEach(id => ids.add(id));
+  const cands = [];
+  ids.forEach(pid => {
+    if (owned.has(pid)) return;
+    const pos = tradePosOf(pid);
+    if (!pos || !CONFIG.TRADE.FA_DEPTH[pos]) return;
+    const raw = state.waiverPlayers && state.waiverPlayers[pid];
+    if (!raw) return;
+    if (pos !== 'DEF' && !raw.team) return;
+    if (raw.injury_status && CONFIG.TRADE.OUT_STATUSES.includes(raw.injury_status)) return;
+    cands.push({ id: pid, pos });
+  });
+  return tradePickFreeAgents(val, cands);
+}
+
+function tradeRosterPlayers(roster) {
+  const reserve = new Set(roster.reserve || []);
+  const taxi = new Set(roster.taxi || []);
+  const out = [];
+  (roster.players || []).forEach(pid => {
+    const pos = tradePosOf(pid);
+    if (!pos || !['QB', 'RB', 'WR', 'TE', 'DEF'].includes(pos)) return; // K etc. aren't in this lineup
+    out.push({ id: pid, pos, ir: reserve.has(pid) || taxi.has(pid) });
+  });
+  return out;
+}
+
+function tradeMaxActive() {
+  const rp = state.sleeperLeague && state.sleeperLeague.roster_positions;
+  if (Array.isArray(rp) && rp.length) return rp.filter(x => x !== 'IR' && x !== 'TAXI').length;
+  return 15;
+}
+
+/* ---------- UI ---------- */
+
+state.tradeUI = { oppRosterId: null, give: new Set(), get: new Set() };
+state.tradeProj = null;
+state.tradeProjPromise = null;
+state.tradeFallback = null;
+state.tradeProjTemplate = null;
+
+function tradeSetOpp(v) {
+  state.tradeUI.oppRosterId = v ? Number(v) : null;
+  state.tradeUI.get = new Set();
+  renderTradeBody();
+}
+function tradeToggle(side, pid) {
+  const s = state.tradeUI[side];
+  if (s.has(pid)) s.delete(pid); else s.add(pid);
+  renderTradeBody();
+}
+function tradeClear() {
+  state.tradeUI.give = new Set();
+  state.tradeUI.get = new Set();
+  renderTradeBody();
+}
+async function tradeRefreshProjections() {
+  state.tradeProj = null;
+  state.tradeProjPromise = null;
+  await renderTradeTab();
+}
+
+async function renderTradeTab() {
+  const host = document.getElementById('tradeHost');
+  if (!host) return;
+  await ensureLeagueDataLoaded();
+  if (renderLeagueDataStatus(host, 'renderTradeTab')) return;
+  if (!state.tradeProj) {
+    host.innerHTML = `<div class="state"><div class="spinner"></div><p style="margin-top:12px">Loading rest-of-season projections…</p><p style="font-size:11px; color:var(--fg-dim); margin-top:6px;">One request per remaining week, scored under your league's own scoring settings.</p></div>`;
+    if (!state.tradeProjPromise) state.tradeProjPromise = loadTradeProjections();
+    state.tradeProj = await state.tradeProjPromise;
+    state.tradeFallback = tradeBuildFallback();
+  }
+  renderTradeBody();
+}
+
+function tradePlayerInfo(pid, sleeperIdToBoard, val) {
+  const row = buildRosterRow(pid, sleeperIdToBoard);
+  const raw = state.waiverPlayers ? state.waiverPlayers[pid] : null;
+  const lv = state.liveVorpData;
+  const act = lv && lv.actualsById ? lv.actualsById[pid] : null;
+  const rec = lv && lv.recentById ? lv.recentById[pid] : null;
+  const m = state.tradeProj && state.tradeProj.byPid[pid];
+  let projPG = null;
+  if (m) {
+    const vals = Object.keys(m).map(w => m[w]);
+    projPG = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  } else if (state.tradeFallback && state.tradeFallback[pid]) {
+    projPG = state.tradeFallback[pid].pg;
+  }
+  return {
+    id: pid, name: row.name, pos: row.pos, team: row.team,
+    src: val.srcOf(pid),
+    projPG,
+    ytdPG: act && act.games ? act.total / act.games : null,
+    l3PG: rec && rec.games ? rec.total / rec.games : null,
+    inj: raw && raw.injury_status ? raw.injury_status : null,
+  };
+}
+
+function tradeNum(v, d = 1) { return v == null || !isFinite(v) ? '—' : v.toFixed(d); }
+
+function tradeRowHtml(side, info, ir, valueCell) {
+  const checked = state.tradeUI[side].has(info.id) ? 'checked' : '';
+  const badges = [];
+  if (ir) badges.push('<span class="tc-badge tc-warn" title="On IR/taxi — not counted in any lineup">IR</span>');
+  else if (info.inj) badges.push(`<span class="tc-badge tc-warn" title="Sleeper injury status">${escapeHtml(info.inj)}</span>`);
+  if (info.src === 'est') badges.push('<span class="tc-badge" title="No projection-feed line — valued from the Ciely/actual blend">est</span>');
+  if (!info.src) badges.push('<span class="tc-badge tc-bad" title="No data at all — excluded from the math">no data</span>');
+  let lag = '';
+  if (info.projPG != null && info.ytdPG != null && info.ytdPG > 0 && Math.abs(info.projPG - info.ytdPG) > 3 && Math.abs(info.projPG - info.ytdPG) / info.ytdPG > 0.35) {
+    lag = info.projPG > info.ytdPG ? ' <span class="tc-lag" title="Projection is well above his season average — check for a role change the feed may have caught (or hype)">▲</span>' : ' <span class="tc-lag" title="Projection is well below his season average — check for a role change or injury">▼</span>';
+  }
+  return `<label class="tc-row">
+    <input type="checkbox" ${checked} onchange="tradeToggle('${side}', '${escapeHtml(info.id)}')">
+    <span class="tc-name">${escapeHtml(info.name || info.id)} <span class="tc-pos">${escapeHtml(info.pos || '')}${info.team ? ' · ' + escapeHtml(info.team) : ''}</span> ${badges.join(' ')}</span>
+    <span class="tc-num">${valueCell}</span>
+    <span class="tc-num">${tradeNum(info.projPG)}${lag}</span>
+    <span class="tc-num">${tradeNum(info.ytdPG)}</span>
+    <span class="tc-num">${tradeNum(info.l3PG)}</span>
+  </label>`;
+}
+
+function renderTradeBody() {
+  const host = document.getElementById('tradeHost');
+  if (!host || !state.tradeProj) return;
+  const myRoster = (state.waiverRosters || []).find(r => r.owner_id === CONFIG.MY_OWNER_ID);
+  if (!myRoster) {
+    host.innerHTML = `<div class="state"><h3>Couldn't find your roster</h3><p style="font-size:12px; color:var(--fg-dim);">No roster in this league matches CONFIG.MY_OWNER_ID.</p></div>`;
+    return;
+  }
+  const val = tradeAssembleValuation();
+  const tp = state.tradeProj;
+  const noData = tp.failed && !Object.keys(state.tradeFallback || {}).length;
+  if (noData) {
+    host.innerHTML = `<div class="state"><h3>No value data available</h3>
+      <p style="font-size:12px; color:var(--down); font-family:var(--font-mono);">Projection feed: ${escapeHtml(tp.notes.error || 'failed')}</p>
+      <p style="font-size:12px; color:var(--fg-dim); margin-top:6px;">The Live VORP fallback also isn't loaded, so there's nothing to value players with. Not showing numbers rather than guessing.</p>
+      <button onclick="tradeRefreshProjections()">Retry</button></div>`;
+    return;
+  }
+
+  const sleeperIdToBoard = buildSleeperIdToBoardMap(state.board, state.waiverIndex);
+  const fa = tradeBuildFreeAgentPool(val);
+  const mineAll = tradeRosterPlayers(myRoster);
+  const mine = mineAll.filter(p => val.srcOf(p.id));
+  const opps = (state.waiverRosters || []).filter(r => r.roster_id !== myRoster.roster_id);
+  const oppRoster = opps.find(r => r.roster_id === state.tradeUI.oppRosterId) || null;
+  const theirAll = oppRoster ? tradeRosterPlayers(oppRoster) : [];
+  const theirs = theirAll.filter(p => val.srcOf(p.id));
+
+  // ---- header: status + replacement transparency
+  const lg = state.sleeperLeague || {};
+  const deadline = lg.settings && lg.settings.trade_deadline;
+  const nflWeek = state.nflState && state.nflState.week;
+  let deadlineHtml = '';
+  if (deadline) {
+    deadlineHtml = nflWeek > deadline
+      ? `<span style="color:var(--down);">Trade deadline (Week ${deadline}) has passed — this is analysis only.</span>`
+      : `Trade deadline: Week ${deadline} (${deadline - nflWeek + 1} week${deadline - nflWeek === 0 ? '' : 's'} incl. this one)`;
+  }
+  const srcHtml = tp.failed
+    ? `<span style="color:var(--down);">⚠ Projection feed unavailable (${escapeHtml(tp.notes.error || '')}) — every number below is the Ciely/actual blend, flat per game. Treat as rough.</span>`
+    : `Projections: Sleeper weekly feed, Weeks ${tp.weeks[0]}–${tp.weeks[tp.weeks.length - 1]}${tp.weeks.length < val.weeks.length ? ' <span style="color:var(--warn);">(' + (val.weeks.length - tp.weeks.length) + ' week(s) rejected: ' + escapeHtml(tp.notes.weeksBad.join('; ')) + ')</span>' : ''} · playoff weeks (≥${tradePlayoffStart()}) weighted ${CONFIG.TRADE.PLAYOFF_WEIGHT}×`;
+  const defNote = (!tp.failed && tp.notes.defUnscoreable)
+    ? ` · <span style="color:var(--warn);">${tp.notes.defUnscoreable} DEF week-lines couldn't be scored (feed lacks points/yards allowed) — those DEFs use the estimate.</span>` : '';
+  const replHtml = ['QB', 'RB', 'WR', 'TE', 'DEF'].map(pos => {
+    const best = fa.filter(f => f.pos === pos).sort((a, b) => b.rosTotal - a.rosTotal)[0];
+    if (!best) return `${pos}: —`;
+    const nm = buildRosterRow(best.id, sleeperIdToBoard).name || best.id;
+    return `${pos}: ${escapeHtml(nm)} (${tradeNum(best.rosTotal / val.weeks.reduce((s, w) => s + val.weightOf(w), 0))}/wk)`;
+  }).join(' · ');
+
+  // ---- per-player values
+  const { marginal } = tradeMarginals(val, mine, fa);
+  const myRows = mineAll.map(p => {
+    const info = tradePlayerInfo(p.id, sleeperIdToBoard, val);
+    const cell = p.ir ? '0.0' : tradeNum(marginal[p.id] != null ? marginal[p.id] : null);
+    return { info, p, cell, sort: p.ir ? -1 : (marginal[p.id] || 0) };
+  }).sort((a, b) => b.sort - a.sort);
+  const theirRows = theirAll.map(p => {
+    const info = tradePlayerInfo(p.id, sleeperIdToBoard, val);
+    const add = (val.srcOf(p.id) && !p.ir) ? tradeAddValue(val, mine, fa, p) : null;
+    return { info, p, cell: p.ir ? '0.0' : tradeNum(add), sort: p.ir ? -1 : (add == null ? -1 : add) };
+  }).sort((a, b) => b.sort - a.sort);
+
+  const colHead = (valueLabel, valueTip) => `<div class="tc-row tc-head"><span></span><span>Player</span><span class="tc-num" title="${valueTip}">${valueLabel}</span><span class="tc-num" title="Projected points per game, remaining weeks, your league's scoring">Proj/gm</span><span class="tc-num" title="Actual points per game this season (display only — not used in the math)">YTD/gm</span><span class="tc-num" title="Actual points per game, last 3 weeks (display only)">L3/gm</span></div>`;
+
+  const oppOptions = opps.map(r => {
+    const nm = teamNameForOwner(r.owner_id) || `Team ${r.roster_id}`;
+    return `<option value="${r.roster_id}" ${r.roster_id === state.tradeUI.oppRosterId ? 'selected' : ''}>${escapeHtml(nm)}</option>`;
+  }).join('');
+
+  const giveHtml = myRows.map(r => tradeRowHtml('give', r.info, r.p.ir, r.cell)).join('');
+  const getHtml = oppRoster
+    ? theirRows.map(r => tradeRowHtml('get', r.info, r.p.ir, r.cell)).join('')
+    : '<div style="padding:14px; font-size:12px; color:var(--fg-dim);">Pick a trade partner above.</div>';
+
+  // ---- verdict
+  let resultHtml = '<div class="tc-result tc-idle">Select players on both sides to evaluate.</div>';
+  if (oppRoster && (state.tradeUI.give.size || state.tradeUI.get.size)) {
+    const ev = tradeEvaluate(val, mine, theirs, state.tradeUI.give, state.tradeUI.get, fa);
+    const band = CONFIG.TRADE.FAIR_BAND_PER_WEEK;
+    const verdict = tradeVerdict(ev.my.perWeek, band);
+    const vColor = verdict === 'ACCEPT' ? 'var(--up)' : verdict === 'REJECT' ? 'var(--down)' : 'var(--warn)';
+    const theirV = tradeVerdict(ev.their.perWeek, band);
+    const theirLine = theirV === 'REJECT'
+      ? 'They lose lineup ground — expect pushback, or you need to sweeten it.'
+      : theirV === 'ACCEPT' ? 'They gain lineup ground too — an easy sell.' : 'Roughly neutral for them.';
+
+    const notes = [];
+    const involved = ev.give.concat(ev.get);
+    const estN = involved.filter(p => val.srcOf(p.id) === 'est').length;
+    if (estN) notes.push(`${estN} player(s) in this deal are valued from the Ciely/actual blend, not the projection feed (marked <em>est</em>).`);
+    const irN = involved.filter(p => p.ir).map(p => buildRosterRow(p.id, sleeperIdToBoard).name || p.id);
+    if (irN.length) notes.push(`On IR and counted as zero: ${escapeHtml(irN.join(', '))}.`);
+    const excluded = (mineAll.concat(theirAll)).filter(p => !val.srcOf(p.id) && (state.tradeUI.give.has(p.id) || state.tradeUI.get.has(p.id)));
+    if (excluded.length) notes.push(`No data for ${escapeHtml(excluded.map(p => buildRosterRow(p.id, sleeperIdToBoard).name || p.id).join(', '))} — excluded, so this verdict ignores them.`);
+    const maxA = tradeMaxActive();
+    const myActive = mineAll.filter(p => !p.ir).length - ev.give.filter(p => !p.ir).length + ev.get.filter(p => !p.ir).length;
+    const theirActive = theirAll.filter(p => !p.ir).length - ev.get.filter(p => !p.ir).length + ev.give.filter(p => !p.ir).length;
+    if (myActive > maxA) notes.push(`You'd be at ${myActive} active players (max ${maxA}) — you must drop ${myActive - maxA}.`);
+    if (theirActive > maxA) notes.push(`They'd be at ${theirActive} active players (max ${maxA}) — they must drop ${theirActive - maxA}; expect that to be a sticking point.`);
+
+    const weekRows = ev.my.before.byWeek.map((b, i) => {
+      const a = ev.my.after.byWeek[i];
+      const d = a.pts - b.pts;
+      return `<tr><td>W${b.week}${b.weight !== 1 ? ' <span style="color:var(--fg-dim)">×' + b.weight + '</span>' : ''}</td><td>${b.pts.toFixed(1)}</td><td>${a.pts.toFixed(1)}</td><td style="color:${d > 0.05 ? 'var(--up)' : d < -0.05 ? 'var(--down)' : 'var(--fg-mute)'}">${d > 0 ? '+' : ''}${d.toFixed(1)}</td></tr>`;
+    }).join('');
+
+    resultHtml = `<div class="tc-result">
+      <div class="tc-verdict" style="color:${vColor};">${verdict}</div>
+      <div class="tc-delta">Your lineup: <strong>${ev.my.delta >= 0 ? '+' : ''}${ev.my.delta.toFixed(1)}</strong> weighted pts over the rest of the season
+        (<strong>${ev.my.perWeek >= 0 ? '+' : ''}${ev.my.perWeek.toFixed(2)}</strong>/wk; fair band ±${band}/wk)</div>
+      <div class="tc-delta" style="color:var(--fg-mute);">Their lineup: ${ev.their.delta >= 0 ? '+' : ''}${ev.their.delta.toFixed(1)} (${ev.their.perWeek >= 0 ? '+' : ''}${ev.their.perWeek.toFixed(2)}/wk). ${theirLine}</div>
+      ${notes.length ? '<ul class="tc-notes">' + notes.map(n => `<li>${n}</li>`).join('') + '</ul>' : ''}
+      <details style="margin-top:10px;"><summary style="cursor:pointer; color:var(--fg-mute); font-size:11px; font-family:var(--font-mono);">Week-by-week lineup (yours)</summary>
+        <table class="tc-weeks"><thead><tr><th>Week</th><th>Before</th><th>After</th><th>Δ</th></tr></thead><tbody>${weekRows}</tbody></table>
+      </details>
+    </div>`;
+  }
+
+  host.innerHTML = `
+    <div class="tc-status">
+      <div>${srcHtml}${defNote}</div>
+      <div style="margin-top:4px;">${deadlineHtml}</div>
+      <div style="margin-top:4px; color:var(--fg-dim);"><strong>Trade replacement value</strong> — backfilled from today's free-agent pool, so it will NOT match the Waivers tab's Live VORP. Best FA now → ${replHtml}</div>
+    </div>
+    <div class="tc-controls">
+      <label class="tc-label">Trade with
+        <select onchange="tradeSetOpp(this.value)"><option value="">Select team…</option>${oppOptions}</select>
+      </label>
+      <button class="chip" onclick="tradeClear()">Clear</button>
+      <button class="chip" onclick="tradeRefreshProjections()" title="Re-pull rosters and projections">Refresh data</button>
+    </div>
+    ${resultHtml}
+    <div class="tc-cols">
+      <div class="tc-col"><div class="tc-coltitle">You give</div>${colHead('Lineup loss', 'Weighted points your best lineups lose without him (FA-backfilled). Bench surplus ≈ 0.')}${giveHtml}</div>
+      <div class="tc-col"><div class="tc-coltitle">You get</div>${colHead('Lineup gain', 'Weighted points his addition would add to your best lineups (before any other move).')}${getHtml}</div>
+    </div>
+    <p class="tc-foot">Weekly value = best lineup (1 QB, 2 RB, 2 WR, 1 TE, 2 FLEX, 1 DEF) through Week ${CONFIG.TRADE.LAST_WEEK}; byes and injuries come from the projection feed. Projections are forward-looking only — YTD/L3 are context, and ▲/▼ flags a projection far from his season average. DEF points/yards-allowed tiers are modeled with an approximate spread, and 50+ yard TD bonuses may be missing from the feed, so close calls on DEF or big-play players deserve a second look.</p>`;
+}
+
+/* ============================================================
    Event wiring
    ============================================================ */
 document.getElementById('tabs').addEventListener('click', e => {
@@ -6869,6 +7479,7 @@ document.getElementById('tabs').addEventListener('click', e => {
   if (target === 'history') renderHistory();
   if (target === 'roster' && !draftState.connected) renderRosterTab();
   if (target === 'waivers') renderWaiversTab();
+  if (target === 'trade') renderTradeTab();
   if (target === 'trends') renderTrendsTab();
 });
 
@@ -6885,8 +7496,6 @@ document.getElementById('waiversSearchBox').addEventListener('input', e => {
 });
 
 document.getElementById('mySlotInput').addEventListener('input', () => renderPickValues());
-document.getElementById('tradeSend').addEventListener('input', () => renderTradeCalc());
-document.getElementById('tradeRecv').addEventListener('input', () => renderTradeCalc());
 
 document.getElementById('draftConnectBtn').addEventListener('click', connectDraft);
 document.getElementById('notifToggleBtn').addEventListener('click', requestDraftNotifications);
