@@ -1035,6 +1035,13 @@
   .tc-weeks { margin-top: 8px; border-collapse: collapse; font-family: var(--font-mono); font-size: 11.5px; }
   .tc-weeks th, .tc-weeks td { padding: 3px 14px 3px 0; text-align: left; }
   .tc-weeks th { color: var(--fg-dim); font-weight: 500; }
+  @media (max-width: 600px) {
+    /* two-line rows: name across the top, the four numbers underneath, so nothing clips at phone width */
+    .tc-row { grid-template-columns: 22px repeat(4, 1fr); row-gap: 3px; }
+    .tc-row > input, .tc-row > .tc-chk { grid-row: 1 / span 2; align-self: center; }
+    .tc-row > .tc-name { grid-column: 2 / -1; }
+    .tc-row.tc-head > .tc-name { font-family: var(--font-mono); }
+  }
   .tc-foot { font-size: 11px; color: var(--fg-dim); line-height: 1.5; margin-top: 14px; }
 </style>
 </head>
@@ -7061,6 +7068,27 @@ function tradeEvaluate(val, myRoster, theirRoster, giveIds, getIds, fa) {
   return { give, get, my, their, sumWeights };
 }
 
+// Sleeper's /state/nfl can keep reporting the week whose Monday game just
+// ended all the way through Tue/Wed. A finished week must not count as a
+// "remaining" week: no trade can change it. A week looks finished when its
+// stats carry lines for most team defenses (they only fill in as games
+// finish) and for plenty of players overall.
+function tradeWeekLooksComplete(weekStats, isDefId) {
+  if (!weekStats || typeof weekStats !== 'object') return false;
+  let defs = 0, total = 0;
+  Object.keys(weekStats).forEach(id => {
+    const line = weekStats[id];
+    if (!line || typeof line !== 'object' || !Object.keys(line).length) return;
+    total++;
+    if (isDefId(id)) defs++;
+  });
+  return total >= 200 && defs >= 20;
+}
+// Games run Thu-Mon, so the stale-week window is Tue through Thu (ET).
+function tradeIsPostGameWeekday(weekday) {
+  return weekday === 'Tue' || weekday === 'Wed' || weekday === 'Thu';
+}
+
 function tradeVerdict(perWeek, band) {
   if (perWeek >= band) return 'ACCEPT';
   if (perWeek <= -band) return 'REJECT';
@@ -7077,11 +7105,32 @@ function tradePosOf(pid) {
   return raw && raw.position ? raw.position : null;
 }
 
-function tradeWeekRange() {
+function tradeWeekRange(firstOverride) {
   const nflWeek = state.nflState && state.nflState.week ? state.nflState.week : 1;
+  const first = firstOverride != null ? firstOverride
+    : (state.tradeProj && state.tradeProj.firstWeek != null ? state.tradeProj.firstWeek : nflWeek);
   const weeks = [];
-  for (let w = Math.max(1, nflWeek); w <= CONFIG.TRADE.LAST_WEEK; w++) weeks.push(w);
-  return { first: nflWeek, weeks };
+  for (let w = Math.max(1, first); w <= CONFIG.TRADE.LAST_WEEK; w++) weeks.push(w);
+  return { first, weeks };
+}
+
+// First week a trade can still affect. Defaults to Sleeper's current week
+// and only advances when that week's stats show it is already finished
+// (Tue-Thu ET). Deliberately fetched UNcached: fetchWeekStatsCached treats
+// a stored week as final, and this check can run while a week is partial.
+async function tradeDetectFirstWeek() {
+  const nflWeek = state.nflState && state.nflState.week ? state.nflState.week : 1;
+  const fallback = { first: nflWeek, advanced: false };
+  try {
+    const weekday = new Date().toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/New_York' });
+    if (!tradeIsPostGameWeekday(weekday)) return fallback;
+    const season = (state.sleeperLeague && state.sleeperLeague.season) || (state.nflState && state.nflState.season);
+    const resp = await fetch(`${CONFIG.SLEEPER_API}/stats/nfl/regular/${season}/${nflWeek}`);
+    if (!resp.ok) return fallback;
+    const data = await resp.json();
+    if (tradeWeekLooksComplete(data, id => NFL_TEAM_ABBRS.has(id))) return { first: nflWeek + 1, advanced: true };
+  } catch (e) { /* check is best-effort; fall back to Sleeper's own week */ }
+  return fallback;
 }
 
 function tradePlayoffStart() {
@@ -7115,12 +7164,16 @@ async function tradeFetchProjectionWeek(season, week, notes) {
 
 async function loadTradeProjections() {
   const notes = { source: null, weeksOk: [], weeksBad: [], defUnscoreable: 0, error: null };
-  const result = { byPid: {}, weeks: [], notes, loadedAt: Date.now(), failed: false };
+  const nflWeekNow = state.nflState && state.nflState.week ? state.nflState.week : 1;
+  const result = { byPid: {}, weeks: [], notes, loadedAt: Date.now(), failed: false, firstWeek: nflWeekNow, weekAdvanced: false };
   try {
     const scoring = state.sleeperLeague && state.sleeperLeague.scoring_settings;
     if (!scoring) throw new Error('League scoring_settings not loaded');
     const season = (state.sleeperLeague && state.sleeperLeague.season) || (state.nflState && state.nflState.season);
-    const { weeks } = tradeWeekRange();
+    const det = await tradeDetectFirstWeek();
+    result.firstWeek = det.first;
+    result.weekAdvanced = det.advanced;
+    const { weeks } = tradeWeekRange(det.first);
     if (!weeks.length) throw new Error('No regular-season weeks remain');
     const ctx = {
       scoring,
@@ -7356,16 +7409,18 @@ function renderTradeBody() {
   // ---- header: status + replacement transparency
   const lg = state.sleeperLeague || {};
   const deadline = lg.settings && lg.settings.trade_deadline;
-  const nflWeek = state.nflState && state.nflState.week;
+  const firstWk = val.weeks.length ? val.weeks[0] : (state.nflState && state.nflState.week);
   let deadlineHtml = '';
   if (deadline) {
-    deadlineHtml = nflWeek > deadline
+    deadlineHtml = firstWk > deadline
       ? `<span style="color:var(--down);">Trade deadline (Week ${deadline}) has passed — this is analysis only.</span>`
-      : `Trade deadline: Week ${deadline} (${deadline - nflWeek + 1} week${deadline - nflWeek === 0 ? '' : 's'} incl. this one)`;
+      : `Trade deadline: Week ${deadline} (${deadline - firstWk + 1} week${deadline - firstWk === 0 ? '' : 's'} of lineup value before it, incl. Week ${firstWk})`;
   }
+  const advNote = tp.weekAdvanced
+    ? ` · Week ${firstWk - 1} is already finished, so it's excluded.` : '';
   const srcHtml = tp.failed
     ? `<span style="color:var(--down);">⚠ Projection feed unavailable (${escapeHtml(tp.notes.error || '')}) — every number below is the Ciely/actual blend, flat per game. Treat as rough.</span>`
-    : `Projections: Sleeper weekly feed, Weeks ${tp.weeks[0]}–${tp.weeks[tp.weeks.length - 1]}${tp.weeks.length < val.weeks.length ? ' <span style="color:var(--warn);">(' + (val.weeks.length - tp.weeks.length) + ' week(s) rejected: ' + escapeHtml(tp.notes.weeksBad.join('; ')) + ')</span>' : ''} · playoff weeks (≥${tradePlayoffStart()}) weighted ${CONFIG.TRADE.PLAYOFF_WEIGHT}×`;
+    : `Projections: Sleeper weekly feed, Weeks ${tp.weeks[0]}–${tp.weeks[tp.weeks.length - 1]}${advNote}${tp.weeks.length < val.weeks.length ? ' <span style="color:var(--warn);">(' + (val.weeks.length - tp.weeks.length) + ' week(s) rejected: ' + escapeHtml(tp.notes.weeksBad.join('; ')) + ')</span>' : ''} · playoff weeks (≥${tradePlayoffStart()}) weighted ${CONFIG.TRADE.PLAYOFF_WEIGHT}×`;
   const defNote = (!tp.failed && tp.notes.defUnscoreable)
     ? ` · <span style="color:var(--warn);">${tp.notes.defUnscoreable} DEF week-lines couldn't be scored (feed lacks points/yards allowed) — those DEFs use the estimate.</span>` : '';
   const replHtml = ['QB', 'RB', 'WR', 'TE', 'DEF'].map(pos => {
@@ -7388,7 +7443,7 @@ function renderTradeBody() {
     return { info, p, cell: p.ir ? '0.0' : tradeNum(add), sort: p.ir ? -1 : (add == null ? -1 : add) };
   }).sort((a, b) => b.sort - a.sort);
 
-  const colHead = (valueLabel, valueTip) => `<div class="tc-row tc-head"><span></span><span>Player</span><span class="tc-num" title="${valueTip}">${valueLabel}</span><span class="tc-num" title="Projected points per game, remaining weeks, your league's scoring">Proj/gm</span><span class="tc-num" title="Actual points per game this season (display only — not used in the math)">YTD/gm</span><span class="tc-num" title="Actual points per game, last 3 weeks (display only)">L3/gm</span></div>`;
+  const colHead = (valueLabel, valueTip) => `<div class="tc-row tc-head"><span class="tc-chk"></span><span class="tc-name">Player</span><span class="tc-num" title="${valueTip}">${valueLabel}</span><span class="tc-num" title="Projected points per game, remaining weeks, your league's scoring">Proj/gm</span><span class="tc-num" title="Actual points per game this season (display only — not used in the math)">YTD/gm</span><span class="tc-num" title="Actual points per game, last 3 weeks (display only)">L3/gm</span></div>`;
 
   const oppOptions = opps.map(r => {
     const nm = teamNameForOwner(r.owner_id) || `Team ${r.roster_id}`;
