@@ -1156,15 +1156,9 @@
       "last_mistake": null
     },
     "Screaming Eagles": {
-      "consecutive_weeks": 2,
+      "consecutive_weeks": 0,
       "last_week_counted": 10,
-      "last_mistake": {
-        "benched_player": "Matthew Stafford",
-        "benched_points": 32.25,
-        "started_instead": "Drake Maye",
-        "started_points": 3.5,
-        "margin": 28.75
-      }
+      "last_mistake": null
     },
     "Chuba Bucky Doo": {
       "consecutive_weeks": 1,
