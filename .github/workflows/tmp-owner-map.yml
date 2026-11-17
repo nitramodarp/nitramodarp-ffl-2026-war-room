@@ -1,0 +1,20 @@
+name: Tmp Owner Map
+on:
+  workflow_dispatch: {}
+jobs:
+  map:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          python3 - <<'PY'
+          import json, urllib.request
+          L="1359038733340389376"
+          g=lambda p: json.load(urllib.request.urlopen("https://api.sleeper.app/v1"+p))
+          users={u["user_id"]:u for u in g(f"/league/{L}/users")}
+          for r in g(f"/league/{L}/rosters"):
+              u=users.get(r["owner_id"],{})
+              print("MAP", u.get("display_name"), "=>", (u.get("metadata") or {}).get("team_name"))
+          for leg in (9,10):
+              for t in g(f"/league/{L}/transactions/{leg}"):
+                  print("TX leg",leg,t.get("type"),t.get("status"),t.get("created"),t.get("status_updated"),t.get("roster_ids"),list((t.get("adds") or {}).keys())[:3])
+          PY
